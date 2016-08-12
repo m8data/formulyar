@@ -37,7 +37,7 @@ BEGIN {
    }
 }
 
-my $forceDBG = 1;
+my $forceDBG = 0;
 my $dbg = 0;
 my $chmod = 0777;
 my $userDays = 60;
@@ -53,7 +53,7 @@ my @role = (	'triple', 	'role1', 	'role2', 		'role3', 	'author', 'quest', 'targe
 my @number = (	'name',		'subject', 	'predicate',	'object',	'author', 'quest', 'add' );
 my @transaction = ( 'REMOTE_ADDR', 'HTTP_USER_AGENT', 'DOCUMENT_ROOT', 'REQUEST_URI', 'QUERY_STRING', 'HTTP_COOKIE', 'REQUEST_METHOD', 'HTTP_X_REQUESTED_WITH' );#, 'HTTP_USER_AGENT', 'HTTP_ACCEPT_LANGUAGE', 'REMOTE_ADDR' $$transaction{'QUERY_STRING'}
 my @mainTriple = ( 'n', 'r', 'i' );
-my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1 );
+my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1, '_avatar', 1 );
 my @superrole = ( 'triple', 'role', 'role', 'role', 'author', 'quest', 'subject', 'predicate', 'object' );
 my @superfile = ( undef, 'port', 'dock', 'terminal' ); 
 my $type = 'xml';
@@ -111,7 +111,7 @@ if ( $ARGV[0]   ){
 else{
 	chdir $ENV{DOCUMENT_ROOT};
 	$ROOT_DIR = $ENV{DOCUMENT_ROOT}.'/';
-	my $adminMode = $dbg = 1 if $forceDBG or cookie('user') ne $defaultAuthor;
+	my $adminMode = $dbg = 1 if $forceDBG or cookie('debug') ne '' ;#cookie('user') ne $defaultAuthor
 	$temp{'adminMode'} = "true" if $adminMode;
 	if (not $adminMode and $ENV{'QUERY_STRING'} ){
 		open (FILE, '>>'.$guest_log)|| die "Ошибка при открытии файла $guest_log: $!\n";
@@ -122,7 +122,7 @@ else{
 
 	my %cookie;
 	my $q = CGI->new();
-	if ( $ENV{'REQUEST_URI'} =~m!^/_(pdf)/(\w+)/! or $ENV{'REQUEST_URI'} =~m!^/_(doc)/(\w+)/! ){
+	if ( $ENV{'REQUEST_URI'} =~m!^/_(pdf)/(\w+)/! or $ENV{'REQUEST_URI'} =~m!^/_(doc)/(\w+)/! or $ENV{'REQUEST_URI'} =~m!^/_(avatar)/(\w+)/! ){
 		my ( $format, $folder ) = ( $1, $2 ); 
 		&setWarn( "  Найден запрос $ENV{'REQUEST_URI'} вывода в особом формате $1 (папка: $2)", $log.'_special.txt' );#	
 		my $req = $ENV{'REQUEST_URI'};
@@ -130,43 +130,64 @@ else{
 		my @request_uri = split /\?/, $req;
 		&setWarn( "  перевод на $request_uri[0] (формат: $format)" );#
 		$request_uri[0] =~s!^/!!;
-		if ( $format eq 'pdf' ){
-			&setWarn( "   Формирование pdf-файла запросом $ENV{HTTP_HOST}$req&proc=wkhtmltopdf" );#
-			system ( 'wkhtmltopdf '.$ENV{HTTP_HOST}.$req.' '.$ROOT_DIR.$request_uri[0].'/report.pdf'.' 2>'.$ROOT_DIR.$logDir.'/wkhtmltopdf.txt' );
-			#system ( 'wkhtmltopdf localhost'.$req.' '.$request_uri[0].'/report.pdf'.' 2>/_log/wkhtmltopdf.txt' );
-			$temp{'format'} = 'pdf';
-		}
-		elsif ( $format eq 'doc' ){
-			&setWarn( "   Формирование doc-файла" );#
-			&initProc( \%temp, \%cookie );
-			$temp{'format'} = 'doc';
-			
-			rmtree $request_uri[0].'/report' if -d $request_uri[0].'/report'; 
-			dircopy $folder.'/template/report', $request_uri[0].'/report';
-			-e $request_uri[0].'/report/_rels/.rels' || copy( $folder.'/template/report/_rels/.rels', $request_uri[0].'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
-			my $xmlFile = $ROOT_DIR.$request_uri[0].'temp.xml';
-			&setFile( $xmlFile, &getDoc( \%temp ) );
-			$temp{'avatar'} = $temp{'tempAvatar'} if defined $temp{'tempAvatar'};
-			my $xslFile = $ROOT_DIR.$temp{'avatar'}.$avatars.'/'.$temp{'avatar'}.'.xsl';
-			my $documentFile = $ROOT_DIR.$request_uri[0].'/report/word/document.xml';
-			my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$ROOT_DIR.$logDir.'/xsltproc_doc.txt' );#
-			&setWarn( "   documntXML: $status" );#
-			unlink $request_uri[0].'report.docx' if -e $request_uri[0].'report.docx';
-			my $zip = Archive::Zip->new();
-			$zip->addTree( $request_uri[0].'/report/' );
-			unless ( $zip->writeToFileNamed($request_uri[0].'report.docx') == AZ_OK ) {
-				die 'write error';
+		
+		if ( $format eq 'avatar' ){
+			my $cookie;
+			if ( $folder eq cookie('avatar') ){
+				my $value = $q->cookie('debug');
+				if ($value!=''){
+					$cookie = $q->cookie( -name => 'debug', -expires => '+1y', -value => '' )
+				}
+				else {
+					$cookie = $q->cookie( -name => 'debug', -expires => '+1y', -value => time )
+				}
+				#$request_uri[0] = 'formulyar/'.$request_uri[0];
 			}
-			$format = 'docx';
-		}
-		if ($adminMode and 0){
-			&setWarn( '   редирект на '.$request_uri[0].'report.'.$format );
-			print $q->header(-location => '/'.$request_uri[0].'report.'.$format );
+			else{ $cookie = $q->cookie( -name => 'avatar', -expires => '+1y', -value => $folder ) }
+			print $q->header( -location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0], -cookie => $cookie );
+		
 		}
 		else {
-			&setWarn( '   редирект на '.$ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0].'report.'.$format );
-			print $q->header(-location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0].'report.'.$format );
+			if ( $format eq 'pdf' ){
+				&setWarn( "   Формирование pdf-файла запросом $ENV{HTTP_HOST}$req&proc=wkhtmltopdf" );#
+				system ( 'wkhtmltopdf '.$ENV{HTTP_HOST}.$req.' '.$ROOT_DIR.$request_uri[0].'/report.pdf'.' 2>'.$ROOT_DIR.$logDir.'/wkhtmltopdf.txt' );
+				#system ( 'wkhtmltopdf localhost'.$req.' '.$request_uri[0].'/report.pdf'.' 2>/_log/wkhtmltopdf.txt' );
+				$temp{'format'} = 'pdf';
+			}
+			elsif ( $format eq 'doc' ){
+				&setWarn( "   Формирование doc-файла" );#
+				&initProc( \%temp, \%cookie );
+				$temp{'format'} = 'doc';
+				
+				rmtree $request_uri[0].'/report' if -d $request_uri[0].'/report'; 
+				dircopy $folder.'/template/report', $request_uri[0].'/report';
+				-e $request_uri[0].'/report/_rels/.rels' || copy( $folder.'/template/report/_rels/.rels', $request_uri[0].'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
+				my $xmlFile = $ROOT_DIR.$request_uri[0].'temp.xml';
+				&setFile( $xmlFile, &getDoc( \%temp ) );
+				$temp{'avatar'} = $temp{'tempAvatar'} if defined $temp{'tempAvatar'};
+				my $xslFile = $ROOT_DIR.$temp{'avatar'}.$avatars.'/'.$temp{'avatar'}.'.xsl';
+				my $documentFile = $ROOT_DIR.$request_uri[0].'/report/word/document.xml';
+				my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$ROOT_DIR.$logDir.'/xsltproc_doc.txt' );#
+				&setWarn( "   documntXML: $status" );#
+				unlink $request_uri[0].'report.docx' if -e $request_uri[0].'report.docx';
+				my $zip = Archive::Zip->new();
+				$zip->addTree( $request_uri[0].'/report/' );
+				unless ( $zip->writeToFileNamed($request_uri[0].'report.docx') == AZ_OK ) {
+					die 'write error';
+				}
+				$format = 'docx';
+			}
+			if ($adminMode and 0){
+				&setWarn( '   редирект на '.$request_uri[0].'report.'.$format );
+				print $q->header( -location => '/'.$request_uri[0].'report.'.$format );
+			}
+			else {
+				&setWarn( '   редирект на '.$ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0].'report.'.$format );
+				print $q->header( -location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0].'report.'.$format );
+			}
+		
 		}
+		
 	}
 	else{
 		&setWarn( " Обработка запроса $ENV{REQUEST_URI} для DOCUMENT_ROOT: >$ROOT_DIR< ", $log);#		
@@ -261,10 +282,12 @@ sub initProc{
 	foreach my $itm ( split '; ', $$temp{'HTTP_COOKIE'} ){
 		&setWarn('		iP  Прием куки '.$itm);
 		my ( $name, $value ) = split( '=', $itm );
-		next if $name ne 'user';
-		$$temp{'tempkey'} = $value;
-		if ( -e $tsvDir.'/'.$value.'/value.tsv' ){ $$temp{'user'} = &getFile( $tsvDir.'/'.$value.'/value.tsv' ) }
-		else { $$cookie{'user'} = $defaultAuthor }
+		if ( $name eq 'user'){
+			$$temp{'tempkey'} = $value;
+			if ( -e $tsvDir.'/'.$value.'/value.tsv' ){ $$temp{'user'} = &getFile( $tsvDir.'/'.$value.'/value.tsv' ) }
+			else { $$cookie{'user'} = $defaultAuthor }
+		}
+		elsif ( $name eq 'avatar' or $name eq 'debug' ){ $$temp{$name} = $$cookie{$name} = $value }
 	}
 	if ( $$temp{'user'} ){ $$temp{'author'} = $$temp{'user'} }
 	else { $$temp{'author'} = $$temp{'user'} = $defaultAuthor }

@@ -81,7 +81,7 @@
 				<!--<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/> это лишне, cgi и так все задает верно
 				<script src="/bower_components/platform.js"></script>
 				<link rel="import" href="/bower_components/polymer/polymer.html"/>-->
-				<script type="text/javascript" src="/system/a/js/jquery-2.1.3.js"/>
+				<script type="text/javascript" src="/formulyar/js/jquery.min-1.9.0.js"/>
 				<!--<script type="text/javascript" src="/$/js/form.js"/>-->
 				<script type="text/javascript">var source = "";
 				</script>
