@@ -123,7 +123,7 @@ else{
 	my %cookie;
 	my $q = CGI->new();
 	if ( $ENV{'REQUEST_URI'} =~m!^/_(pdf)/(\w+)/! or $ENV{'REQUEST_URI'} =~m!^/_(doc)/(\w+)/! or $ENV{'REQUEST_URI'} =~m!^/_(avatar)/(\w+)/! ){
-		my ( $format, $folder ) = ( $1, $2 ); 
+		my ( $format, $value ) = ( $1, $2 ); 
 		&setWarn( "  Найден запрос $ENV{'REQUEST_URI'} вывода в особом формате $1 (папка: $2)", $log.'_special.txt' );#	
 		my $req = $ENV{'REQUEST_URI'};
 		$req =~s!/_$format!!;
@@ -132,18 +132,13 @@ else{
 		$request_uri[0] =~s!^/!!;
 		
 		if ( $format eq 'avatar' ){
-			my $cookie;
-			if ( $folder eq cookie('avatar') ){
-				my $value = $q->cookie('debug');
-				if ($value!=''){
-					$cookie = $q->cookie( -name => 'debug', -expires => '+1y', -value => '' )
-				}
-				else {
-					$cookie = $q->cookie( -name => 'debug', -expires => '+1y', -value => time )
-				}
-				#$request_uri[0] = 'formulyar/'.$request_uri[0];
+			if ( $value eq cookie('avatar') ){
+				#$value = $q->cookie('debug');
+				if ( not cookie('debug') or $q->cookie('debug') eq '' ){ $value = time }
+				else { $value = '' }
+				$format = 'debug';
 			}
-			else{ $cookie = $q->cookie( -name => 'avatar', -expires => '+1y', -value => $folder ) }
+			my $cookie = $q->cookie( -name => $format, -expires => '+1y', -value => $value );
 			print $q->header( -location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0], -cookie => $cookie );
 		
 		}
@@ -160,8 +155,8 @@ else{
 				$temp{'format'} = 'doc';
 				
 				rmtree $request_uri[0].'/report' if -d $request_uri[0].'/report'; 
-				dircopy $folder.'/template/report', $request_uri[0].'/report';
-				-e $request_uri[0].'/report/_rels/.rels' || copy( $folder.'/template/report/_rels/.rels', $request_uri[0].'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
+				dircopy $value.'/template/report', $request_uri[0].'/report';
+				-e $request_uri[0].'/report/_rels/.rels' || copy( $value.'/template/report/_rels/.rels', $request_uri[0].'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
 				my $xmlFile = $ROOT_DIR.$request_uri[0].'temp.xml';
 				&setFile( $xmlFile, &getDoc( \%temp ) );
 				$temp{'avatar'} = $temp{'tempAvatar'} if defined $temp{'tempAvatar'};
@@ -287,11 +282,17 @@ sub initProc{
 			if ( -e $tsvDir.'/'.$value.'/value.tsv' ){ $$temp{'user'} = &getFile( $tsvDir.'/'.$value.'/value.tsv' ) }
 			else { $$cookie{'user'} = $defaultAuthor }
 		}
-		elsif ( $name eq 'avatar' or $name eq 'debug' ){ $$temp{$name} = $$cookie{$name} = $value }
+		elsif ( $name eq 'avatar' ){ 
+			if ( -d $value ){ $$temp{$name} = $value }
+			else { $$cookie{'avatar'} = &startProc }
+		}
+		elsif ( $name eq 'debug' ){ $$temp{$name} = $value }
 	}
 	if ( $$temp{'user'} ){ $$temp{'author'} = $$temp{'user'} }
 	else { $$temp{'author'} = $$temp{'user'} = $defaultAuthor }
-	$$temp{'ctrl'} = $$temp{'avatar'} = $$temp{'group'} || &startProc ||  $$temp{'author'}; 
+	if ( $$temp{'avatar'} ){ $$temp{'ctrl'} = $$temp{'avatar'} }
+	else { $$cookie{'avatar'} = $$temp{'ctrl'} = $$temp{'avatar'} = &startProc }
+	#$$temp{'ctrl'} = $$temp{'avatar'} = $$temp{'group'} || &startProc ||  $$temp{'author'}; 
 	$$temp{'format'} = 'html';
 	$$temp{'ajax'} = $$temp{'HTTP_X_REQUESTED_WITH'} if $$temp{'HTTP_X_REQUESTED_WITH'}; 
 	$$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/;
