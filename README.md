@@ -13,6 +13,6 @@
 - обеспечивает лишь интерфейсную оболочку к своей СУБД используя ее открытый API;
 - может быть встроен в полноценные CMS. 
 
-Пожалуйста сообщайте о ошибках в трекер http://github.com/m8data/formulyar/issues. Так же приглашаем на форум проекта http://groups.google.com/forum/#!forum/formulyar.
+Пожалуйста сообщайте о ошибках в трекер http://github.com/m8data/formulyar/issues. Так же приглашаем на форум проекта http://groups.google.com/forum/formulyar.
 
 Спасибо за интерес к проекту!
