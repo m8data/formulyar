@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 
+#версия файла 0.0.2
 #модули в составе ядра
 use strict;
 use warnings;
@@ -295,7 +296,7 @@ sub initProc{
 	#$$temp{'ctrl'} = $$temp{'avatar'} = $$temp{'group'} || &startProc ||  $$temp{'author'}; 
 	$$temp{'format'} = 'html';
 	$$temp{'ajax'} = $$temp{'HTTP_X_REQUESTED_WITH'} if $$temp{'HTTP_X_REQUESTED_WITH'}; 
-	$$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/;
+	$$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/ or  or $temp{'HTTP_USER_AGENT'}=~m!Qt/4.6.1!;
 	my @request_uri = split /\?/, $$temp{'REQUEST_URI'};
 	chop $request_uri[0] if $request_uri[0]=~m!/$!;
 	$request_uri[0]=~s!^/!!;
