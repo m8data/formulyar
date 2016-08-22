@@ -293,7 +293,6 @@ sub initProc{
 	else { $$temp{'author'} = $$temp{'user'} = $defaultAuthor }
 	if ( $$temp{'avatar'} ){ $$temp{'ctrl'} = $$temp{'avatar'} }
 	else { $$cookie{'avatar'} = $$temp{'ctrl'} = $$temp{'avatar'} = &startProc }
-	#$$temp{'ctrl'} = $$temp{'avatar'} = $$temp{'group'} || &startProc ||  $$temp{'author'}; 
 	$$temp{'format'} = 'html';
 	$$temp{'ajax'} = $$temp{'HTTP_X_REQUESTED_WITH'} if $$temp{'HTTP_X_REQUESTED_WITH'}; 
 	$$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/ or $temp{'HTTP_USER_AGENT'}=~m!Qt/4.6.1!;
