@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 #версия файла 0.0.2
+
 #модули в составе ядра
 use strict;
 use warnings;
