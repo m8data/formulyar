@@ -251,7 +251,7 @@ else{
 			my $location = $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST};
 			if ( defined $temp{'message'} and $temp{'message'} ne 'OK' ){ $location .= '/'.$temp{'ctrl'}.'/m8/?error='.$temp{'message'} }
 			else { $location .= &m8req( \%temp ).'/' }
-			print $q->header( -location => $location, -cookie => [@cookie] )# -status => '201 Created' #куки нужны исключительно для случая указания автора		
+			print $q->header( -location => $location, -cookie => [@cookie] )# -status => '201 Created'
 		}
 		
 	}
