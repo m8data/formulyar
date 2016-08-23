@@ -674,6 +674,8 @@
 			<xsl:if test="$user != 'guest' ">
 			<!--//-->
 			<div style="position: fixed; bottom: 5px; right: 5px; color: gray; z-index: 1">
+				<xsl:value-of select="$start/@version"/>
+				<xsl:text> | </xsl:text>
 				<xsl:value-of select="$avatar"/>
 				<xsl:text> | </xsl:text>
 				<!--<xsl:text> &lt;- </xsl:text>-->
