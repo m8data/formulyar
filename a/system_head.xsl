@@ -120,13 +120,13 @@
 		<div style="position: fixed; top: 0px; background: black; text-align: center; width: 100%; ">
 			<xsl:if test="document( '/avatar.xml' )/*/*[2]">
 				<div style="float: left">
-					<a href="/system/" style="color: red; ">сменить группу</a>
+					<a href="/formulyar/" style="color: red; ">сменить группу</a>
 				</div>
 			</xsl:if>
 			<div style="float: right">
 				<xsl:choose>
 					<xsl:when test="$user='guest'">
-						<a href="/system/?author=" style="color: #CFC">войти</a>
+						<a href="/formulyar/?author=" style="color: #CFC">войти</a>
 					</xsl:when>
 					<xsl:otherwise>
 						<span style="color: yellow">
