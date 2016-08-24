@@ -414,7 +414,7 @@ sub washProc{
 					if ( $$temp{'del'} < 3 ){ 
 						&setWarn ("		wP      Анализ базовых директорий");
 						if ( $$temp{'del'} > 1 ){
-							for my $dir ( grep { $_ ne 'd' } &getDir ( $tsvDir, 1 ) ){ rmtree( $tsvDir.'/'.$dir ) }
+							#for my $dir ( grep { $_ ne 'd' } &getDir ( $tsvDir, 1 ) ){ rmtree( $tsvDir.'/'.$dir ) }
 						}
 					}
 					else { 
@@ -723,20 +723,21 @@ sub spinProc {
 	}
 	my $metterDir = $tsvDir.'/'.$name;
 	my $authorDir = $metterDir.'/'.$author;
-	my $questDir = $authorDir.'/'.$quest;
+	#my $questDir = $authorDir.'/'.$quest;
+	my $questDir = $author.'/tsv/'.$name.'/'.$quest;
 	if ( $add ){
 		&setWarn("		wP   Добавление директории $questDir в базу");
-		&setFile( $questDir.'/time.txt', $time );
-		#&setFile ( $author.'/tsv/'.$name.'/'.$quest.'/time.txt', $time ); #ss
+		#&setFile( $questDir.'/time.txt', $time );
+		&setFile ( $author.'/tsv/'.$name.'/'.$quest.'/time.txt', $time ); #ss
 	}
 	else{
 		&setWarn("		wP   Удаление директории $questDir из базы");
 		rmtree $questDir;
-		if ( not &getDir ( $authorDir ) ){
-			rmtree $authorDir;
-			if ( not &getDir( $metterDir, 1 ) ){
+		if ( not &getDir ( $author.'/tsv/'.$name ) ){
+			rmtree $author.'/tsv/'.$name;
+			if ( not &getDir( $author.'/tsv', 1 ) ){
 				&setXML( 'm8/d/'.$value[0], 'value' );
-				rmtree $metterDir;
+				rmtree $author.'/tsv';
 			}
 			if ( $value[3]=~/^i\d+$/ ){
 				&setWarn("		dN    Проверка на идентификатор");
