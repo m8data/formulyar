@@ -61,8 +61,8 @@ my $type = 'xml';
 my $logDir = '../log';
 my $userDir = 'm8/author';
 my $baseDir = 'base';
-my $tsvDir = $baseDir.'/tsv';
-my $defaultNumberDir = $tsvDir.'/d/guest/n';
+my $sessionDir = $baseDir.'/tsv';
+my $defaultNumberDir = 'guest/tsv/d/n';
 
 my $errorLog = $logDir.'/error_log.txt';
 my $logName = 'data_log.txt';
@@ -254,7 +254,7 @@ sub initProc{
 	$$temp{'time'} = time;
 	( $$temp{'seconds'}, $$temp{'microseconds'} ) = gettimeofday;
 	$$temp{'record'} = 0;
-	$$temp{'version'} = 'v'.&getFile( 'formulyar/version.txt' ) || '0';
+	$$temp{'version'} = &getFile( 'formulyar/version.txt' ) || 'v0';
 	for my $param ( @transaction ){	
 		&setWarn('		iP  ENV '.$param.': '.$ENV{$param});
 		$$temp{$param} = $ENV{$param} 
@@ -264,7 +264,7 @@ sub initProc{
 		my ( $name, $value ) = split( '=', $itm );
 		next if $name ne 'user';
 		$$temp{'tempkey'} = $value;
-		if ( -e $tsvDir.'/'.$value.'/value.tsv' ){ $$temp{'user'} = &getFile( $tsvDir.'/'.$value.'/value.tsv' ) }
+		if ( -e $sessionDir.'/'.$value.'/value.text' ){ $$temp{'user'} = &getFile( $sessionDir.'/'.$value.'/value.txt' ) }
 		else { $$cookie{'user'} = $defaultAuthor }
 	}
 	if ( $$temp{'user'} ){ $$temp{'author'} = $$temp{'user'} }
@@ -365,7 +365,7 @@ sub washProc{
 					my @value = ( 'd', @mainTriple, $$temp{'user'}, $$temp{'quest'}, 1 );
 					push @num, \@value;
 					my $data = join "\t", @mainTriple;
-					&setFile( $tsvDir.'/d/value.tsv', $data );
+					&setFile( $$temp{'user'}.'/tsv/d/value.tsv', $data );
 					&rinseProc ( 'd', $data)
 				}
 				else { 
@@ -377,7 +377,7 @@ sub washProc{
 				my %tempkey = &getHash( $baseDir.'/'.$$temp{'user'}.'.json' );
 				$tempkey{$tempName} = $$temp{'time'};
 				&setFile( $baseDir.'/'.$$temp{'user'}.'.json', $JSON->encode(\%tempkey) );
-				&setFile( $tsvDir.'/'.$tempName.'/value.tsv', $$temp{'user'} );
+				&setFile( $sessionDir.'/'.$tempName.'/value.txt', $$temp{'user'} );
 				$$cookie{'user'} = $tempName;
 			}
 			else { 
@@ -390,7 +390,7 @@ sub washProc{
 					if ( keys %tempkey ){ &setFile( $tempKeysFile, $JSON->encode(\%tempkey) ) }
 					else { unlink $tempKeysFile } 
 				}
-				rmtree $tsvDir.'/'.$$temp{'tempkey'} if -d $tsvDir.'/'.$$temp{'tempkey'};
+				rmtree $sessionDir.'/'.$$temp{'tempkey'} if -d $sessionDir.'/'.$$temp{'tempkey'};
 				$$cookie{'user'} = $defaultAuthor 
 			}
 			$$temp{'message'} = 'OK';
@@ -540,7 +540,7 @@ sub washProc{
 					&setWarn("		wP     Замена пустого в номере $s");
 					if ( $num[$s][0] ){			
 						&setWarn("		wP      на удаление");
-						my @span = &getTriple( $num[$s][0] );
+						my @span = &getTriple( $$temp{'user'}, $num[$s][0] );
 						$span[4] = $num[$s][4] if $num[$s][4];
 						$span[5] = $num[$s][5] if $num[$s][5];
 						$num[$s] = \@span
@@ -575,7 +575,7 @@ sub washProc{
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает повтор трипла в запросе';
 			next;
 		}
-		if ( &spinProc ( $num[$s], $$temp{'time'} ) ){
+		if ( &spinProc( $num[$s], $$temp{'time'} ) ){
 			&setWarn("		wP   Номер запрашивает повтор трипла в базе.");
 			$$temp{'povtor'}[$s] = 2;
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает повтор установления значения';
@@ -727,6 +727,7 @@ sub spinProc {
 	if ( $add ){
 		&setWarn("		wP   Добавление директории $questDir в базу");
 		&setFile( $questDir.'/time.txt', $time );
+		#&setFile ( $author.'/tsv/'.$name.'/'.$quest.'/time.txt', $time ); #ss
 	}
 	else{
 		&setWarn("		wP   Удаление директории $questDir из базы");
@@ -856,6 +857,14 @@ sub dryProc2 {
 					$stat{$authorName}{'add'}++;
 				}
 				&spinProc( \@val, $timeProc );
+				#make_path( $authorName.'/tsv/'.$tsvName.'/'.$questName );
+				#&setFile ( $authorName.'/tsv/'.$tsvName.'/'.$questName.'/time.txt', $timeProc ); #ss
+				#copy( $tsvDir.'/'.$tsvName.'/value.tsv', $authorName.'/tsv/'.$tsvName.'/value.tsv' );
+				#for my $m (1..3){
+				#	next if not $val[$m]=~/i/;
+				#	-d $authorName.'/tsv/'.$val[$m] || make_path( $authorName.'/tsv/'.$val[$m] );
+				#	copy( $tsvDir.'/'.$val[$m].'/value.tsv', $authorName.'/tsv/'.$val[$m].'/value.tsv' )
+				#}
 			}
 			}
 		}
@@ -875,7 +884,7 @@ sub dryProc2 {
 			}
 		}
 		if ( $tsvName=~/^d/ ){
-			my @val = map{ Encode::decode_utf8($_) } &getTriple( $tsvName );
+			my @val = map{ Encode::decode_utf8($_) } &getTriple( undef, $tsvName );
 			my $parent = $val[1];
 			for my $authorName ( &getDir( $tsvDir.'/'.$tsvName, 1 ) ){
 				$val[4] = $authorName;
@@ -1204,8 +1213,8 @@ sub getDoc {
 }
 sub getTriple {
 	&setWarn("		gT @_");
-	my $name = $_[0];
-	my $val = &getFile( $tsvDir.'/'.$name.'/value.tsv' );
+	my ( $user, $name )=@_;
+	my $val = &getFile( $user.'/tsv/'.$name.'/value.tsv' );
 	&setWarn("		gT val: $val");
 	my @value = ( split "\t", $val );
 	unshift @value, $name;
