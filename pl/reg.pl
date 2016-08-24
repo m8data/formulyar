@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 
+
 #модули в составе ядра
 use strict;
 use warnings;
@@ -37,7 +38,7 @@ BEGIN {
    }
 }
 
-my $forceDBG = 1;
+my $forceDBG = 0;
 my $dbg = 0;
 my $chmod = 0777;
 my $userDays = 60;
@@ -53,7 +54,7 @@ my @role = (	'triple', 	'role1', 	'role2', 		'role3', 	'author', 'quest', 'targe
 my @number = (	'name',		'subject', 	'predicate',	'object',	'author', 'quest', 'add' );
 my @transaction = ( 'REMOTE_ADDR', 'HTTP_USER_AGENT', 'DOCUMENT_ROOT', 'REQUEST_URI', 'QUERY_STRING', 'HTTP_COOKIE', 'REQUEST_METHOD', 'HTTP_X_REQUESTED_WITH' );#, 'HTTP_USER_AGENT', 'HTTP_ACCEPT_LANGUAGE', 'REMOTE_ADDR' $$transaction{'QUERY_STRING'}
 my @mainTriple = ( 'n', 'r', 'i' );
-my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1 );
+my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1, '_avatar', 1 );
 my @superrole = ( 'triple', 'role', 'role', 'role', 'author', 'quest', 'subject', 'predicate', 'object' );
 my @superfile = ( undef, 'port', 'dock', 'terminal' ); 
 my $type = 'xml';
@@ -61,7 +62,7 @@ my $type = 'xml';
 my $logDir = '../log';
 my $userDir = 'm8/author';
 my $baseDir = 'base';
-my $sessionDir = $baseDir.'/tsv';
+my $sessionDir = $baseDir.'/temp_name';
 my $defaultNumberDir = 'guest/tsv/d/n';
 
 my $errorLog = $logDir.'/error_log.txt';
@@ -103,6 +104,31 @@ if ( $ARGV[0]   ){
 			-d $ROOT_DIR.$format.'/'.$ava || symlink( $ROOT_DIR.$ava => $ROOT_DIR.$format.'/'.$ava );
 		}
 	}
+	if (0){
+	my $tsvDir = 'base/tsv';
+	for my $tsvName ( &getDir ( $tsvDir, 1 ) ){ 
+		warn '		tsv  '.$tsvName;
+		next if $tsvName=~/^u/ or $tsvName=~/^i/;
+		my @div = map{ Encode::decode_utf8($_) } &getFile( $tsvDir.'/'.$tsvName.'/value.tsv' );
+		my @val = split "\t", $div[0];
+		unshift @val, $tsvName;
+		for my $authorName ( &getDir( $tsvDir.'/'.$tsvName, 1 ) ){
+			for my $questName ( &getDir( $tsvDir.'/'.$tsvName.'/'.$authorName, 1 ) ){
+				print REINDEX "    Исследование квеста $questName \n";
+				my ( $timeProc ) = &getFile( $tsvDir.'/'.$tsvName.'/'.$authorName.'/'.$questName.'/time.txt' );
+				make_path( $authorName.'/tsv/'.$tsvName.'/'.$questName );
+				&setFile ( $authorName.'/tsv/'.$tsvName.'/'.$questName.'/time.txt', $timeProc ); #ss
+				copy( $tsvDir.'/'.$tsvName.'/value.tsv', $authorName.'/tsv/'.$tsvName.'/value.tsv' );
+				for my $m (1..3){
+					next if not $val[$m]=~/i/;
+					-d $authorName.'/tsv/'.$val[$m] || make_path( $authorName.'/tsv/'.$val[$m] );
+					copy( $tsvDir.'/'.$val[$m].'/value.tsv', $authorName.'/tsv/'.$val[$m].'/value.tsv' )
+				}
+			}
+		}
+	}
+	}
+	
 	if ($ARGV[1]){
 		&dryProc2( $ARGV[1] )
 	}
@@ -111,7 +137,7 @@ if ( $ARGV[0]   ){
 else{
 	chdir $ENV{DOCUMENT_ROOT};
 	$ROOT_DIR = $ENV{DOCUMENT_ROOT}.'/';
-	my $adminMode = $dbg = 1 if $forceDBG or cookie('user') ne $defaultAuthor;
+	my $adminMode = $dbg = 1 if $forceDBG or cookie('debug') ne '';
 	$temp{'adminMode'} = "true" if $adminMode;
 	if (not $adminMode and $ENV{'QUERY_STRING'} ){
 		open (FILE, '>>'.$guest_log)|| die "Ошибка при открытии файла $guest_log: $!\n";
@@ -122,50 +148,63 @@ else{
 
 	my %cookie;
 	my $q = CGI->new();
-	if ( $ENV{'REQUEST_URI'} =~m!^/_(pdf)/(\w+)/! or $ENV{'REQUEST_URI'} =~m!^/_(doc)/(\w+)/! ){
-		my ( $format, $folder ) = ( $1, $2 ); 
+	if ( $ENV{'REQUEST_URI'} =~m!^/_(pdf)/(\w+)/! or $ENV{'REQUEST_URI'} =~m!^/_(doc)/(\w+)/! or $ENV{'REQUEST_URI'} =~m!^/_(avatar)/(\w+)/! ){
+		my ( $format, $value ) = ( $1, $2 ); 
 		&setWarn( "  Найден запрос $ENV{'REQUEST_URI'} вывода в особом формате $1 (папка: $2)", $log.'_special.txt' );#	
 		my $req = $ENV{'REQUEST_URI'};
 		$req =~s!/_$format!!;
 		my @request_uri = split /\?/, $req;
 		&setWarn( "  перевод на $request_uri[0] (формат: $format)" );#
 		$request_uri[0] =~s!^/!!;
-		if ( $format eq 'pdf' ){
-			&setWarn( "   Формирование pdf-файла запросом $ENV{HTTP_HOST}$req&proc=wkhtmltopdf" );#
-			system ( 'wkhtmltopdf '.$ENV{HTTP_HOST}.$req.' '.$ROOT_DIR.$request_uri[0].'/report.pdf'.' 2>'.$ROOT_DIR.$logDir.'/wkhtmltopdf.txt' );
-			#system ( 'wkhtmltopdf localhost'.$req.' '.$request_uri[0].'/report.pdf'.' 2>/_log/wkhtmltopdf.txt' );
-			$temp{'format'} = 'pdf';
-		}
-		elsif ( $format eq 'doc' ){
-			&setWarn( "   Формирование doc-файла" );#
-			&initProc( \%temp, \%cookie );
-			$temp{'format'} = 'doc';
-			
-			rmtree $request_uri[0].'/report' if -d $request_uri[0].'/report'; 
-			dircopy $folder.'/template/report', $request_uri[0].'/report';
-			-e $request_uri[0].'/report/_rels/.rels' || copy( $folder.'/template/report/_rels/.rels', $request_uri[0].'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
-			my $xmlFile = $ROOT_DIR.$request_uri[0].'temp.xml';
-			&setFile( $xmlFile, &getDoc( \%temp ) );
-			$temp{'avatar'} = $temp{'tempAvatar'} if defined $temp{'tempAvatar'};
-			my $xslFile = $ROOT_DIR.$temp{'avatar'}.$avatars.'/'.$temp{'avatar'}.'.xsl';
-			my $documentFile = $ROOT_DIR.$request_uri[0].'/report/word/document.xml';
-			my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$ROOT_DIR.$logDir.'/xsltproc_doc.txt' );#
-			&setWarn( "   documntXML: $status" );#
-			unlink $request_uri[0].'report.docx' if -e $request_uri[0].'report.docx';
-			my $zip = Archive::Zip->new();
-			$zip->addTree( $request_uri[0].'/report/' );
-			unless ( $zip->writeToFileNamed($request_uri[0].'report.docx') == AZ_OK ) {
-				die 'write error';
+		if ( $format eq 'avatar' ){
+			if ( $value eq cookie('avatar') ){
+				#$value = $q->cookie('debug');
+				if ( not cookie('debug') or $q->cookie('debug') eq '' ){ $value = time }
+				else { $value = '' }
+				$format = 'debug';
 			}
-			$format = 'docx';
+			my $cookie = $q->cookie( -name => $format, -expires => '+1y', -value => $value );
+			print $q->header( -location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0], -cookie => $cookie );
+		
 		}
-		if ($adminMode and 0){
-			&setWarn( '   редирект на '.$request_uri[0].'report.'.$format );
-			print $q->header(-location => '/'.$request_uri[0].'report.'.$format );
-		}
-		else {
-			&setWarn( '   редирект на '.$ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0].'report.'.$format );
-			print $q->header(-location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0].'report.'.$format );
+		else {		
+			if ( $format eq 'pdf' ){
+				&setWarn( "   Формирование pdf-файла запросом $ENV{HTTP_HOST}$req&proc=wkhtmltopdf" );#
+				system ( 'wkhtmltopdf '.$ENV{HTTP_HOST}.$req.' '.$ROOT_DIR.$request_uri[0].'/report.pdf'.' 2>'.$ROOT_DIR.$logDir.'/wkhtmltopdf.txt' );
+				#system ( 'wkhtmltopdf localhost'.$req.' '.$request_uri[0].'/report.pdf'.' 2>/_log/wkhtmltopdf.txt' );
+				$temp{'format'} = 'pdf';
+			}
+			elsif ( $format eq 'doc' ){
+				&setWarn( "   Формирование doc-файла" );#
+				&initProc( \%temp, \%cookie );
+				$temp{'format'} = 'doc';
+				
+				rmtree $request_uri[0].'/report' if -d $request_uri[0].'/report'; 
+				dircopy $value.'/template/report', $request_uri[0].'/report';
+				-e $request_uri[0].'/report/_rels/.rels' || copy( $value.'/template/report/_rels/.rels', $request_uri[0].'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
+				my $xmlFile = $ROOT_DIR.$request_uri[0].'temp.xml';
+				&setFile( $xmlFile, &getDoc( \%temp ) );
+				$temp{'avatar'} = $temp{'tempAvatar'} if defined $temp{'tempAvatar'};
+				my $xslFile = $ROOT_DIR.$temp{'avatar'}.$avatars.'/'.$temp{'avatar'}.'.xsl';
+				my $documentFile = $ROOT_DIR.$request_uri[0].'/report/word/document.xml';
+				my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$ROOT_DIR.$logDir.'/xsltproc_doc.txt' );#
+				&setWarn( "   documntXML: $status" );#
+				unlink $request_uri[0].'report.docx' if -e $request_uri[0].'report.docx';
+				my $zip = Archive::Zip->new();
+				$zip->addTree( $request_uri[0].'/report/' );
+				unless ( $zip->writeToFileNamed($request_uri[0].'report.docx') == AZ_OK ) {
+					die 'write error';
+				}
+				$format = 'docx';
+			}
+			if ($adminMode and 0){
+				&setWarn( '   редирект на '.$request_uri[0].'report.'.$format );
+				print $q->header(-location => '/'.$request_uri[0].'report.'.$format );
+			}
+			else {
+				&setWarn( '   редирект на '.$ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0].'report.'.$format );
+				print $q->header(-location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0].'report.'.$format );
+			}
 		}
 	}
 	else{
@@ -174,7 +213,10 @@ else{
 		&washProc( \%temp, \%cookie ) if $temp{'REQUEST_METHOD'} eq 'POST' or $temp{'QUERY_STRING'};
 		$temp{'fact'} = $temp{'quest'} = $defaultFact if not defined $temp{'fact'};		
 		my @cookie;
-		for (keys %cookie){	push @cookie, $q->cookie( -name => $_, -expires => '+1y', -value => $cookie{$_} ) }	
+		for (keys %cookie){	
+			&setWarn( "   Добавление куки $_: $cookie{$_}");#		
+			push @cookie, $q->cookie( -name => $_, -expires => '+1y', -value => $cookie{$_} ) 
+		}	
 		if ( 1 and ( not $temp{'QUERY_STRING'} or ( not $temp{'record'} and not defined $temp{'message'} ) or defined $temp{'ajax'} or defined $temp{'wkhtmltopdf'} ) ){ 	#$temp{'QUERY_STRING'} $temp{'record'} or $temp{'QUERY_STRING'}=~/^n1464273764-4704-1/ $ENV{'HTTP_HOST'} eq 'localhost'$ENV{'REMOTE_ADDR'} eq "127.0.0.1" 
 			&setWarn('   Вывод в web без редиректа '.$temp{'record'});		
 			my $doc = $JSON->encode(\%temp);
@@ -262,17 +304,24 @@ sub initProc{
 	foreach my $itm ( split '; ', $$temp{'HTTP_COOKIE'} ){
 		&setWarn('		iP  Прием куки '.$itm);
 		my ( $name, $value ) = split( '=', $itm );
-		next if $name ne 'user';
-		$$temp{'tempkey'} = $value;
-		if ( -e $sessionDir.'/'.$value.'/value.text' ){ $$temp{'user'} = &getFile( $sessionDir.'/'.$value.'/value.txt' ) }
-		else { $$cookie{'user'} = $defaultAuthor }
+		if ( $name eq 'user'){
+			$$temp{'tempkey'} = $value;
+			if ( -e $sessionDir.'/'.$value.'/value.txt' ){ $$temp{'user'} = &getFile( $sessionDir.'/'.$value.'/value.txt' ) }
+			else { $$cookie{'user'} = $defaultAuthor }
+		}
+		elsif ( $name eq 'avatar' ){ 
+			if ( -d $value ){ $$temp{$name} = $value }
+			else { $$cookie{'avatar'} = &startProc }
+		}
+		elsif ( $name eq 'debug' ){ $$temp{$name} = $value }
 	}
 	if ( $$temp{'user'} ){ $$temp{'author'} = $$temp{'user'} }
 	else { $$temp{'author'} = $$temp{'user'} = $defaultAuthor }
-	$$temp{'ctrl'} = $$temp{'avatar'} = $$temp{'group'} || &startProc ||  $$temp{'author'}; 
+	if ( $$temp{'avatar'} ){ $$temp{'ctrl'} = $$temp{'avatar'} }
+	else { $$cookie{'avatar'} = $$temp{'ctrl'} = $$temp{'avatar'} = &startProc }
 	$$temp{'format'} = 'html';
 	$$temp{'ajax'} = $$temp{'HTTP_X_REQUESTED_WITH'} if $$temp{'HTTP_X_REQUESTED_WITH'}; 
-	$$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/;
+	$$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/ or $temp{'HTTP_USER_AGENT'}=~m!Qt/4.6.1!;
 	my @request_uri = split /\?/, $$temp{'REQUEST_URI'};
 	chop $request_uri[0] if $request_uri[0]=~m!/$!;
 	$request_uri[0]=~s!^/!!;
@@ -462,8 +511,11 @@ sub washProc{
 				#$value =~ s/%([a-fA-F0-9]{2})/pack("C", hex($1))/eg;
 				my $n = "\n";
 				$value =~ s/%0D%0A/$n/eg; #без этой обработки на выходе получаем двойной возврат каретки помимо перевода строки если данные идут из textarea
-				$value = &utfText($value);
+				#$value =~ s/\s+\z//;
 				$value = Encode::decode_utf8($value);# 
+				$value = &utfText($value);
+				
+				
 				if ( not $value and $value ne '0' ){ 
 					&setWarn('		wP     присвоение пустого значения');
 					$value = 'r' 
@@ -483,8 +535,9 @@ sub washProc{
 				}
 				else {
 					&setWarn('		wP     запрос карты');
+					&setWarn('		wP: '.$value );
 					my @value = split "\n", $value;
-					$value = &setName( 'i', @value );
+					$value = &setName( 'i', $$temp{'user'}, @value );
 					if ( $value[1] and $value[1]=~/^xsd:(\w+)$/ ){
 						&setWarn('		wP      запрос создания именнованой карты');
 						#здесь еще нужно исключить указание одному имени разных типов
@@ -553,7 +606,7 @@ sub washProc{
 							elsif ( $m == 2 ){	$num[$s][2] = 'r' 				}
 							else { 				$num[$s][3] = 'r'	}
 						}
-						$num[$s][0] = &setName( 'd', $num[$s][1], $num[$s][2], $num[$s][3] );
+						$num[$s][0] = &setName( 'd', $$temp{'user'}, $num[$s][1], $num[$s][2], $num[$s][3] );
 					}
 					$num[$s][4] = $$temp{'user'};
 					$num[$s][5] = $$temp{'quest'} if not $num[$s][5];
@@ -597,6 +650,7 @@ sub rinseProc {
 		&setWarn("		rP  Раскладка @div по строкам"  );
 		for my $s (0..$#div){
 			&setWarn("		rP   Строка $s: $div[$s]"  );
+			#$div[$s] = Encode::decode_utf8($div[$s]) if $div[$s];
 			my @span = split "\t", $div[$s];
 			for my $m (0..$#span){ $value{'div'}[$s]{'span'}[$m]{$tNode} = $span[$m] } 
 		}
@@ -721,8 +775,8 @@ sub spinProc {
 		&setXML ( $metter, 'index', \%index );
 	}
 	}
-	my $metterDir = $tsvDir.'/'.$name;
-	my $authorDir = $metterDir.'/'.$author;
+	#my $metterDir = $tsvDir.'/'.$name;
+	#my $authorDir = $metterDir.'/'.$author;
 	#my $questDir = $authorDir.'/'.$quest;
 	my $questDir = $author.'/tsv/'.$name.'/'.$quest;
 	if ( $add ){
@@ -733,7 +787,7 @@ sub spinProc {
 	else{
 		&setWarn("		wP   Удаление директории $questDir из базы");
 		rmtree $questDir;
-		if ( not &getDir ( $author.'/tsv/'.$name ) ){
+		if ( not &getDir ( $author.'/tsv/'.$name, 1 ) ){
 			rmtree $author.'/tsv/'.$name;
 			if ( not &getDir( $author.'/tsv', 1 ) ){
 				&setXML( 'm8/d/'.$value[0], 'value' );
@@ -774,10 +828,13 @@ sub dryProc2 {
 	make_path( $logDir, { chmod => $chmod } );
 	open (REINDEX, '>'.$logDir.'/reindex.txt')|| die "Ошибка при открытии файла reindex.txt: $!\n";
 	
-	if (not -d $tsvDir){
-		&setFile( $tsvDir.'/d/admin/n0000000000-0-0/time.txt', '0' );
-		&setFile( $tsvDir.'/d/value.tsv', ( join "\t", @mainTriple ) );
-		&setFile( $tsvDir.'/i/value.tsv' );
+	if (not -d 'guest/tsv'){
+		&setFile( 'guest/tsv/d/n0000000000-0-0/time.txt', '0' );
+		&setFile( 'guest/tsv/d/value.tsv', ( join "\t", @mainTriple ) );
+		&setFile( 'guest/tsv/i/value.tsv' );
+		#&setFile( $tsvDir.'/d/admin/n0000000000-0-0/time.txt', '0' );
+		#&setFile( $tsvDir.'/d/value.tsv', ( join "\t", @mainTriple ) );
+		#&setFile( $tsvDir.'/i/value.tsv' );
 		&startProc;
 	}
 	elsif ( -e $baseDir.'/guest_days.txt' ){
@@ -805,49 +862,55 @@ sub dryProc2 {
 	my $cookie = 0;
 	my $DL_cookie = 0;
 	my $time1 = time;	
-	for my $tsvName ( &getDir( $tsvDir, 1 ) ){ 
-		print REINDEX "tsv	$tsvName \n";
-		warn '		tsv  '.$tsvName;
-		if ($tsvName=~/^u/){
-			$cookie++;
-			my $cAuthor = &getFile( $tsvDir.'/'.$tsvName.'/value.tsv' );
-			my $tempKeysFile = $baseDir.'/'.$cAuthor.'.json';
-			if ( -e $tempKeysFile ){
-				my %tempkey = &getHash( $tempKeysFile );
-				if ( not defined $tempkey{$tsvName} or $tempkey{$tsvName} < $userTime ){
-					rmtree $tsvDir.'/'.$tsvName;
-					$DL_cookie++
-				}
-			}
-			else {
-				rmtree $tsvDir.'/'.$tsvName;
+	for my $sessionName ( &getDir( $sessionDir, 1 ) ){ 
+		print REINDEX "sessionName	$sessionName \n";
+		warn '		sessionName  '.$sessionName;
+		$cookie++;
+		my $cAuthor = &getFile( $sessionDir.'/'.$sessionName.'/value.txt' );
+		my $tempKeysFile = $baseDir.'/'.$cAuthor.'.json';
+		if ( -e $tempKeysFile ){
+			my %tempkey = &getHash( $tempKeysFile );
+			if ( not defined $tempkey{$sessionName} or $tempkey{$sessionName} < $userTime ){
+				rmtree $sessionDir.'/'.$sessionName;
 				$DL_cookie++
 			}
-			next
 		}
-		$all++;
-		my @div = map{ Encode::decode_utf8($_) } &getFile( $tsvDir.'/'.$tsvName.'/value.tsv' );
-		&rinseProc( $tsvName, @div );
-		next if $tsvName=~/^i/;	
-		my @val = split "\t", $div[0];
-		unshift @val, $tsvName;
-		$triple++;
+		else {
+			rmtree $sessionDir.'/'.$sessionName;
+			$DL_cookie++
+		}		
+	}
 		
-		for my $authorName ( &getDir( $tsvDir.'/'.$tsvName, 1 ) ){
-			print REINDEX "   Исследование aвтора $authorName \n";
+	for my $authorName ( grep { -d $_.'/tsv' } &getDir( '.', 1 ) ){ 
+		print REINDEX "authorName	$authorName \n";
+		warn '		authorName  '.$authorName;
+		
+		my $tsvDir = $authorName.'/tsv';
+		if ( not defined $stat{$authorName} ){
+			for ( 'add', 'n_delR', 'n_delN' ){ $stat{$authorName}{$_} = 0 }
+		}
+		
+		for my $tsvName ( &getDir( $authorName.'/tsv', 1 ) ){
+			print REINDEX "   Исследование aвтора $tsvName \n";
+			warn '		tsv  '.$tsvName;
+			$all++;
+			my @div = map{ Encode::decode_utf8($_) } &getFile( $tsvDir.'/'.$tsvName.'/value.tsv' );
+			&rinseProc( $tsvName, @div );
+			next if $tsvName=~/^i/;	
+			my @val = split "\t", $div[0];
+			unshift @val, $tsvName;
 			$val[4] = $authorName;
-			if ( not defined $stat{$authorName} ){
-				for ( 'add', 'n_delR', 'n_delN' ){ $stat{$authorName}{$_} = 0 }
-			}
+			$triple++;
+			
 			if ( $val[3] =~/^i\d+$/ ){
 				my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvDir.'/'.$val[3].'/value.tsv' );
 				$authorType{$authorName}{$val[3]} = $map[0] if $map[1] and $map[1]=~/^xsd:\w+$/;
 			}
 			if (1){
-			for my $questName ( &getDir( $tsvDir.'/'.$tsvName.'/'.$authorName, 1 ) ){
+			for my $questName ( &getDir( $tsvDir.'/'.$tsvName, 1 ) ){
 				print REINDEX "    Исследование квеста $questName \n";
 				$val[5] = $questName;
-				my ( $timeProc ) = &getFile( $tsvDir.'/'.$tsvName.'/'.$val[4].'/'.$val[5].'/time.txt' );
+				my ( $timeProc ) = &getFile( $tsvDir.'/'.$tsvName.'/'.$val[5].'/time.txt' );
 				if ( $authorName eq 'guest' and $timeProc and $timeProc < $guestTime ){ 
 					print REINDEX "     Удаление старого гостевого трипла '.$div[0].' \n";
 					$n_delG++
@@ -874,22 +937,25 @@ sub dryProc2 {
 	my $time2 = time;
 	my $real2 = 1;
 	if(1){
-	for my $tsvName ( &getDir( $tsvDir, 1 ) ){ 
-		warn '		tsv2  '.$tsvName;
-		print REINDEX "tsv2	$tsvName \n";
-		if ( $tsvName=~/^i/ ){
-			if ( not -e &m8path( $tsvName, 'index' ) and $tsvName ne 'i' ){
-				rmtree $tsvDir.'/'.$tsvName;
-				rmtree &m8dir( $tsvName );
-				$DL_map++
+	for my $authorName ( grep { -d $_.'/tsv' } &getDir( '', 1 ) ){ 
+		warn '		author2  '.$authorName;
+		print REINDEX "author2	$authorName \n";
+		my $tsvDir = $authorName.'/tsv';
+		for my $tsvName ( &getDir( $tsvDir, 1 ) ){ 
+			warn '		tsv2  '.$tsvName;
+			print REINDEX "tsv2	$tsvName \n";
+			if ( $tsvName=~/^i/ ){
+				if ( not -e &m8path( $tsvName, 'index' ) and $tsvName ne 'i' ){
+					rmtree $tsvDir.'/'.$tsvName;
+					rmtree &m8dir( $tsvName );
+					$DL_map++
+				}
 			}
-		}
-		if ( $tsvName=~/^d/ ){
-			my @val = map{ Encode::decode_utf8($_) } &getTriple( undef, $tsvName );
-			my $parent = $val[1];
-			for my $authorName ( &getDir( $tsvDir.'/'.$tsvName, 1 ) ){
+			elsif ( $tsvName=~/^d/ ){
+				my @val = map{ Encode::decode_utf8($_) } &getTriple( $authorName, $tsvName );
+				my $parent = $val[1];
 				$val[4] = $authorName;
-				for my $questName ( &getDir( $tsvDir.'/'.$tsvName.'/'.$val[4], 1 ) ){
+				for my $questName ( &getDir( $tsvDir.'/'.$tsvName, 1 ) ){
 					$val[5] = $questName;
 					if ( $val[2]=~/^r/ ){
 						next if $val[1] eq $val[5];
@@ -897,7 +963,7 @@ sub dryProc2 {
 					}
 					my %index = &getJSON( &m8dir( $parent ), 'index' );
 					next if defined $index{'subject'};
-					my ( $timeProc ) = &getFile( $tsvDir.'/'.$tsvName.'/'.$val[4].'/'.$val[5].'/time.txt' );
+					my ( $timeProc ) = &getFile( $tsvDir.'/'.$tsvName.'/'.$val[5].'/time.txt' );
 					if ( $val[3] =~/^i\d+$/ ){
 						my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvDir.'/'.$val[3].'/value.tsv' );
 						delete $authorType{$val[4]}{$val[3]} if $map[1]=~/^xsd:\w+$/;
@@ -922,8 +988,8 @@ sub dryProc2 {
 		&rinseProc2( $authorName, %type )
 	}
 
-	my $second1 = int( $time2 - $time1 );
-	my $second2 = int( $time3 - $time2 );
+	my $second1 = int( $time2 - $time1 ) +1;
+	my $second2 = int( $time3 - $time2 ) +1;
 	my $s1 = int( $all / $second1 );
 	my $s2 = int( $all / $second2 );
 	my $map = $all - $triple;
@@ -1080,9 +1146,10 @@ sub setXML {
 	}
 }
 sub setName {
-	my ( $type, @value )=@_;
+	my ( $type, $author, @value )=@_;
 	&setWarn( "					sN @_" );
 	my $name;
+	my $tsvDir = $author.'/tsv';
 	if (@value){
 		@value = ( join( "\t", @value ) ) if $type eq 'd'; 
 		my $value = join "\n", @value;
