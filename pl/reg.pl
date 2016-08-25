@@ -832,15 +832,15 @@ sub dryProc2 {
 	#-d $tsvDir || return;
 	my %stat;
 	$dbg = 0;
-	my $guestDays;# = &getFile( $baseDir.'/guest_days.txt' ) || return;\
+	
 	rmtree $logDir if -d $logDir;
 	make_path( $logDir, { chmod => $chmod } );
 	open (REINDEX, '>'.$logDir.'/reindex.txt')|| die "Ошибка при открытии файла reindex.txt: $!\n";
 	warn '		DRY BEGIN ';
+	my $guestDays = 0;# = &getFile( $baseDir.'/guest_days.txt' ) || return;\
 	if ( -e $baseDir.'/guest_days.txt' ){
 		$guestDays = &getFile( $baseDir.'/guest_days.txt' )
 	}
-	else { return }
 	my $guestTime = time - $guestDays * 24 * 60 * 60;
 	my $userTime = time - $userDays * 24 * 60 * 60;
 	if ( $mode == 2 or 0 ){
