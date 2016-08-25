@@ -92,7 +92,16 @@ if ( $ARGV[0]   ){
 	&setWarn (' Ответ на запрос с локалхоста', $log1);
 	-d 'm8' || make_path( 'm8', { chmod => $chmod });
 	-d $logDir || make_path( $logDir, { chmod => $chmod } );
-	-d $defaultNumberDir || make_path( $defaultNumberDir, { chmod => $chmod } );
+	if (not -d 'guest/tsv'){
+		warn '		Make defaultTriple  ';
+		&setFile( 'guest/tsv/d/n/time.txt', '0' );
+		&setFile( 'guest/tsv/d/value.tsv', ( join "\t", @mainTriple ) );
+		#&setFile( $tsvDir.'/d/admin/n0000000000-0-0/time.txt', '0' );
+		#&setFile( $tsvDir.'/d/value.tsv', ( join "\t", @mainTriple ) );
+		#&setFile( $tsvDir.'/i/value.tsv' );
+		&startProc;
+	}
+	#-d $defaultNumberDir || make_path( $defaultNumberDir, { chmod => $chmod } );
 	my @ava = grep { $_ ne $baseDir and $_ ne 'm8' and not defined $formatDir{$_} } &getDir( '.', 1 );
 	for my $ava ( @ava ){
 		-d $ROOT_DIR.$ava.'/m8' || symlink( $ROOT_DIR.'m8' => $ROOT_DIR.$ava.'/m8' );
@@ -128,7 +137,6 @@ if ( $ARGV[0]   ){
 		}
 	}
 	}
-	
 	if ($ARGV[1]){
 		&dryProc2( $ARGV[1] )
 	}
@@ -512,8 +520,9 @@ sub washProc{
 				my $n = "\n";
 				$value =~ s/%0D%0A/$n/eg; #без этой обработки на выходе получаем двойной возврат каретки помимо перевода строки если данные идут из textarea
 				#$value =~ s/\s+\z//;
-				$value = Encode::decode_utf8($value);# 
 				$value = &utfText($value);
+				$value = Encode::decode_utf8($value);# 
+				
 				
 				
 				if ( not $value and $value ne '0' ){ 
@@ -646,7 +655,7 @@ sub rinseProc {
 	my ( $name, @div )=@_;
 	&setWarn("		rP @_"  );
 	my %value;
-	if ( $div[0] ne '' or $div[1] ){ 
+	if ( ( $div[0] and $div[0] ne '' ) or $div[1]  ){ 
 		&setWarn("		rP  Раскладка @div по строкам"  );
 		for my $s (0..$#div){
 			&setWarn("		rP   Строка $s: $div[$s]"  );
@@ -827,17 +836,8 @@ sub dryProc2 {
 	rmtree $logDir if -d $logDir;
 	make_path( $logDir, { chmod => $chmod } );
 	open (REINDEX, '>'.$logDir.'/reindex.txt')|| die "Ошибка при открытии файла reindex.txt: $!\n";
-	
-	if (not -d 'guest/tsv'){
-		&setFile( 'guest/tsv/d/n0000000000-0-0/time.txt', '0' );
-		&setFile( 'guest/tsv/d/value.tsv', ( join "\t", @mainTriple ) );
-		&setFile( 'guest/tsv/i/value.tsv' );
-		#&setFile( $tsvDir.'/d/admin/n0000000000-0-0/time.txt', '0' );
-		#&setFile( $tsvDir.'/d/value.tsv', ( join "\t", @mainTriple ) );
-		#&setFile( $tsvDir.'/i/value.tsv' );
-		&startProc;
-	}
-	elsif ( -e $baseDir.'/guest_days.txt' ){
+	warn '		DRY BEGIN ';
+	if ( -e $baseDir.'/guest_days.txt' ){
 		$guestDays = &getFile( $baseDir.'/guest_days.txt' )
 	}
 	else { return }
@@ -1103,6 +1103,7 @@ sub setFile {
 	my ( $file, $text, $add )=@_;
 	#&setWarn( "						sF @_" );
 	chomp $text;
+	#warn $file.': '.$text;
 	my @path = split '/', $file;
 	my $fileName = pop @path;
 	my $dir = join '/', @path;
@@ -1110,7 +1111,7 @@ sub setFile {
 	my $mode = '>';#>:encoding(UTF-8)
 	$mode = '>'.$mode if $add;
 	open (FILE, $mode, $dir.'/'.$fileName)|| die "Error opening file $dir/$fileName: $!\n";
-		print FILE $text if $text;
+		print FILE $text if $text ne ''; #на входе может быть '0' поэтому не просто "if $text"
 		print FILE "\n" if $add;
 	close (FILE);
 	if ( $dbg and $file=~/.xml$/ or 1 ){
