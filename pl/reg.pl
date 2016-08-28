@@ -31,23 +31,32 @@ use Time::HiRes qw( time gettimeofday );#gettimeofday
 #установление возможности записывать файлы с правами 777
 umask 0;
 
+my $disk = '';
 BEGIN {
    if ($^O eq 'MSWin32'){
       require Win32::Symlink;
       Win32::Symlink->import();
    }
 }
+$disk = "C:" if $^O eq 'MSWin32';
 
+my $guestDaysDefault = 30;
+my $userDaysDefault = 60;
+my $passwordDefault = 'ryazan2016';
+my $guestDaysFile = 'guest_days.txt';
+my $userDaysFile = 'user_days.txt';
+my $passwordFile = 'password.txt';
+my $userConfigDir = 'user';
 my $forceDBG = 0;
 my $dbg = 0;
 my $chmod = 0777;
-my $userDays = 60;
-my $avatars = '/a';
-my $defaultAvatar = 'system';
+
+my $stylesheetDir = 'xsl';
+my $defaultAvatar = 'formulyar';
 my $defaultAuthor = 'guest';
 my $defaultFact = 'n';
 my $admin = 'admin';
-my $canonicalHomeAvatar = 'system';	
+my $canonicalHomeAvatar = 'formulyar';	
 my $tNode = '$t';
 my @level = ( 'system', 'prefix', 'fact', 'author', 'quest' );
 my @role = (	'triple', 	'role1', 	'role2', 		'role3', 	'author', 'quest', 'target' );
@@ -60,10 +69,11 @@ my @superfile = ( undef, 'port', 'dock', 'terminal' );
 my $type = 'xml';
 
 my $logDir = '../log';
-my $userDir = 'm8/author';
-my $baseDir = 'base';
-my $sessionDir = $baseDir.'/temp_name';
-my $defaultNumberDir = 'guest/tsv/d/n';
+my $authorPath = 'm8/author';
+my $configDir = 'config';
+my $sessionDir = $configDir.'/temp_name';
+#my $defaultNumberPath = 'guest/tsv/d/n';
+my $tempfsFolder = '/mnt/tmpfs/';
 
 my $errorLog = $logDir.'/error_log.txt';
 my $logName = 'data_log.txt';
@@ -71,9 +81,16 @@ my $log = $logDir.'/'.$logName;
 my $log1 = $logDir.'/control_log.txt';
 my $guest_log = $logDir.'/guest_log.txt';
 
+my $rootFolder = '/var/www/';
+my $rootDir = 'public_html';
+my $userDir = 'u';
+my $auraDir = 'a';
+my $planDir = 'p';
+my $indexDir = 'm8';
 
-my $trashDir = $logDir.'/trash';
-my $universePath = $baseDir.'/universe';
+
+my $trashPath = $logDir.'/trash';
+my $universePath = $configDir.'/universe';
 
 my $ROOT_DIR;
 	
@@ -86,52 +103,66 @@ my $JSON = JSON->new->utf8;
 my $XML2JSON = XML::XML2JSON->new(pretty => 'true');
 
 
-if ( $ARGV[0]   ){
-	chdir $ARGV[0];
-	$ROOT_DIR = $ARGV[0].'/';
+if ( $ARGV[0] ){
+	my $aName = $ARGV[0];
+	$ROOT_DIR = $rootFolder.$aName.'/'.$rootDir.'/';
+	chdir $ROOT_DIR;
 	&setWarn (' Ответ на запрос с локалхоста', $log1);
-	-d 'm8' || make_path( 'm8', { chmod => $chmod });
+	
 	-d $logDir || make_path( $logDir, { chmod => $chmod } );
-	if (not -d 'guest/tsv'){
-		warn '		Make defaultTriple  ';
-		&setFile( 'guest/tsv/d/n/time.txt', '0' );
-		&setFile( 'guest/tsv/d/value.tsv', ( join "\t", @mainTriple ) );
-		#&setFile( $tsvDir.'/d/admin/n0000000000-0-0/time.txt', '0' );
-		#&setFile( $tsvDir.'/d/value.tsv', ( join "\t", @mainTriple ) );
-		#&setFile( $tsvDir.'/i/value.tsv' );
-		&startProc;
-	}
-	#-d $defaultNumberDir || make_path( $defaultNumberDir, { chmod => $chmod } );
-	my @ava = grep { $_ ne $baseDir and $_ ne 'm8' and not defined $formatDir{$_} } &getDir( '.', 1 );
-	for my $ava ( @ava ){
-		-d $ROOT_DIR.$ava.'/m8' || symlink( $ROOT_DIR.'m8' => $ROOT_DIR.$ava.'/m8' );
-	}	
-	for my $format ( keys %formatDir ){
-		-d $format || make_path( $format, { chmod => $chmod } );
-		-d $ROOT_DIR.$format.'/m8' || symlink( $ROOT_DIR.'m8' => $ROOT_DIR.$format.'/m8' );
-		for my $ava ( @ava ){
-			-d $ROOT_DIR.$format.'/'.$ava || symlink( $ROOT_DIR.$ava => $ROOT_DIR.$format.'/'.$ava );
+	-e $configDir.'/'.$guestDaysFile || &setFile( $configDir.'/'.$guestDaysFile, $guestDaysDefault );
+	-e $configDir.'/'.$userDaysFile || &setFile( $configDir.'/'.$userDaysFile, $userDaysDefault );
+	#if (not -d $planDir.'/guest/tsv'){
+	#	warn '		Make defaultTriple  ';
+	-e $planDir.'/guest/tsv/d/n/time.txt' || &setFile( $planDir.'/guest/tsv/d/n/time.txt', '1.1' );
+	-e $planDir.'/guest/tsv/d/value.tsv' || &setFile( $planDir.'/guest/tsv/d/value.tsv', ( join "\t", @mainTriple ) );
+	-e $planDir.'/guest/tsv/i/value.tsv' || &setFile( $planDir.'/guest/tsv/i/value.tsv' );
+	#}
+	#-d $defaultNumberPath || make_path( $defaultNumberPath, { chmod => $chmod } );
+	if ( not -d 'm8' ){
+		warn 'check $tempfsFolder.$aName';
+		if ( -d $tempfsFolder.'m8/'.$ARGV[0] ){
+			warn 'add '.$tempfsFolder.'m8/'.$ARGV[0];
+			make_path( $tempfsFolder.'m8/'.$ARGV[0], { chmod => $chmod } );
+			symlink( $disk.$tempfsFolder.'m8/'.$ARGV[0] => $disk.$ROOT_DIR.'m8' )
+		}
+		else {
+			warn 'add '.$ROOT_DIR.'m8';
+			make_path( $ROOT_DIR.'m8', { chmod => $chmod } )
 		}
 	}
+	&startProc;
+	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
+	-d $auraDir.'/m8' || symlink( $disk.$ROOT_DIR.'m8' => $disk.$ROOT_DIR.$auraDir.'/m8' );
+	my @ava = &getDir( $planDir, 1 );
+	for my $ava ( @ava ){
+		-d $auraDir.'/'.$ava || make_path( $auraDir.'/'.$ava, { chmod => $chmod } );
+		-d $auraDir.'/'.$ava.'/m8' || symlink( $disk.$ROOT_DIR.'m8' => $disk.$ROOT_DIR.$auraDir.'/'.$ava.'/m8' );
+		-e $userDir.'/'.$ava.'/'.$passwordFile || &setFile( $userDir.'/'.$ava.'/'.$passwordFile, $passwordDefault );
+	}	
+	for my $format ( keys %formatDir ){
+		-d $format || symlink( $disk.$ROOT_DIR.$auraDir => $disk.$ROOT_DIR.$format );
+	}
+	-d $defaultAvatar || symlink( $disk.$ROOT_DIR.$planDir.'/'.$defaultAvatar => $disk.$ROOT_DIR.$defaultAvatar ); #для возможности авторизации указанием в корне formulyar
 	if (0){
-	my $tsvDir = 'base/tsv';
-	for my $tsvName ( &getDir ( $tsvDir, 1 ) ){ 
+	my $tsvPath = $configDir.'/tsv';
+	for my $tsvName ( &getDir ( $tsvPath, 1 ) ){ 
 		warn '		tsv  '.$tsvName;
 		next if $tsvName=~/^u/ or $tsvName=~/^i/;
-		my @div = map{ Encode::decode_utf8($_) } &getFile( $tsvDir.'/'.$tsvName.'/value.tsv' );
+		my @div = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$tsvName.'/value.tsv' );
 		my @val = split "\t", $div[0];
 		unshift @val, $tsvName;
-		for my $authorName ( &getDir( $tsvDir.'/'.$tsvName, 1 ) ){
-			for my $questName ( &getDir( $tsvDir.'/'.$tsvName.'/'.$authorName, 1 ) ){
+		for my $authorName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
+			for my $questName ( &getDir( $tsvPath.'/'.$tsvName.'/'.$authorName, 1 ) ){
 				print REINDEX "    Исследование квеста $questName \n";
-				my ( $timeProc ) = &getFile( $tsvDir.'/'.$tsvName.'/'.$authorName.'/'.$questName.'/time.txt' );
+				my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$authorName.'/'.$questName.'/time.txt' );
 				make_path( $authorName.'/tsv/'.$tsvName.'/'.$questName );
 				&setFile ( $authorName.'/tsv/'.$tsvName.'/'.$questName.'/time.txt', $timeProc ); #ss
-				copy( $tsvDir.'/'.$tsvName.'/value.tsv', $authorName.'/tsv/'.$tsvName.'/value.tsv' );
+				copy( $tsvPath.'/'.$tsvName.'/value.tsv', $authorName.'/tsv/'.$tsvName.'/value.tsv' );
 				for my $m (1..3){
 					next if not $val[$m]=~/i/;
 					-d $authorName.'/tsv/'.$val[$m] || make_path( $authorName.'/tsv/'.$val[$m] );
-					copy( $tsvDir.'/'.$val[$m].'/value.tsv', $authorName.'/tsv/'.$val[$m].'/value.tsv' )
+					copy( $tsvPath.'/'.$val[$m].'/value.tsv', $authorName.'/tsv/'.$val[$m].'/value.tsv' )
 				}
 			}
 		}
@@ -172,7 +203,7 @@ else{
 				$format = 'debug';
 			}
 			my $cookie = $q->cookie( -name => $format, -expires => '+1y', -value => $value );
-			print $q->header( -location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0], -cookie => $cookie );
+			print $q->header( -location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$auraDir.'/'.$request_uri[0], -cookie => $cookie );
 		
 		}
 		else {		
@@ -193,7 +224,7 @@ else{
 				my $xmlFile = $ROOT_DIR.$request_uri[0].'temp.xml';
 				&setFile( $xmlFile, &getDoc( \%temp ) );
 				$temp{'avatar'} = $temp{'tempAvatar'} if defined $temp{'tempAvatar'};
-				my $xslFile = $ROOT_DIR.$temp{'avatar'}.$avatars.'/'.$temp{'avatar'}.'.xsl';
+				my $xslFile = $ROOT_DIR.$planDir.'/'.$temp{'avatar'}.'/'.$stylesheetDir.'/'.$temp{'avatar'}.'.xsl';
 				my $documentFile = $ROOT_DIR.$request_uri[0].'/report/word/document.xml';
 				my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$ROOT_DIR.$logDir.'/xsltproc_doc.txt' );#
 				&setWarn( "   documntXML: $status" );#
@@ -210,8 +241,8 @@ else{
 				print $q->header(-location => '/'.$request_uri[0].'report.'.$format );
 			}
 			else {
-				&setWarn( '   редирект на '.$ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0].'report.'.$format );
-				print $q->header(-location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$request_uri[0].'report.'.$format );
+				&setWarn( '   редирект на '.$ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$auraDir.'/'.$request_uri[0].'report.'.$format );
+				print $q->header(-location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$auraDir.'/'.$request_uri[0].'report.'.$format );
 			}
 		}
 	}
@@ -256,7 +287,7 @@ else{
 				if ( $temp{'format'} eq 'html' ){
 					&setWarn("     Вывод temp-а под аватаром: $temp{'tempAvatar'}");
 					$temp{'avatar'} = $temp{'tempAvatar'} if defined $temp{'tempAvatar'};
-					my $xslFile = $temp{'avatar'}.$avatars.'/'.$temp{'avatar'}.'.xsl';
+					my $xslFile = $planDir.'/'.$temp{'avatar'}.'/'.$stylesheetDir.'/'.$temp{'avatar'}.'.xsl';
 					if ( 1 or defined $universe{'serverTranslate'} ){
 						&setWarn('      Преобразование на сервере');
 						if (0){
@@ -282,7 +313,7 @@ else{
 			&setWarn( '   Вывод в web c редиректом' );
 			copy( $log, $log.'.txt' ) or die "Copy failed: $!" if $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
 			my $location = $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST};
-			if ( defined $temp{'message'} and $temp{'message'} ne 'OK' ){ $location .= '/'.$temp{'ctrl'}.'/m8/?error='.$temp{'message'} }
+			if ( defined $temp{'message'} and $temp{'message'} ne 'OK' ){ $location .= '/'.$auraDir.'/'.$temp{'ctrl'}.'/m8/?error='.$temp{'message'} }
 			else { $location .= &m8req( \%temp ).'/' }
 			print $q->header( -location => $location, -cookie => [@cookie] )# -status => '201 Created' #куки нужны исключительно для случая указания автора		
 		}
@@ -304,7 +335,7 @@ sub initProc{
 	$$temp{'time'} = time;
 	( $$temp{'seconds'}, $$temp{'microseconds'} ) = gettimeofday;
 	$$temp{'record'} = 0;
-	$$temp{'version'} = &getFile( 'formulyar/version.txt' ) || 'v0';
+	$$temp{'version'} = &getFile( $planDir.'/'.$defaultAvatar.'/version.txt' ) || 'v0';
 	for my $param ( @transaction ){	
 		&setWarn('		iP  ENV '.$param.': '.$ENV{$param});
 		$$temp{$param} = $ENV{$param} 
@@ -343,20 +374,23 @@ sub initProc{
 		$$temp{'quest'} = &utfText($path[1]);
 		if ( $$temp{'QUERY_STRING'} =~/^avatar=$/ ){
 			&setWarn( "		iP   Смена аватара текущего аватара" );
-			if ( -e $$temp{'quest'}.$avatars.'/'.$$temp{'quest'}.'.xsl' and -e $$temp{'quest'}.$avatars.'/title.txt' ){ $$cookie{'group'} = $$temp{'ctrl'} =  $$temp{'avatar'} = $$temp{'quest'} }
+			if ( -e $planDir.'/'.$$temp{'quest'}.'/'.$stylesheetDir.'/'.$$temp{'quest'}.'.xsl' and -e $planDir.'/'.$$temp{'quest'}.'/'.$stylesheetDir.'/title.txt' ){ $$cookie{'group'} = $$temp{'ctrl'} =  $$temp{'avatar'} = $$temp{'quest'} }
 			else {
 				&setWarn( "		iP    Обнуление текущего аватара " );
 				&startProc;
 				$$cookie{'group'} = ''; #$$temp{'avatar'} = 			
 			}
 		}
-		elsif ( -e $$temp{'quest'}.$avatars.'/'.$$temp{'quest'}.'.xsl' ){ $$temp{'ctrl'} = $$temp{'tempAvatar'} = $$temp{'quest'} }
+		elsif ( -e $planDir.'/'.$$temp{'quest'}.'/'.$stylesheetDir.'/'.$$temp{'quest'}.'.xsl' ){ $$temp{'ctrl'} = $$temp{'tempAvatar'} = $$temp{'quest'} }
 		else {$$temp{'ctrl'} =  $$temp{'tempAvatar'} = $canonicalHomeAvatar }
 	}
 	else{
 		&setWarn( "		iP  Не системный запрос" );#
-		$temp{'format'} = shift @path if $path[0] =~m!^_!;
-		$$temp{'ctrl'} = $$temp{'tempAvatar'} = shift @path if $path[0] ne 'm8'; 
+		if ( $path[0] ne 'm8' ){
+			$$temp{'format'} = shift @path;
+			$$temp{'format'} = 'html' if $$temp{'format'} eq $auraDir;
+			$$temp{'ctrl'} = $$temp{'tempAvatar'} = shift @path if $path[0] ne 'm8'; 
+		}
 		$$temp{'fact'} = $$temp{'quest'} = &utfText($path[2]) if $path[2];
 		$$temp{'author'} = $path[3] if $path[3];	
 		$$temp{'quest'} = $path[4] if $path[4]
@@ -381,8 +415,8 @@ sub washProc{
 		}
 		$$temp{'fact'} = $defaultFact if not defined $$temp{'fact'};
 		$$temp{'quest'} = $defaultFact if not defined $$temp{'quest'};
-		my $iName = &setName( 'i', @text );
-		my $trName =  &setName( 'd', $$temp{'fact'}, 'n', $iName );
+		my $iName = &setName( 'i', $$temp{'user'}, @text );
+		my $trName =  &setName( 'd', $$temp{'user'}, $$temp{'fact'}, 'n', $iName );
 		my @val = ( $trName, $$temp{'fact'}, 'n', $iName, $$temp{'user'}, $$temp{'quest'}, 1 );
 		push @num, \@val;
 	}
@@ -431,15 +465,15 @@ sub washProc{
 				}
 				my $tempName = 'u';
 				$tempName .= murmur128_x64(rand(10000000));
-				my %tempkey = &getHash( $baseDir.'/'.$$temp{'user'}.'.json' );
+				my %tempkey = &getHash( $configDir.'/'.$$temp{'user'}.'.json' );
 				$tempkey{$tempName} = $$temp{'time'};
-				&setFile( $baseDir.'/'.$$temp{'user'}.'.json', $JSON->encode(\%tempkey) );
+				&setFile( $configDir.'/'.$$temp{'user'}.'.json', $JSON->encode(\%tempkey) );
 				&setFile( $sessionDir.'/'.$tempName.'/value.txt', $$temp{'user'} );
 				$$cookie{'user'} = $tempName;
 			}
 			else { 
 				&setWarn( "		wP    Процедура разлогирования" );#
-				my $tempKeysFile = $baseDir.'/'.$$temp{'author'}.'.json';
+				my $tempKeysFile = $configDir.'/'.$$temp{'author'}.'.json';
 				if ( -e $tempKeysFile ){
 					&setWarn( "		wP     Удаление временного ключа" );#
 					my %tempkey = &getHash( $tempKeysFile );	
@@ -471,7 +505,7 @@ sub washProc{
 					if ( $$temp{'del'} < 3 ){ 
 						&setWarn ("		wP      Анализ базовых директорий");
 						if ( $$temp{'del'} > 1 ){
-							#for my $dir ( grep { $_ ne 'd' } &getDir ( $tsvDir, 1 ) ){ rmtree( $tsvDir.'/'.$dir ) }
+							#for my $dir ( grep { $_ ne 'd' } &getDir ( $tsvPath, 1 ) ){ rmtree( $tsvPath.'/'.$dir ) }
 						}
 					}
 					else { 
@@ -501,7 +535,7 @@ sub washProc{
 				}			
 				elsif (-e $universePath.'.json') {
 					unlink $universePath.'.json';
-					&getDir ($baseDir) || rmdir $baseDir
+					&getDir ($configDir) || rmdir $configDir
 				}
 			}
 			for (keys %universe){ $$temp{$_} = 1 }
@@ -550,7 +584,7 @@ sub washProc{
 					if ( $value[1] and $value[1]=~/^xsd:(\w+)$/ ){
 						&setWarn('		wP      запрос создания именнованой карты');
 						#здесь еще нужно исключить указание одному имени разных типов
-						my $authorTypeFile = $userDir.'/'.$$temp{'author'}; #вообще не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
+						my $authorTypeFile = $authorPath.'/'.$$temp{'author'}; #вообще не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
 						my %type = &getJSON( $authorTypeFile, 'type' );
 						$type{$value}[0]{'name'} = $value[0];
 						&setXML ( $authorTypeFile, 'type', \%type );
@@ -643,7 +677,7 @@ sub washProc{
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает повтор установления значения';
 		}
 	}
-	return if 1 or -e $baseDir.'/control' or not grep { $$temp{'number'}[$_] eq 'OK' } @{$$temp{'number'}};
+	return if 1 or -e $configDir.'/control' or not grep { $$temp{'number'}[$_] eq 'OK' } @{$$temp{'number'}};
 	
 	&setWarn('   Обнаружены физические записи. Запуск процесса сушки');
 	eval{ system( 'perl.exe M:\system\reg.pl dry >/dev/null 2>M:\_log\error_dry.txt' ); }	
@@ -683,7 +717,7 @@ sub rinseProc2 {
 		$x++
 	}
 	my $XML = $XML2JSON->json2xml( $JSON->encode(\%xsl_stylesheet) );
-	&setFile( $userDir.'/'.$author.'/type.xsl', $XML );
+	&setFile( $authorPath.'/'.$author.'/type.xsl', $XML );
 }
 
 sub spinProc {
@@ -784,27 +818,27 @@ sub spinProc {
 		&setXML ( $metter, 'index', \%index );
 	}
 	}
-	#my $metterDir = $tsvDir.'/'.$name;
+	#my $metterDir = $tsvPath.'/'.$name;
 	#my $authorDir = $metterDir.'/'.$author;
 	#my $questDir = $authorDir.'/'.$quest;
-	my $questDir = $author.'/tsv/'.$name.'/'.$quest;
+	my $questDir = $planDir.'/'.$author.'/tsv/'.$name.'/'.$quest;
 	if ( $add ){
 		&setWarn("		wP   Добавление директории $questDir в базу");
 		#&setFile( $questDir.'/time.txt', $time );
-		&setFile ( $author.'/tsv/'.$name.'/'.$quest.'/time.txt', $time ); #ss
+		&setFile ( $planDir.'/'.$author.'/tsv/'.$name.'/'.$quest.'/time.txt', $time ); #ss
 	}
 	else{
 		&setWarn("		wP   Удаление директории $questDir из базы");
 		rmtree $questDir;
-		if ( not &getDir ( $author.'/tsv/'.$name, 1 ) ){
-			rmtree $author.'/tsv/'.$name;
-			if ( not &getDir( $author.'/tsv', 1 ) ){
+		if ( not &getDir ( $planDir.'/'.$author.'/tsv/'.$name, 1 ) ){
+			rmtree $planDir.'/'.$author.'/tsv/'.$name;
+			if ( not &getDir( $planDir.'/'.$author.'/tsv', 1 ) ){
 				&setXML( 'm8/d/'.$value[0], 'value' );
-				rmtree $author.'/tsv';
+				rmtree $planDir.'/'.$author.'/tsv';
 			}
 			if ( $value[3]=~/^i\d+$/ ){
 				&setWarn("		dN    Проверка на идентификатор");
-				my $authorTypeDir = $userDir.'/'.$value[4];
+				my $authorTypeDir = $authorPath.'/'.$value[4];
 				if ( -e $authorTypeDir.'/type.json' ){
 					my %type = &getJSON( $authorTypeDir, 'type' );
 					if ( defined $type{$value[3]} ){ 
@@ -829,7 +863,6 @@ sub dryProc2 {
 	#mode2 - только удаляется мусор (в штатном режиме имеет смысл только для доудаления гостевых триплов)
 	#@user - Если указаны то только они будут сохранены
 	#chdir "W:";
-	#-d $tsvDir || return;
 	my %stat;
 	$dbg = 0;
 	
@@ -837,13 +870,19 @@ sub dryProc2 {
 	make_path( $logDir, { chmod => $chmod } );
 	open (REINDEX, '>'.$logDir.'/reindex.txt')|| die "Ошибка при открытии файла reindex.txt: $!\n";
 	warn '		DRY BEGIN ';
-	my $guestDays = 0;# = &getFile( $baseDir.'/guest_days.txt' ) || return;\
-	if ( -e $baseDir.'/guest_days.txt' ){
-		$guestDays = &getFile( $baseDir.'/guest_days.txt' )
+	my $guestDays = 0;# = &getFile( $configDir.'/guest_days.txt' ) || return;\
+	my $userDays = 0;
+	if ( -e $configDir.'/guest_days.txt' ){
+		$guestDays = &getFile( $configDir.'/guest_days.txt' )
 	}
+	if ( -e $configDir.'/user_days.txt' ){
+		$userDays = &getFile( $configDir.'/user_days.txt' )
+	}
+	warn '		guestDays: '.$guestDays;	
 	my $guestTime = time - $guestDays * 24 * 60 * 60;
 	my $userTime = time - $userDays * 24 * 60 * 60;
 	if ( $mode == 2 or 0 ){
+		warn '		delete all index';
 		for my $d ( &getDir( 'm8' ) ){
 			if ( -d 'm8/'.$d ){ rmtree 'm8/'.$d }
 			else { unlink 'm8/'.$d }
@@ -861,13 +900,13 @@ sub dryProc2 {
 	my $DL_map = 0;
 	my $cookie = 0;
 	my $DL_cookie = 0;
-	my $time1 = time;	
+
 	for my $sessionName ( &getDir( $sessionDir, 1 ) ){ 
 		print REINDEX "sessionName	$sessionName \n";
 		warn '		sessionName  '.$sessionName;
 		$cookie++;
 		my $cAuthor = &getFile( $sessionDir.'/'.$sessionName.'/value.txt' );
-		my $tempKeysFile = $baseDir.'/'.$cAuthor.'.json';
+		my $tempKeysFile = $configDir.'/'.$cAuthor.'.json';
 		if ( -e $tempKeysFile ){
 			my %tempkey = &getHash( $tempKeysFile );
 			if ( not defined $tempkey{$sessionName} or $tempkey{$sessionName} < $userTime ){
@@ -880,38 +919,37 @@ sub dryProc2 {
 			$DL_cookie++
 		}		
 	}
-		
-	for my $authorName ( grep { -d $_.'/tsv' } &getDir( '.', 1 ) ){ 
+	my $time1 = time;
+	my $time2;		
+	for my $authorName ( grep { -d $planDir.'/'.$_.'/tsv' } &getDir( $planDir, 1 ) ){ 
 		print REINDEX "authorName	$authorName \n";
 		warn '		authorName  '.$authorName;
 		
-		my $tsvDir = $authorName.'/tsv';
+		my $tsvPath = $planDir.'/'.$authorName.'/tsv';
 		if ( not defined $stat{$authorName} ){
 			for ( 'add', 'n_delR', 'n_delN' ){ $stat{$authorName}{$_} = 0 }
 		}
-		
-		for my $tsvName ( &getDir( $authorName.'/tsv', 1 ) ){
+		for my $tsvName ( &getDir( $tsvPath, 1 ) ){
 			print REINDEX "   Исследование aвтора $tsvName \n";
 			warn '		tsv  '.$tsvName;
 			$all++;
-			my @div = map{ Encode::decode_utf8($_) } &getFile( $tsvDir.'/'.$tsvName.'/value.tsv' );
+			my @div = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$tsvName.'/value.tsv' );
 			&rinseProc( $tsvName, @div );
 			next if $tsvName=~/^i/;	
 			my @val = split "\t", $div[0];
 			unshift @val, $tsvName;
 			$val[4] = $authorName;
 			$triple++;
-			
 			if ( $val[3] =~/^i\d+$/ ){
-				my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvDir.'/'.$val[3].'/value.tsv' );
+				my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$val[3].'/value.tsv' );
 				$authorType{$authorName}{$val[3]} = $map[0] if $map[1] and $map[1]=~/^xsd:\w+$/;
 			}
 			if (1){
-			for my $questName ( &getDir( $tsvDir.'/'.$tsvName, 1 ) ){
+			for my $questName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
 				print REINDEX "    Исследование квеста $questName \n";
 				$val[5] = $questName;
-				my ( $timeProc ) = &getFile( $tsvDir.'/'.$tsvName.'/'.$val[5].'/time.txt' );
-				if ( $authorName eq 'guest' and $timeProc and $timeProc < $guestTime ){ 
+				my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$val[5].'/time.txt' );
+				if ( $authorName eq 'guest' and $tsvName ne 'd' and $timeProc and $timeProc < $guestTime ){ 
 					print REINDEX "     Удаление старого гостевого трипла '.$div[0].' \n";
 					$n_delG++
 				}
@@ -923,30 +961,29 @@ sub dryProc2 {
 				&spinProc( \@val, $timeProc );
 				#make_path( $authorName.'/tsv/'.$tsvName.'/'.$questName );
 				#&setFile ( $authorName.'/tsv/'.$tsvName.'/'.$questName.'/time.txt', $timeProc ); #ss
-				#copy( $tsvDir.'/'.$tsvName.'/value.tsv', $authorName.'/tsv/'.$tsvName.'/value.tsv' );
+				#copy( $tsvPath.'/'.$tsvName.'/value.tsv', $authorName.'/tsv/'.$tsvName.'/value.tsv' );
 				#for my $m (1..3){
 				#	next if not $val[$m]=~/i/;
 				#	-d $authorName.'/tsv/'.$val[$m] || make_path( $authorName.'/tsv/'.$val[$m] );
-				#	copy( $tsvDir.'/'.$val[$m].'/value.tsv', $authorName.'/tsv/'.$val[$m].'/value.tsv' )
+				#	copy( $tsvPath.'/'.$val[$m].'/value.tsv', $authorName.'/tsv/'.$val[$m].'/value.tsv' )
 				#}
 			}
 			}
 		}
-	}
-	
-	my $time2 = time;
-	my $real2 = 1;
-	if(1){
-	for my $authorName ( grep { -d $_.'/tsv' } &getDir( '', 1 ) ){ 
-		warn '		author2  '.$authorName;
-		print REINDEX "author2	$authorName \n";
-		my $tsvDir = $authorName.'/tsv';
-		for my $tsvName ( &getDir( $tsvDir, 1 ) ){ 
+	#}
+		$time2 = time;
+	#	my $real2 = 1;
+	#if(1){
+	#for my $authorName ( grep { -d $planDir.'/'.$_.'/tsv' } &getDir( $planDir, 1 ) ){ 
+	#	warn '		author2  '.$authorName;
+	#	print REINDEX "author2	$authorName \n";
+	#	my $tsvPath = $planDir.'/'.$authorName.'/tsv';
+		for my $tsvName ( &getDir( $tsvPath, 1 ) ){ 
 			warn '		tsv2  '.$tsvName;
 			print REINDEX "tsv2	$tsvName \n";
 			if ( $tsvName=~/^i/ ){
 				if ( not -e &m8path( $tsvName, 'index' ) and $tsvName ne 'i' ){
-					rmtree $tsvDir.'/'.$tsvName;
+					rmtree $tsvPath.'/'.$tsvName;
 					rmtree &m8dir( $tsvName );
 					$DL_map++
 				}
@@ -955,7 +992,7 @@ sub dryProc2 {
 				my @val = map{ Encode::decode_utf8($_) } &getTriple( $authorName, $tsvName );
 				my $parent = $val[1];
 				$val[4] = $authorName;
-				for my $questName ( &getDir( $tsvDir.'/'.$tsvName, 1 ) ){
+				for my $questName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
 					$val[5] = $questName;
 					if ( $val[2]=~/^r/ ){
 						next if $val[1] eq $val[5];
@@ -963,9 +1000,9 @@ sub dryProc2 {
 					}
 					my %index = &getJSON( &m8dir( $parent ), 'index' );
 					next if defined $index{'subject'};
-					my ( $timeProc ) = &getFile( $tsvDir.'/'.$tsvName.'/'.$val[5].'/time.txt' );
+					my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$val[5].'/time.txt' );
 					if ( $val[3] =~/^i\d+$/ ){
-						my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvDir.'/'.$val[3].'/value.tsv' );
+						my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$val[3].'/value.tsv' );
 						delete $authorType{$val[4]}{$val[3]} if $map[1]=~/^xsd:\w+$/;
 					}
 					&spinProc( \@val, $timeProc );
@@ -974,13 +1011,13 @@ sub dryProc2 {
 				}
 			}
 		}
-	}
+	#}
 	}
 	my $time3 = time+1;
 	for my $authorName ( keys %authorType ){
 		my %type;
 		#здесь еще нужно исключить указание одному имени разных типов
-		my $authorTypeDir = $userDir.'/'.$authorName; #не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
+		my $authorTypeDir = $authorPath.'/'.$authorName; #не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
 		for my $tsvName ( keys %{$authorType{$authorName}} ){
 			$type{$tsvName}[0]{'name'} = $authorType{$authorName}{$tsvName};
 		}
@@ -1025,10 +1062,10 @@ sub dryProc2 {
 sub startProc {
 	my %avatar;
 	my $count = 0;
-	for my $avatarName( grep { -e $_.$avatars.'/'.$_.'.xsl' and -e $_.$avatars.'/title.txt'} &getDir( '.', 1 ) ){
+	for my $avatarName ( grep { -e $planDir.'/'.$_.'/'.$stylesheetDir.'/title.txt'} &getDir( $planDir, 1 ) ){
 		&setWarn ("		startProc   Найден аватар $avatarName");
 		$avatar{'unit'}[$count]{'id'} = $avatarName;
-		$avatar{'unit'}[$count]{'title'} = &getFile( $avatarName.$avatars.'/title.txt' );
+		$avatar{'unit'}[$count]{'title'} = Encode::decode_utf8( &getFile( $planDir.'/'.$avatarName.'/'.$stylesheetDir.'/title.txt' ) );
 		$count++
 	}
 	&setXML ( '.', 'avatar', \%avatar );
@@ -1044,7 +1081,7 @@ sub parseNew {
 		&setWarn('			pN   Вход ранее созданного пользователя');
 		if ($$temp{'login'} ne 'guest'){
 			defined $$pass{'password'} and $$pass{'password'} || return 'no_password';
-			my $userFile = $baseDir.'/'.$$temp{'login'}.'.txt';
+			my $userFile = $userDir.'/'.$$temp{'login'}.'/'.$passwordFile;
 			-e $userFile || return 'no_user';
 			my $password = &getFile( $userFile );
 			$password eq $$pass{'password'} || return 'bad_password';
@@ -1054,7 +1091,7 @@ sub parseNew {
 		&setWarn('			pN   Создание автора');
 		$$temp{'new_author'} =~/^\w+$/ || return 'В имени могут быть лишь буквы латинского алфавита и цифры.';
 		34 >= length $$temp{'new_author'} || return 'Имя не должно быть длиннее 34 символов.';
-		return 'Такой пользователь уже существует' if -e $baseDir.'/'.$$temp{'new_author'}.'/value.txt'; #-e $authorRuneDIR.'/mult/index.xml';
+		return 'Такой пользователь уже существует' if -d $userDir.'/'.$$temp{'new_author'}; #-e $authorRuneDIR.'/mult/index.xml';
 		defined $$pass{'new_password'} and $$pass{'new_password'} || return 'Введите пароль';
 		defined $$pass{'new_password2'} and $$pass{'new_password2'} || return 'Введите пароль с повтором';		
 		$$pass{'new_password'} eq $$pass{'new_password2'} || return 'Пароль повторен не верно';
@@ -1074,7 +1111,7 @@ sub m8path {
 		if ( $level4 ){ 	$path .= '/'.$level3.'/'.$level4 }
 		elsif ( $level3 ){	$path .= '/'.$level1.'/'.$level3 }
 	}
-	else { $path = $userDir.'/'.$level1.'/type' }
+	else { $path = $authorPath.'/'.$level1.'/type' }
 	return $path.'.xml'
 }
 sub m8dir {
@@ -1086,7 +1123,7 @@ sub m8dir {
 }
 sub m8req {
 	my ( $temp ) = @_;
-	my $dir = '/'.$$temp{'ctrl'}.'/m8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'};
+	my $dir = '/'.$auraDir.'/'.$$temp{'ctrl'}.'/m8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'};
 	if ( $$temp{'quest'} ne $$temp{'fact'} ){ $dir .= '/'.$$temp{'author'}.'/'.$$temp{'quest'} }
 	elsif ( $$temp{'author'} and $$temp{'author'} ne $$temp{'ctrl'} ){ $dir .= '/'.$$temp{'author'} }
 	return $dir;
@@ -1096,7 +1133,7 @@ sub getID {
 #	&setWarn("						gI  @_" );
 	if ($name=~m!^/m8/[dirn]/[dirn][\d_\-]*$! or $name=~m!^/m8/author/[a-z]{2}[\w\d]*$!){ $name=~s!^/!!; return $name }
 	elsif ($name=~m!^([dirn])[\d_\-]*$!){ return 'm8/'.$1.'/'.$name }
-	else { return $userDir.'/'.$name }
+	else { return $authorPath.'/'.$name }
 }
 
 sub setFile {
@@ -1115,8 +1152,8 @@ sub setFile {
 		print FILE "\n" if $add;
 	close (FILE);
 	if ( $dbg and $file=~/.xml$/ or 1 ){
-		-d $trashDir || make_path( $trashDir, { chmod => $chmod } );
-		my $file = $trashDir.'/'.$path[$#path].'_'.$fileName;
+		-d $trashPath || make_path( $trashPath, { chmod => $chmod } );
+		my $file = $trashPath.'/'.$path[$#path].'_'.$fileName;
 		open (FILE, $mode, $file )|| die "Error opening file $file: $!\n";#$path[2].'-'.
 			print FILE $text if $text;
 			print FILE "\n" if $add;
@@ -1150,15 +1187,15 @@ sub setName {
 	my ( $type, $author, @value )=@_;
 	&setWarn( "					sN @_" );
 	my $name;
-	my $tsvDir = $author.'/tsv';
+	my $tsvPath = $planDir.'/'.$author.'/tsv';
 	if (@value){
 		@value = ( join( "\t", @value ) ) if $type eq 'd'; 
 		my $value = join "\n", @value;
 		my @name = murmur128_x64($value);
 		( $name[0], $name[1] ) = ( $type.$name[0], $type.$name[1] );
-		for my $n ( grep { -e $tsvDir.'/'.$name[$_].'/value.tsv' } ( 0, 1 ) ){
+		for my $n ( grep { -e $tsvPath.'/'.$name[$_].'/value.tsv' } ( 0, 1 ) ){
 			&setWarn( "					sN  проверка варианта $n - $name[$n]" );
-			my $old = join "\n", &getFile( $tsvDir.'/'.$name[$n].'/value.tsv' );
+			my $old = join "\n", &getFile( $tsvPath.'/'.$name[$n].'/value.tsv' );
 			$old = Encode::decode_utf8($old);#читает и так нормально, но проверку на эквивалетность без флага не пройдет
 			if ( $value eq $old ){ $name = $name[$n] }
 			else { $name[$n] = undef }
@@ -1166,7 +1203,7 @@ sub setName {
 		if (not $name ){
 			&setWarn( "					sN  присвоение первого попавшегося имени из двух: @name" );
 			( $name ) = grep { $_ } @name;
-			&setFile( $tsvDir.'/'.$name.'/value.tsv', $value );
+			&setFile( $tsvPath.'/'.$name.'/value.tsv', $value );
 			&rinseProc( $name, @value )
 		}	
 	}
@@ -1210,11 +1247,9 @@ sub getFile {
 			push @text, $_;
 		}
 	close (FILE);
-	if ( $text[1] ){ 	return @text 	}	#elsif ( $text[0] ){ return $text[0]	}
-	else {
-		$text[0] = '' if not $text[0];
-		return $text[0]
-	}
+	if ( @text > 1 ){	return @text 	}	#elsif ( $text[0] ){ return $text[0]	}
+	elsif (@text) 	{	return $text[0]	}
+	else { 				return '' 		}
 }
 sub getDir{
 	my ( $dir, $dir_only )=@_;
@@ -1283,7 +1318,7 @@ sub getDoc {
 sub getTriple {
 	&setWarn("		gT @_");
 	my ( $user, $name )=@_;
-	my $val = &getFile( $user.'/tsv/'.$name.'/value.tsv' );
+	my $val = &getFile( $planDir.'/'.$user.'/tsv/'.$name.'/value.tsv' );
 	&setWarn("		gT val: $val");
 	my @value = ( split "\t", $val );
 	unshift @value, $name;
