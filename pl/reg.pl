@@ -47,7 +47,7 @@ my $guestDaysFile = 'guest_days.txt';
 my $userDaysFile = 'user_days.txt';
 my $passwordFile = 'password.txt';
 my $userConfigDir = 'user';
-my $forceDBG = 0;
+my $forceDBG = 1;
 my $dbg = 0;
 my $chmod = 0777;
 
@@ -63,7 +63,7 @@ my @role = (	'triple', 	'role1', 	'role2', 		'role3', 	'author', 'quest', 'targe
 my @number = (	'name',		'subject', 	'predicate',	'object',	'author', 'quest', 'add' );
 my @transaction = ( 'REMOTE_ADDR', 'HTTP_USER_AGENT', 'DOCUMENT_ROOT', 'REQUEST_URI', 'QUERY_STRING', 'HTTP_COOKIE', 'REQUEST_METHOD', 'HTTP_X_REQUESTED_WITH' );#, 'HTTP_USER_AGENT', 'HTTP_ACCEPT_LANGUAGE', 'REMOTE_ADDR' $$transaction{'QUERY_STRING'}
 my @mainTriple = ( 'n', 'r', 'i' );
-my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1, '_avatar', 1 );
+my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1, '_xml', 1, 'formulyar', 1 );
 my @superrole = ( 'triple', 'role', 'role', 'role', 'author', 'quest', 'subject', 'predicate', 'object' );
 my @superfile = ( undef, 'port', 'dock', 'terminal' ); 
 my $type = 'xml';
@@ -143,7 +143,7 @@ if ( $ARGV[0] ){
 	for my $format ( keys %formatDir ){
 		-d $format || symlink( $disk.$ROOT_DIR.$auraDir => $disk.$ROOT_DIR.$format );
 	}
-	-d $defaultAvatar || symlink( $disk.$ROOT_DIR.$planDir.'/'.$defaultAvatar => $disk.$ROOT_DIR.$defaultAvatar ); #для возможности авторизации указанием в корне formulyar
+	#-d $defaultAvatar || symlink( $disk.$ROOT_DIR.$planDir.'/'.$defaultAvatar => $disk.$ROOT_DIR.$defaultAvatar ); #для возможности авторизации указанием в корне formulyar
 	if (0){
 	my $tsvPath = $configDir.'/tsv';
 	for my $tsvName ( &getDir ( $tsvPath, 1 ) ){ 
@@ -183,111 +183,111 @@ else{
 			print FILE localtime(time).'	'.$ENV{'REMOTE_ADDR'}.'	'.$ENV{'HTTP_FORWARDED'}.'	'.$ENV{'REQUEST_URI'},  "\n";
 		close (FILE);
 	}
+	copy( $log, $log.'.txt' ) or die "Copy failed: $!" if -e $log and $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
+	copy( $logDir.'/env.json', $logDir.'/env.json.json' ) or die "Copy failed: $!" if -e $logDir.'/env.json' and $dbg; #копировать лог не ниже, т.е. не после возможного
+	&setWarn( " Обработка запроса $ENV{REQUEST_URI}", $log);#
+	#&setWarn( "  Работа в режиме отл." ) if $dbg;#	
 	&setFile( $logDir.'/env.json', $JSON->encode(\%ENV) ) if $dbg;
-
-	my %cookie;
 	my $q = CGI->new();
-	if ( $ENV{'REQUEST_URI'} =~m!^/_(pdf)/(\w+)/! or $ENV{'REQUEST_URI'} =~m!^/_(doc)/(\w+)/! or $ENV{'REQUEST_URI'} =~m!^/_(avatar)/(\w+)/! ){
-		my ( $format, $value ) = ( $1, $2 ); 
-		&setWarn( "  Найден запрос $ENV{'REQUEST_URI'} вывода в особом формате $1 (папка: $2)", $log.'_special.txt' );#	
-		my $req = $ENV{'REQUEST_URI'};
-		$req =~s!/_$format!!;
-		my @request_uri = split /\?/, $req;
-		&setWarn( "  перевод на $request_uri[0] (формат: $format)" );#
-		$request_uri[0] =~s!^/!!;
-		if ( $format eq 'avatar' ){
-			if ( $value eq cookie('avatar') ){
-				#$value = $q->cookie('debug');
-				if ( not cookie('debug') or $q->cookie('debug') eq '' ){ $value = time }
-				else { $value = '' }
-				$format = 'debug';
-			}
-			my $cookie = $q->cookie( -name => $format, -expires => '+1y', -value => $value );
-			print $q->header( -location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$auraDir.'/'.$request_uri[0], -cookie => $cookie );
-		
+	$q->charset('utf-8');
+	my %cookie;
+	&initProc( \%temp, \%cookie );
+	if ( $temp{'format'} eq 'pdf' or $temp{'format'} eq 'doc' ){
+		&setWarn( "  Выдача не текстовой информации (pdf, docx)" );#	
+		my $extensiton = $temp{'format'};	
+		if ( $temp{'format'} eq 'pdf' ){
+			&setWarn( "   Формирование pdf-файла запросом $ENV{HTTP_HOST}/$auraDir/$temp{'avatar'}/$temp{'m8path'}" );#
+			my $req = $ENV{HTTP_HOST}.'/'.$auraDir.'/'.$temp{'avatar'}.'/'.$temp{'m8path'};
+			$req .= '/?'.$temp{'QUERY_STRING'};
+			system ( 'wkhtmltopdf '.$req.' '.$ROOT_DIR.$temp{'m8path'}.'/report.pdf'.' 2>'.$ROOT_DIR.$logDir.'/wkhtmltopdf.txt' );
+			#system ( 'wkhtmltopdf localhost'.$req.' '.$request_uri[0].'/report.pdf'.' 2>/_log/wkhtmltopdf.txt' );
+			#$extensiton = 'pdf';
 		}
-		else {		
-			if ( $format eq 'pdf' ){
-				&setWarn( "   Формирование pdf-файла запросом $ENV{HTTP_HOST}$req&proc=wkhtmltopdf" );#
-				system ( 'wkhtmltopdf '.$ENV{HTTP_HOST}.$req.' '.$ROOT_DIR.$request_uri[0].'/report.pdf'.' 2>'.$ROOT_DIR.$logDir.'/wkhtmltopdf.txt' );
-				#system ( 'wkhtmltopdf localhost'.$req.' '.$request_uri[0].'/report.pdf'.' 2>/_log/wkhtmltopdf.txt' );
-				$temp{'format'} = 'pdf';
+		elsif ( $temp{'format'} eq 'doc' ){
+			&setWarn( "   Формирование doc-файла" );#
+			rmtree $temp{'m8path'}.'/report' if -d $temp{'m8path'}.'/report'; 
+			dircopy $planDir.'/'.$temp{'avatar'}.'/template/report', $temp{'m8path'}.'/report';
+			-e $temp{'m8path'}.'/report/_rels/.rels' || copy( $planDir.'/'.$temp{'avatar'}.'/template/report/_rels/.rels', $temp{'m8path'}.'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
+			my $xmlFile = $ROOT_DIR.$temp{'m8path'}.'/temp.xml';
+			&setFile( $xmlFile, &getDoc( \%temp ) );
+			#$temp{'avatar'} = $temp{'tempAvatar'} if defined $temp{'tempAvatar'};
+			my $xslFile = $ROOT_DIR.$planDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
+			my $documentFile = $ROOT_DIR.$temp{'m8path'}.'/report/word/document.xml';
+			my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$ROOT_DIR.$logDir.'/xsltproc_doc.txt' );#
+			&setWarn( "   documntXML: $status" );#
+			unlink $temp{'m8path'}.'/report.docx' if -e $temp{'m8path'}.'/report.docx';
+			my $zip = Archive::Zip->new();
+			$zip->addTree( $temp{'m8path'}.'/report/' );
+			unless ( $zip->writeToFileNamed($temp{'m8path'}.'/report.docx') == AZ_OK ) {
+				die 'write error';
 			}
-			elsif ( $format eq 'doc' ){
-				&setWarn( "   Формирование doc-файла" );#
-				&initProc( \%temp, \%cookie );
-				$temp{'format'} = 'doc';
-				
-				rmtree $request_uri[0].'/report' if -d $request_uri[0].'/report'; 
-				dircopy $value.'/template/report', $request_uri[0].'/report';
-				-e $request_uri[0].'/report/_rels/.rels' || copy( $value.'/template/report/_rels/.rels', $request_uri[0].'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
-				my $xmlFile = $ROOT_DIR.$request_uri[0].'temp.xml';
-				&setFile( $xmlFile, &getDoc( \%temp ) );
-				$temp{'avatar'} = $temp{'tempAvatar'} if defined $temp{'tempAvatar'};
-				my $xslFile = $ROOT_DIR.$planDir.'/'.$temp{'avatar'}.'/'.$stylesheetDir.'/'.$temp{'avatar'}.'.xsl';
-				my $documentFile = $ROOT_DIR.$request_uri[0].'/report/word/document.xml';
-				my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$ROOT_DIR.$logDir.'/xsltproc_doc.txt' );#
-				&setWarn( "   documntXML: $status" );#
-				unlink $request_uri[0].'report.docx' if -e $request_uri[0].'report.docx';
-				my $zip = Archive::Zip->new();
-				$zip->addTree( $request_uri[0].'/report/' );
-				unless ( $zip->writeToFileNamed($request_uri[0].'report.docx') == AZ_OK ) {
-					die 'write error';
-				}
-				$format = 'docx';
-			}
-			if ($adminMode and 0){
-				&setWarn( '   редирект на '.$request_uri[0].'report.'.$format );
-				print $q->header(-location => '/'.$request_uri[0].'report.'.$format );
-			}
-			else {
-				&setWarn( '   редирект на '.$ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$auraDir.'/'.$request_uri[0].'report.'.$format );
-				print $q->header(-location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$auraDir.'/'.$request_uri[0].'report.'.$format );
-			}
+			$extensiton = 'docx';
+		}
+		if ($adminMode and 0){
+			&setWarn( '   редирект на '.$temp{'m8path'}.'/report.'.$extensiton );
+			print $q->header(-location => '/'.$temp{'m8path'}.'/report.'.$extensiton );
+		}
+		else {
+			&setWarn( '   редирект на '.$ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$auraDir.'/'.$temp{'avatar'}.'/'.$temp{'m8path'}.'/report.'.$extensiton );
+			print $q->header(-location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.'/'.$auraDir.'/'.$temp{'avatar'}.'/'.$temp{'m8path'}.'/report.'.$extensiton );
 		}
 	}
 	else{
-		&setWarn( " Обработка запроса $ENV{REQUEST_URI} для DOCUMENT_ROOT: >$ROOT_DIR< ", $log);#		
-		&initProc( \%temp, \%cookie );
+		&setWarn( "  Выдача текстовой информации" );
+		#&initProc( \%temp, \%cookie );
 		&washProc( \%temp, \%cookie ) if $temp{'REQUEST_METHOD'} eq 'POST' or $temp{'QUERY_STRING'};
-		$temp{'fact'} = $temp{'quest'} = $defaultFact if not defined $temp{'fact'};		
+		$temp{'fact'} = $temp{'quest'} = $defaultFact if not defined $temp{'fact'};	
+		$temp{'ctrl'} = $defaultAvatar if $temp{'mission'} eq $defaultAvatar;	
 		my @cookie;
 		for (keys %cookie){	
 			&setWarn( "   Добавление куки $_: $cookie{$_}");#		
 			push @cookie, $q->cookie( -name => $_, -expires => '+1y', -value => $cookie{$_} ) 
-		}	
-		if ( 1 and ( not $temp{'QUERY_STRING'} or ( not $temp{'record'} and not defined $temp{'message'} ) or defined $temp{'ajax'} or defined $temp{'wkhtmltopdf'} ) ){ 	#$temp{'QUERY_STRING'} $temp{'record'} or $temp{'QUERY_STRING'}=~/^n1464273764-4704-1/ $ENV{'HTTP_HOST'} eq 'localhost'$ENV{'REMOTE_ADDR'} eq "127.0.0.1" 
+		}
+	
+		if ( 0 and ( $temp{'mission'} eq $defaultAvatar and $temp{'user'} eq 'guest' ) ){
+			my $location = $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST};
+			if ( defined $temp{'message'} and $temp{'message'} eq 'OK' ){ $location .= &m8req( \%temp ).'/'}
+			else { $location .= '/'.$defaultAvatar.'/?error='.$temp{'message'} }
+			print $q->header( -location => $location, -cookie => [@cookie] )
+		
+		}
+		elsif ( ( $temp{'mission'} ne $defaultAvatar or $temp{'user'} eq 'guest' ) and ( not $temp{'QUERY_STRING'} or ( not $temp{'record'} and not defined $temp{'message'} ) or defined $temp{'ajax'} or defined $temp{'wkhtmltopdf'} ) ) { 	#$temp{'QUERY_STRING'} $temp{'record'} or $temp{'QUERY_STRING'}=~/^n1464273764-4704-1/ $ENV{'HTTP_HOST'} eq 'localhost'$ENV{'REMOTE_ADDR'} eq "127.0.0.1" 
 			&setWarn('   Вывод в web без редиректа '.$temp{'record'});		
-			my $doc = $JSON->encode(\%temp);
-			&setFile( $logDir.'/temp.json', $doc ) if $dbg;
-			$q->charset('utf-8');
+			my $doc;
+			
 			print $q->header( 
 				-type 			=> 'text/'.$temp{'format'}, 
-				-cookie 		=> [@cookie],
-				-expires		=> 'Sat, 26 Jul 1997 05:00:00 GMT',
+				-cookie 		=> [@cookie]
+				#-expires		=> 'Sat, 26 Jul 1997 05:00:00 GMT',
+				#-charset		=> 'utf-8',
 				# always modified
-				-Last_Modified	=> strftime('%a, %d %b %Y %H:%M:%S GMT', gmtime),
+				# -Last_Modified	=> strftime('%a, %d %b %Y %H:%M:%S GMT', gmtime),
 				# HTTP/1.0
-				-Pragma			=> 'no-cache',
-				-Note 			=> 'CACHING IS DISABLED IN SCRIPT REG.PL',
+				# -Pragma			=> 'no-cache',
+				# -Note 			=> 'CACHING IS DISABLED IN SCRIPT REG.PL',
 				# HTTP/1.1 + IE-specific (pre|post)-check
-				-Cache_Control => join(', ', qw(
-					private
-					no-cache
-					no-store
-					must-revalidate
-					max-age=0
-					pre-check=0
-					post-check=0
-				)),
+				#-Cache_Control => join(', ', qw(
+				#	private
+				#	no-cache
+				#	no-store
+				#	must-revalidate
+				#	max-age=0
+				#	pre-check=0
+				#	post-check=0
+				#)),
 			);
-			if ( $temp{'format'} ne 'json' ){
+			if ( $temp{'format'} eq 'json' ){
+				&setWarn ('    Вывод в json-варианте');
+				$doc = $JSON->encode(\%temp);
+				&setFile( $logDir.'/temp.json', $doc ) if $dbg;
+			}
+			else {
 				&setWarn ('    Вывод в xml-варианте');
 				$doc = &getDoc( \%temp );
 				if ( $temp{'format'} eq 'html' ){
-					&setWarn("     Вывод temp-а под аватаром: $temp{'tempAvatar'}");
-					$temp{'avatar'} = $temp{'tempAvatar'} if defined $temp{'tempAvatar'};
-					my $xslFile = $planDir.'/'.$temp{'avatar'}.'/'.$stylesheetDir.'/'.$temp{'avatar'}.'.xsl';
+					&setWarn("     Вывод temp-а под аватаром: $temp{'ctrl'}");
+					#$temp{'avatar'} = $temp{'ctrl'} if defined $temp{'ctrl'};
+					my $xslFile = $planDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
 					if ( 1 or defined $universe{'serverTranslate'} ){
 						&setWarn('      Преобразование на сервере');
 						if (0){
@@ -311,9 +311,10 @@ else{
 		}
 		else {
 			&setWarn( '   Вывод в web c редиректом' );
-			copy( $log, $log.'.txt' ) or die "Copy failed: $!" if $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
+			#copy( $log, $log.'.txt' ) or die "Copy failed: $!" if $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
+
 			my $location = $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST};
-			if ( defined $temp{'message'} and $temp{'message'} ne 'OK' ){ $location .= '/'.$auraDir.'/'.$temp{'ctrl'}.'/m8/?error='.$temp{'message'} }
+			if ( defined $temp{'message'} and $temp{'message'} ne 'OK' ){ $location .= '/'.$auraDir.'/'.$temp{'ctrl'}.'/?error='.$temp{'message'} }
 			else { $location .= &m8req( \%temp ).'/' }
 			print $q->header( -location => $location, -cookie => [@cookie] )# -status => '201 Created' #куки нужны исключительно для случая указания автора		
 		}
@@ -343,22 +344,20 @@ sub initProc{
 	foreach my $itm ( split '; ', $$temp{'HTTP_COOKIE'} ){
 		&setWarn('		iP  Прием куки '.$itm);
 		my ( $name, $value ) = split( '=', $itm );
-		if ( $name eq 'user'){
+		if ( $name eq 'user' ){
 			$$temp{'tempkey'} = $value;
-			if ( -e $sessionDir.'/'.$value.'/value.txt' ){ $$temp{'user'} = &getFile( $sessionDir.'/'.$value.'/value.txt' ) }
-			else { $$cookie{'user'} = $defaultAuthor }
+			if ( $value eq 'guest' ){ $$temp{'user'} = 'guest' }
+			else { $$temp{'user'} = &getFile( $sessionDir.'/'.$value.'/value.txt' ) if -e $sessionDir.'/'.$value.'/value.txt' }
 		}
-		elsif ( $name eq 'avatar' ){ 
-			if ( -d $value ){ $$temp{$name} = $value }
-			else { $$cookie{'avatar'} = &startProc }
+		elsif ( $name eq 'avatar' or $name eq 'debug' ){ 
+			$$temp{$name} = $value if $value
 		}
-		elsif ( $name eq 'debug' ){ $$temp{$name} = $value }
 	}
 	if ( $$temp{'user'} ){ $$temp{'author'} = $$temp{'user'} }
-	else { $$temp{'author'} = $$temp{'user'} = $defaultAuthor }
+	else { $$cookie{'user'} = $$temp{'author'} = $$temp{'user'} = $defaultAuthor }
 	if ( $$temp{'avatar'} ){ $$temp{'ctrl'} = $$temp{'avatar'} }
 	else { $$cookie{'avatar'} = $$temp{'ctrl'} = $$temp{'avatar'} = &startProc }
-	$$temp{'format'} = 'html';
+	$$temp{'mission'} = $$temp{'format'} = 'html';
 	$$temp{'ajax'} = $$temp{'HTTP_X_REQUESTED_WITH'} if $$temp{'HTTP_X_REQUESTED_WITH'}; 
 	$$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/ or $temp{'HTTP_USER_AGENT'}=~m!Qt/4.6.1!;
 	my @request_uri = split /\?/, $$temp{'REQUEST_URI'};
@@ -367,34 +366,29 @@ sub initProc{
 	-d $request_uri[0] || return;
 	
 	&setWarn( "		iP В пожелании $$temp{'REQUEST_URI'} директория $request_uri[0] действительна. Идет детектирование автора/аватара/квеста" );# стирка 	
-	$$temp{'path'} = '/'.$request_uri[0];
+	#$$temp{'path'} = '/'.$request_uri[0];
 	my @path = split '/', $request_uri[0];
-	if ( @path == 1 and $path[0] ne 'm8' ){ 
-		&setWarn( "		iP  Найден запрос системной операции" );#
-		$$temp{'quest'} = &utfText($path[1]);
-		if ( $$temp{'QUERY_STRING'} =~/^avatar=$/ ){
-			&setWarn( "		iP   Смена аватара текущего аватара" );
-			if ( -e $planDir.'/'.$$temp{'quest'}.'/'.$stylesheetDir.'/'.$$temp{'quest'}.'.xsl' and -e $planDir.'/'.$$temp{'quest'}.'/'.$stylesheetDir.'/title.txt' ){ $$cookie{'group'} = $$temp{'ctrl'} =  $$temp{'avatar'} = $$temp{'quest'} }
-			else {
-				&setWarn( "		iP    Обнуление текущего аватара " );
-				&startProc;
-				$$cookie{'group'} = ''; #$$temp{'avatar'} = 			
-			}
-		}
-		elsif ( -e $planDir.'/'.$$temp{'quest'}.'/'.$stylesheetDir.'/'.$$temp{'quest'}.'.xsl' ){ $$temp{'ctrl'} = $$temp{'tempAvatar'} = $$temp{'quest'} }
-		else {$$temp{'ctrl'} =  $$temp{'tempAvatar'} = $canonicalHomeAvatar }
+	if ( $path[0] ne 'm8' ){
+		&setWarn( "		iP  Обнаружен регистр миссии $path[0]" );
+		$$temp{'mission'} = $$temp{'format'} = shift @path;
+		if ( $$temp{'format'} eq $auraDir or $$temp{'format'} eq $defaultAvatar ){ 	$$temp{'format'} = 'html'	}
+		#elsif ( $$temp{'mission'} eq '_doc' ){ 	$$temp{'format'} = 'docx'
+		else {									$$temp{'format'} =~s/^_//	}
 	}
-	else{
-		&setWarn( "		iP  Не системный запрос" );#
+	if ( @path ){
 		if ( $path[0] ne 'm8' ){
-			$$temp{'format'} = shift @path;
-			$$temp{'format'} = 'html' if $$temp{'format'} eq $auraDir;
-			$$temp{'ctrl'} = $$temp{'tempAvatar'} = shift @path if $path[0] ne 'm8'; 
+			$$temp{'ctrl'} = shift @path;
 		}
-		$$temp{'fact'} = $$temp{'quest'} = &utfText($path[2]) if $path[2];
+	}		
+	elsif ( $$temp{'mission'} eq $defaultAvatar and $$temp{'user'} eq $defaultAuthor ) {	$$temp{'ctrl'} = $defaultAvatar } #Это указание не дает выйти на текущие контроллеры при переходе на страницу авторизации }
+	if ( @path ){
+		$$temp{'m8path'} = join '/', @path;
+		$$temp{'fact'} = $$temp{'quest'} = $path[2] if $path[2];#&utfText($path[2]) 
 		$$temp{'author'} = $path[3] if $path[3];	
-		$$temp{'quest'} = $path[4] if $path[4]
+		$$temp{'quest'} = $path[4] if $path[4]		
 	}
+	
+
 	#$$transaction{'REQUEST_METHOD'} eq 'POST' || $$transaction{'QUERY_STRING'} || return;
 	#&setWarn( "		wP Имеется запрос. Идет обработка" );# стирка	
 }
@@ -423,12 +417,24 @@ sub washProc{
 	else {
 		&setWarn( "		wP  Имеется строка запроса $$temp{'QUERY_STRING'}. Идет идет ее парсинг" );# 
 		my %param;
+		$$temp{'QUERY_STRING'} =~ s/%0D//eg; #Оставляем LA(ака 0A или \n), но убираем CR(0D). Без этой обработки на выходе получаем двойной возврат каретки помимо перевода строки если данные идут из textarea
+		$$temp{'QUERY_STRING'} = &utfText($$temp{'QUERY_STRING'});
+		$$temp{'QUERY_STRING'} = Encode::decode_utf8($$temp{'QUERY_STRING'});
 		for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
 			&setWarn( "		wP   Анализ пары $pair" );	
 			my ($name, $value) = split( /=/, $pair );
 			next if $name eq 'user';
-			$param{$name} = &utfText($value);
+			$param{$name} = $value; #&utfText($value);
 			if ( $name eq 'logout' ){ delete $$temp{'user'} }
+			elsif ( $name eq 'debug' ){ 
+				&setWarn( "		wP    Переключение режима отладки" );	
+				$$temp{'message'} = 'OK';
+				if ( $$temp{'debug'} ){ $$cookie{'debug'} = '' }
+				else { $$temp{'debug'} = $$cookie{'debug'} = time }
+				#$$temp{$name} = time if $value 
+				#if ($value) { $temp{'message'} = 'OK' }
+				#else { $temp{'message'} = 'debug mod enabled' }
+			}
 			elsif ( $name =~/^\w[\d_\-]*$/ ){
 				&setWarn( "		wP     Детектирован элемент создания номера" );
 				$$temp{'record'} = $$temp{'record'} + 1;
@@ -448,9 +454,10 @@ sub washProc{
 				for my $pass ( grep { defined $param{$_} } ( 'password', 'new_password', 'new_password2' ) ){ $pass{$pass} = $param{$pass} 	}
 				$$temp{'message'} = &parseNew ( $temp, \%pass );
 				return if $$temp{'message'};
-				$$temp{'fact'} = $$temp{'quest'} = $defaultFact;
+				
 				if ( defined $$temp{'new_author'} ){
 					&setWarn('		wP    фиксация создания автора '); 
+					$$temp{'fact'} = $$temp{'quest'} = $defaultFact;
 					$$temp{'user'} = $pass{'new_password'};
 					$$temp{'author'} = $$temp{'user'} = $$temp{'new_author'};
 					my @value = ( 'd', @mainTriple, $$temp{'user'}, $$temp{'quest'}, 1 );
@@ -460,7 +467,8 @@ sub washProc{
 					&rinseProc ( 'd', $data)
 				}
 				else { 
-					$$temp{'user'} = $$temp{'author'} = $$temp{'login'} 
+					$$temp{'user'} = $$temp{'login'}; #$$temp{'author'} = 
+					$$temp{'author'} = $$temp{'user'} if not $$temp{'m8path'}
 				
 				}
 				my $tempName = 'u';
@@ -550,15 +558,6 @@ sub washProc{
 				&setWarn('		wP  парсинг пары >'.$pair.'<');
 				my ($name, $value) = split(/=/, $pair);
 				next if $name eq 'user' or defined $$temp{$name};
-				#$value =~ s/%([a-fA-F0-9]{2})/pack("C", hex($1))/eg;
-				my $n = "\n";
-				$value =~ s/%0D%0A/$n/eg; #без этой обработки на выходе получаем двойной возврат каретки помимо перевода строки если данные идут из textarea
-				#$value =~ s/\s+\z//;
-				$value = &utfText($value);
-				$value = Encode::decode_utf8($value);# 
-				
-				
-				
 				if ( not $value and $value ne '0' ){ 
 					&setWarn('		wP     присвоение пустого значения');
 					$value = 'r' 
@@ -705,7 +704,7 @@ sub rinseProc {
 sub rinseProc2 {
 	my ( $author, %type )=@_;
 	&setWarn("		rP2 @_"  );
-	-d $author || return;
+	#-d $author || return;
 	my %xsl_stylesheet;
 	$xsl_stylesheet{'xsl:stylesheet'}{'version'} = '1.0';
 	$xsl_stylesheet{'xsl:stylesheet'}{'xmlns:xsl'} = 'http://www.w3.org/1999/XSL/Transform';
@@ -930,8 +929,8 @@ sub dryProc2 {
 			for ( 'add', 'n_delR', 'n_delN' ){ $stat{$authorName}{$_} = 0 }
 		}
 		for my $tsvName ( &getDir( $tsvPath, 1 ) ){
-			print REINDEX "   Исследование aвтора $tsvName \n";
-			warn '		tsv  '.$tsvName;
+			print REINDEX "   Исследование tsv-шки $tsvName \n";
+			warn '	tsv  '.$tsvName;
 			$all++;
 			my @div = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$tsvName.'/value.tsv' );
 			&rinseProc( $tsvName, @div );
@@ -970,16 +969,9 @@ sub dryProc2 {
 			}
 			}
 		}
-	#}
 		$time2 = time;
-	#	my $real2 = 1;
-	#if(1){
-	#for my $authorName ( grep { -d $planDir.'/'.$_.'/tsv' } &getDir( $planDir, 1 ) ){ 
-	#	warn '		author2  '.$authorName;
-	#	print REINDEX "author2	$authorName \n";
-	#	my $tsvPath = $planDir.'/'.$authorName.'/tsv';
 		for my $tsvName ( &getDir( $tsvPath, 1 ) ){ 
-			warn '		tsv2  '.$tsvName;
+			warn '	tsv2  '.$tsvName;
 			print REINDEX "tsv2	$tsvName \n";
 			if ( $tsvName=~/^i/ ){
 				if ( not -e &m8path( $tsvName, 'index' ) and $tsvName ne 'i' ){
@@ -989,6 +981,7 @@ sub dryProc2 {
 				}
 			}
 			elsif ( $tsvName=~/^d/ ){
+				print REINDEX "    Исследование трипла $tsvName \n";			
 				my @val = map{ Encode::decode_utf8($_) } &getTriple( $authorName, $tsvName );
 				my $parent = $val[1];
 				$val[4] = $authorName;
@@ -998,8 +991,10 @@ sub dryProc2 {
 						next if $val[1] eq $val[5];
 						$parent = $val[5];
 					}
-					my %index = &getJSON( &m8dir( $parent ), 'index' );
-					next if defined $index{'subject'};
+					my %indexParent = &getJSON( &m8dir( $parent ), 'index' );
+					#next if defined $indexParent{'subject'};
+					my %indexQuest = &getJSON( &m8dir( $questName ), 'index' );
+					next if defined $indexParent{'subject'} and defined $indexQuest{'subject'};
 					my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$val[5].'/time.txt' );
 					if ( $val[3] =~/^i\d+$/ ){
 						my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$val[3].'/value.tsv' );
@@ -1139,7 +1134,7 @@ sub getID {
 sub setFile {
 	my ( $file, $text, $add )=@_;
 	#&setWarn( "						sF @_" );
-	chomp $text;
+	
 	#warn $file.': '.$text;
 	my @path = split '/', $file;
 	my $fileName = pop @path;
@@ -1148,16 +1143,20 @@ sub setFile {
 	my $mode = '>';#>:encoding(UTF-8)
 	$mode = '>'.$mode if $add;
 	open (FILE, $mode, $dir.'/'.$fileName)|| die "Error opening file $dir/$fileName: $!\n";
-		print FILE $text if $text ne ''; #на входе может быть '0' поэтому не просто "if $text"
-		print FILE "\n" if $add;
-	close (FILE);
-	if ( $dbg and $file=~/.xml$/ or 1 ){
-		-d $trashPath || make_path( $trashPath, { chmod => $chmod } );
-		my $file = $trashPath.'/'.$path[$#path].'_'.$fileName;
-		open (FILE, $mode, $file )|| die "Error opening file $file: $!\n";#$path[2].'-'.
-			print FILE $text if $text;
+		if ($text){
+			chomp $text;
+			print FILE $text; #на входе может быть '0' поэтому не просто "if $text"
 			print FILE "\n" if $add;
-		close (FILE);
+		}
+	close (FILE);
+	if ( $dbg and $file=~/.xml$/ ){
+		-d $trashPath || make_path( $trashPath, { chmod => $chmod } );
+		#my $file = $trashPath.'/'.$path[$#path].'_'.$fileName;
+		copy $dir.'/'.$fileName, $trashPath.'/'.$path[$#path].'_'.$fileName;
+		#open (FILE, $mode, $file )|| die "Error opening file $file: $!\n";#$path[2].'-'.
+		#	print FILE $text if $text;
+		#	print FILE "\n" if $add;
+		#close (FILE);
 	}
 	return $text; #обязательно нужно что-то возвращать, т.к. иногда функция вызывается в контексте and
 }
@@ -1225,7 +1224,7 @@ sub setWarn {
 	my $time = time;
 	#$text = Encode::decode_utf8($text);
 	open( FILE, ">>", $log ) || die "Ошибка при открытии файла $log: $!\n"; #:utf8 без :utf8 выдает ошибку "wide character..."
-		$text = Encode::decode_utf8($c[2].' '.$text);
+		#$text = Encode::decode_utf8($c[2].' '.$text);
 		print FILE $text, "\n";#  $c[3], ' ' - секунда
 	close (FILE);
 }

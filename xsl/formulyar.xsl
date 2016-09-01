@@ -8,14 +8,14 @@
 
 	-->
 	<xsl:template name="Head2">
-		<script src="/formulyar/js/jquery.min-1.9.0.js"/>
+		<script src="/p/formulyar/js/jquery.min-1.9.0.js"/>
 		<script>var source = "";</script>
 		<!-- по какой-то причине, если не втавить этот тэг, то предыдущий открывающий тег скрипта не закроется //
 		<script src="/system/a/js/xalio.js"/>-->
 		<script>var source2 = "";</script>
 	</xsl:template>
 	<xsl:template name="TitleAndMisk">
-		<title>Админка</title>
+		<title><xsl:value-of select="$start/@avatar"/>: Админка</title>
 	</xsl:template>
 	<!--	
 
