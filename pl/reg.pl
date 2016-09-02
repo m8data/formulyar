@@ -49,7 +49,6 @@ my %setting = (
 );
 my $passwordFile = 'password.txt';
 my $sessionFile = 'session.json';
-my $userConfigDir = 'user';
 my $stylesheetDir = 'xsl';
 my $defaultAvatar = 'formulyar';
 my $defaultAuthor = 'guest';
@@ -67,18 +66,19 @@ my @superrole = ( 'triple', 'role', 'role', 'role', 'author', 'quest', 'subject'
 my @superfile = ( undef, 'port', 'dock', 'terminal' ); 
 my $type = 'xml';
 
-my $logDir = '../log';
+my $logPath = '../log';
 my $authorPath = 'm8/author';
 my $configDir = 'config';
-my $sessionDir = $configDir.'/temp_name';
+my $configPath = '../'.$configDir;
+my $sessionPath = $configPath.'/temp_name';
 #my $defaultNumberPath = 'guest/tsv/d/n';
 my $tempfsFolder = '/mnt/tmpfs/';
 
-my $errorLog = $logDir.'/error_log.txt';
-my $logName = 'data_log.txt';
-my $log = $logDir.'/'.$logName;
-my $log1 = $logDir.'/control_log.txt';
-my $guest_log = $logDir.'/guest_log.txt';
+my $errorLog = $logPath.'/error_log.txt';
+my $logFile = 'data_log.txt';
+my $log = $logPath.'/'.$logFile;
+my $log1 = $logPath.'/control_log.txt';
+my $guest_log = $logPath.'/guest_log.txt';
 
 my $rootFolder = '/var/www/';
 my $rootDir = 'public_html';
@@ -87,8 +87,8 @@ my $auraDir = 'a';
 my $planDir = 'p';
 my $indexDir = 'm8';
 
-my $trashPath = $logDir.'/trash';
-my $universePath = $configDir.'/universe';
+my $trashPath = $logPath.'/trash';
+my $universePath = $configPath.'/universe';
 
 my $ROOT_DIR;
 	
@@ -110,9 +110,9 @@ if ( $ARGV[0] ){
 	$chmod = &getSetting('chMod');
 	&setWarn (' Ответ на запрос с локалхоста', $log1);
 	
-	-d $logDir || make_path( $logDir, { chmod => $chmod } );
+	-d $logPath || make_path( $logPath, { chmod => $chmod } );
 	
-	#for my $key ( grep { not -e $configDir.'/'.$_.'.txt' } keys %setting ){ &setFile( $configDir.'/'.$key.'.txt', $setting{$key} )	}
+	#for my $key ( grep { not -e $configPath.'/'.$_.'.txt' } keys %setting ){ &setFile( $configPath.'/'.$key.'.txt', $setting{$key} )	}
 	#if (not -d $planDir.'/guest/tsv'){
 	#	warn '		Make defaultTriple  ';
 	-e $planDir.'/guest/tsv/d/n/time.txt' || &setFile( $planDir.'/guest/tsv/d/n/time.txt', '1.1' );
@@ -164,10 +164,10 @@ else{
 		close (FILE);
 	}
 	copy( $log, $log.'.txt' ) or die "Copy failed: $!" if -e $log and $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
-	copy( $logDir.'/env.json', $logDir.'/env.json.json' ) or die "Copy failed: $!" if -e $logDir.'/env.json' and $dbg; #копировать лог не ниже, т.е. не после возможного
+	copy( $logPath.'/env.json', $logPath.'/env.json.json' ) or die "Copy failed: $!" if -e $logPath.'/env.json' and $dbg; #копировать лог не ниже, т.е. не после возможного
 	&setWarn( " Обработка запроса $ENV{REQUEST_URI}", $log);#
 	#&setWarn( "  Работа в режиме отл." ) if $dbg;#	
-	&setFile( $logDir.'/env.json', $JSON->encode(\%ENV) ) if $dbg;
+	&setFile( $logPath.'/env.json', $JSON->encode(\%ENV) ) if $dbg;
 	my $q = CGI->new();
 	$q->charset('utf-8');
 	my %cookie;
@@ -179,7 +179,7 @@ else{
 			&setWarn( "   Формирование pdf-файла запросом $ENV{HTTP_HOST}/$auraDir/$temp{'avatar'}/$temp{'m8path'}" );#
 			my $req = $ENV{HTTP_HOST}.'/'.$auraDir.'/'.$temp{'avatar'}.'/'.$temp{'m8path'};
 			$req .= '/?'.$temp{'QUERY_STRING'};
-			system ( 'wkhtmltopdf '.$req.' '.$ROOT_DIR.$temp{'m8path'}.'/report.pdf'.' 2>'.$ROOT_DIR.$logDir.'/wkhtmltopdf.txt' );
+			system ( 'wkhtmltopdf '.$req.' '.$ROOT_DIR.$temp{'m8path'}.'/report.pdf'.' 2>'.$ROOT_DIR.$logPath.'/wkhtmltopdf.txt' );
 			#system ( 'wkhtmltopdf localhost'.$req.' '.$request_uri[0].'/report.pdf'.' 2>/_log/wkhtmltopdf.txt' );
 			#$extensiton = 'pdf';
 		}
@@ -193,7 +193,7 @@ else{
 			#$temp{'avatar'} = $temp{'tempAvatar'} if defined $temp{'tempAvatar'};
 			my $xslFile = $ROOT_DIR.$planDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
 			my $documentFile = $ROOT_DIR.$temp{'m8path'}.'/report/word/document.xml';
-			my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$ROOT_DIR.$logDir.'/xsltproc_doc.txt' );#
+			my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$ROOT_DIR.$logPath.'/xsltproc_doc.txt' );#
 			&setWarn( "   documntXML: $status" );#
 			unlink $temp{'m8path'}.'/report.docx' if -e $temp{'m8path'}.'/report.docx';
 			my $zip = Archive::Zip->new();
@@ -259,7 +259,7 @@ else{
 			if ( $temp{'format'} eq 'json' ){
 				&setWarn ('    Вывод в json-варианте');
 				$doc = $JSON->encode(\%temp);
-				&setFile( $logDir.'/temp.json', $doc ) if $dbg;
+				&setFile( $logPath.'/temp.json', $doc ) if $dbg;
 			}
 			else {
 				&setWarn ('    Вывод в xml-варианте');
@@ -278,9 +278,9 @@ else{
 						}
 						else {				
 							$temp{'time'} =~/(\d\d)$/;
-							my $trashTempFile = $logDir.'/trash/'.$1.'.xml';
+							my $trashTempFile = $logPath.'/trash/'.$1.'.xml';
 							&setFile( $trashTempFile, $doc );
-							$doc = system ( 'xsltproc '.$ROOT_DIR.$xslFile.' '.$ROOT_DIR.$trashTempFile.' 2>'.$ROOT_DIR.$logDir.'/out.txt' );#
+							$doc = system ( 'xsltproc '.$ROOT_DIR.$xslFile.' '.$ROOT_DIR.$trashTempFile.' 2>'.$ROOT_DIR.$logPath.'/out.txt' );#
 							$doc =~s/(\d*)$//;
 							print $1 if $dbg and $1
 						}
@@ -327,7 +327,7 @@ sub initProc{
 		if ( $name eq 'user' ){
 			$$temp{'tempkey'} = $value;
 			if ( $value eq 'guest' ){ $$temp{'user'} = 'guest' }
-			else { $$temp{'user'} = &getFile( $sessionDir.'/'.$value.'/value.txt' ) if -e $sessionDir.'/'.$value.'/value.txt' }
+			else { $$temp{'user'} = &getFile( $sessionPath.'/'.$value.'/value.txt' ) if -e $sessionPath.'/'.$value.'/value.txt' }
 		}
 		elsif ( $name eq 'avatar' or $name eq 'debug' ){ 
 			$$temp{$name} = $value if $value
@@ -458,7 +458,7 @@ sub washProc{
 				my %tempkey = &getHash( $sessionListFile );
 				$tempkey{$tempName} = $$temp{'time'};
 				&setFile( $sessionListFile, $JSON->encode(\%tempkey) );
-				&setFile( $sessionDir.'/'.$tempName.'/value.txt', $$temp{'user'} );
+				&setFile( $sessionPath.'/'.$tempName.'/value.txt', $$temp{'user'} );
 				$$cookie{'user'} = $tempName;
 			}
 			else { 
@@ -471,7 +471,7 @@ sub washProc{
 					if ( keys %tempkey ){ &setFile( $sessionListFile, $JSON->encode(\%tempkey) ) }
 					else { unlink $sessionListFile } 
 				}
-				rmtree $sessionDir.'/'.$$temp{'tempkey'} if -d $sessionDir.'/'.$$temp{'tempkey'};
+				rmtree $sessionPath.'/'.$$temp{'tempkey'} if -d $sessionPath.'/'.$$temp{'tempkey'};
 				$$cookie{'user'} = $defaultAuthor 
 			}
 			$$temp{'message'} = 'OK';
@@ -525,7 +525,7 @@ sub washProc{
 				}			
 				elsif (-e $universePath.'.json') {
 					unlink $universePath.'.json';
-					&getDir ($configDir) || rmdir $configDir
+					&getDir ($configPath) || rmdir $configPath
 				}
 			}
 			for (keys %universe){ $$temp{$_} = 1 }
@@ -658,7 +658,7 @@ sub washProc{
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает повтор установления значения';
 		}
 	}
-	return if 1 or -e $configDir.'/control' or not grep { $$temp{'number'}[$_] eq 'OK' } @{$$temp{'number'}};
+	return if 1 or -e $configPath.'/control' or not grep { $$temp{'number'}[$_] eq 'OK' } @{$$temp{'number'}};
 	
 	&setWarn('   Обнаружены физические записи. Запуск процесса сушки');
 	eval{ system( 'perl.exe M:\system\reg.pl dry >/dev/null 2>M:\_log\error_dry.txt' ); }	
@@ -847,9 +847,9 @@ sub dryProc2 {
 	my %stat;
 	$dbg = 0;
 	
-	rmtree $logDir if -d $logDir;
-	make_path( $logDir, { chmod => $chmod } );
-	open (REINDEX, '>'.$logDir.'/reindex.txt')|| die "Ошибка при открытии файла reindex.txt: $!\n";
+	rmtree $logPath if -d $logPath;
+	make_path( $logPath, { chmod => $chmod } );
+	open (REINDEX, '>'.$logPath.'/reindex.txt')|| die "Ошибка при открытии файла reindex.txt: $!\n";
 	warn '		DRY BEGIN ';
 	my $guestDays = &getSetting('guestDays');
 	my $userDays = &getSetting('userDays');
@@ -876,21 +876,21 @@ sub dryProc2 {
 	my $cookie = 0;
 	my $DL_cookie = 0;
 
-	for my $sessionName ( &getDir( $sessionDir, 1 ) ){ 
+	for my $sessionName ( &getDir( $sessionPath, 1 ) ){ 
 		print REINDEX "sessionName	$sessionName \n";
 		warn '		sessionName  '.$sessionName;
 		$cookie++;
-		my $cAuthor = &getFile( $sessionDir.'/'.$sessionName.'/value.txt' );
+		my $cAuthor = &getFile( $sessionPath.'/'.$sessionName.'/value.txt' );
 		my $tempKeysFile = $userDir.'/'.$cAuthor.'/'.$sessionFile;
 		if ( -e $tempKeysFile ){
 			my %tempkey = &getHash( $tempKeysFile );
 			if ( not defined $tempkey{$sessionName} or $tempkey{$sessionName} < $userTime ){
-				rmtree $sessionDir.'/'.$sessionName;
+				rmtree $sessionPath.'/'.$sessionName;
 				$DL_cookie++
 			}
 		}
 		else {
-			rmtree $sessionDir.'/'.$sessionName;
+			rmtree $sessionPath.'/'.$sessionName;
 			$DL_cookie++
 		}		
 	}
@@ -1039,7 +1039,7 @@ sub startProc {
 		$avatar{'unit'}[$count]{'title'} = Encode::decode_utf8( &getFile( $planDir.'/'.$avatarName.'/'.$stylesheetDir.'/title.txt' ) );
 		$count++
 	}
-	&setXML ( '.', 'avatar', \%avatar );
+	&setXML ( 'm8', 'avatar', \%avatar );
 	return $avatar{'unit'}[0]{'id'} if $count == 1;
 }
 
@@ -1192,7 +1192,7 @@ sub setName {
 sub setWarn {
 	$dbg || return;
 	my ( $text, $logFile )=@_;
-	-d $logDir || mkdir $logDir;
+	-d $logPath || mkdir $logPath;
 	my @c = caller;
 	if ($logFile){
 		$log = $logFile;  #что бы записи отладки для контроля и другого шли в разные логи
@@ -1257,8 +1257,8 @@ sub getJSON {
 sub getSetting {
 	my ( $key ) = @_;
 	&setWarn("						getSetting  @_" );	
-	if ( -e $configDir.'/'.$key.'.txt' ){ $setting{$key} = &getFile( $configDir.'/'.$key.'.txt' ) }
-	else { &setFile( $configDir.'/'.$key.'.txt', $setting{$key} ) }
+	if ( -e $configPath.'/'.$key.'.txt' ){ $setting{$key} = &getFile( $configPath.'/'.$key.'.txt' ) }
+	else { &setFile( $configPath.'/'.$key.'.txt', $setting{$key} ) }
 	return $setting{$key}
 }
 
@@ -1292,7 +1292,7 @@ sub getDoc {
 	}
 	my $pp = XML::LibXML::PrettyPrint->new();
 	$pp->pretty_print($rootElement);
-	my $tempFile = $logDir.'/temp.xml';
+	my $tempFile = $logPath.'/temp.xml';
 	copy( $tempFile, $tempFile.'.xml' ) if -e $tempFile and $adminMode;
 	&setFile( $tempFile, $doc );
 	return $doc

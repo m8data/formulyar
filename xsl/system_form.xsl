@@ -658,7 +658,7 @@
 					<xsl:text> | </xsl:text>-->
 				<xsl:choose>
 					<xsl:when test="$ctrl = 'formulyar' ">
-						<xsl:for-each select="document( concat( $start/@DOCUMENT_ROOT, '/avatar.xml' ) )/*/*">
+						<xsl:for-each select="document( concat( $start/@DOCUMENT_ROOT, '/m8/avatar.xml' ) )/*/*">
 							<a href="/a/{@id}/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:gray">
 								<xsl:value-of select="@id"/>
 							</a>
