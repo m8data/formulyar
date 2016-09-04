@@ -345,8 +345,8 @@
 			</xsl:choose>
 		</div>
 		<xsl:message> 
-								@@@@@ - Зона генерации нового (END) - @@@@@
-				</xsl:message>
+			@@@@@ - Зона генерации нового (END) - @@@@@
+		</xsl:message>
 	</xsl:template>
 	<!--
 
@@ -388,6 +388,10 @@
 												<a href="/a/{$ctrl}/m8/{substring($pName,1,1)}/{$pName}">
 													<span style="font-size: .8em; color: black">
 														<xsl:choose>
+															<xsl:when test="$pName = 'i' ">имя</xsl:when>
+															<xsl:when test="$pName = 'n' ">файл</xsl:when>
+															<xsl:when test="$pName = 'd' ">описание</xsl:when>
+															<xsl:when test="$pName = 'r' ">перемещение</xsl:when>
 															<xsl:when test="$pName=$fact">по умолчанию</xsl:when>
 															<xsl:otherwise>
 																<xsl:apply-templates select="." mode="simpleName"/>

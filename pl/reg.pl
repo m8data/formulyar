@@ -45,7 +45,8 @@ my %setting = (
 	'userDays'		=> 60,
 	'userPassword'	=> 'example',
 	'forceDbg'		=> 0,
-	'chMod'			=> '0777'
+	'chMod'			=> '0777',
+	'avatar'		=> undef
 );
 my $passwordFile = 'password.txt';
 my $sessionFile = 'session.json';
@@ -111,13 +112,11 @@ if ( $ARGV[0] ){
 	&setWarn (' Ответ на запрос с локалхоста', $log1);
 	
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
+	-d $planDir.'/'.$defaultAuthor || make_path( $planDir.'/'.$defaultAuthor, { chmod => $chmod } );
 	
 	#for my $key ( grep { not -e $configPath.'/'.$_.'.txt' } keys %setting ){ &setFile( $configPath.'/'.$key.'.txt', $setting{$key} )	}
 	#if (not -d $planDir.'/guest/tsv'){
 	#	warn '		Make defaultTriple  ';
-	-e $planDir.'/guest/tsv/d/n/time.txt' || &setFile( $planDir.'/guest/tsv/d/n/time.txt', '1.1' );
-	-e $planDir.'/guest/tsv/d/value.tsv' || &setFile( $planDir.'/guest/tsv/d/value.tsv', ( join "\t", @mainTriple ) );
-	-e $planDir.'/guest/tsv/i/value.tsv' || &setFile( $planDir.'/guest/tsv/i/value.tsv' );
 	#}
 	#-d $defaultNumberPath || make_path( $defaultNumberPath, { chmod => $chmod } );
 	if ( not -d 'm8' ){
@@ -132,7 +131,7 @@ if ( $ARGV[0] ){
 			make_path( $ROOT_DIR.'m8', { chmod => $chmod } )
 		}
 	}
-	&startProc;
+	&getAvatar;
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
 	-d $auraDir.'/m8' || symlink( $disk.$ROOT_DIR.'m8' => $disk.$ROOT_DIR.$auraDir.'/m8' );
 	my @ava = &getDir( $planDir, 1 );
@@ -140,7 +139,7 @@ if ( $ARGV[0] ){
 		-d $auraDir.'/'.$ava || make_path( $auraDir.'/'.$ava, { chmod => $chmod } );
 		-d $auraDir.'/'.$ava.'/m8' || symlink( $disk.$ROOT_DIR.'m8' => $disk.$ROOT_DIR.$auraDir.'/'.$ava.'/m8' );
 		-e $userDir.'/'.$ava.'/'.$passwordFile || &setFile( $userDir.'/'.$ava.'/'.$passwordFile );
-	}	
+	}
 	for my $format ( keys %formatDir ){
 		-d $format || symlink( $disk.$ROOT_DIR.$auraDir => $disk.$ROOT_DIR.$format );
 	}
@@ -336,7 +335,7 @@ sub initProc{
 	if ( $$temp{'user'} ){ $$temp{'author'} = $$temp{'user'} }
 	else { $$cookie{'user'} = $$temp{'author'} = $$temp{'user'} = $defaultAuthor }
 	if ( $$temp{'avatar'} ){ $$temp{'ctrl'} = $$temp{'avatar'} }
-	else { $$cookie{'avatar'} = $$temp{'ctrl'} = $$temp{'avatar'} = &startProc }
+	else { $$cookie{'avatar'} = $$temp{'ctrl'} = $$temp{'avatar'} = &getSetting('avatar') || &getAvatar || $defaultAvatar }
 	$$temp{'mission'} = $$temp{'format'} = 'html';
 	$$temp{'ajax'} = $$temp{'HTTP_X_REQUESTED_WITH'} if $$temp{'HTTP_X_REQUESTED_WITH'}; 
 	$$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/ or $temp{'HTTP_USER_AGENT'}=~m!Qt/4.6.1!;
@@ -505,7 +504,7 @@ sub washProc{
 				}
 			}
 			elsif ( $$temp{'control'} eq 'start'){
-				&startProc;
+				&getAvatar;
 			}
 			else {
 				&setWarn ('		wP    Работа с глобальными параметрами');
@@ -896,11 +895,15 @@ sub dryProc2 {
 	}
 	my $time1 = time;
 	my $time2;		
-	for my $authorName ( grep { -d $planDir.'/'.$_.'/tsv' } &getDir( $planDir, 1 ) ){ 
+	for my $authorName ( &getDir( $planDir, 1 ) ){ 
 		print REINDEX "authorName	$authorName \n";
 		warn '		authorName  '.$authorName;
 		
 		my $tsvPath = $planDir.'/'.$authorName.'/tsv';
+		-e $tsvPath.'/d/n/time.txt' || &setFile( $tsvPath.'/d/n/time.txt', '0.1' );
+		-e $tsvPath.'/d/value.tsv' || &setFile( $tsvPath.'/d/value.tsv', ( join "\t", @mainTriple ) );
+		-e $tsvPath.'/i/value.tsv' || &setFile( $tsvPath.'/i/value.tsv' );
+		
 		if ( not defined $stat{$authorName} ){
 			for ( 'add', 'n_delR', 'n_delN' ){ $stat{$authorName}{$_} = 0 }
 		}
@@ -1030,17 +1033,19 @@ sub dryProc2 {
 	close (REINDEX);
 }
 
-sub startProc {
+sub getAvatar {
 	my %avatar;
 	my $count = 0;
+	my $ava;
 	for my $avatarName ( grep { -e $planDir.'/'.$_.'/'.$stylesheetDir.'/title.txt'} &getDir( $planDir, 1 ) ){
-		&setWarn ("		startProc   Найден аватар $avatarName");
+		&setWarn ("		getAvatar   Найден аватар $avatarName");
 		$avatar{'unit'}[$count]{'id'} = $avatarName;
 		$avatar{'unit'}[$count]{'title'} = Encode::decode_utf8( &getFile( $planDir.'/'.$avatarName.'/'.$stylesheetDir.'/title.txt' ) );
-		$count++
+		$ava = $avatarName if $avatarName ne $defaultAvatar;
+		$count++;
 	}
 	&setXML ( 'm8', 'avatar', \%avatar );
-	return $avatar{'unit'}[0]{'id'} if $count == 1;
+	return $ava if $count == 2;
 }
 
 
@@ -1052,9 +1057,9 @@ sub parseNew {
 		&setWarn('			pN   Вход ранее созданного пользователя');
 		if ($$temp{'login'} ne 'guest'){
 			defined $$pass{'password'} and $$pass{'password'} || return 'no_password';
-			my $userFile = $userDir.'/'.$$temp{'login'}.'/'.$passwordFile;
-			-e $userFile || return 'no_user';
-			my $password = &getFile( $userFile );
+			my $userPath = $userDir.'/'.$$temp{'login'};
+			-d $userPath || return 'no_user';
+			my $password = &getFile( $userPath.'/'.$passwordFile );
 			$password = &getSetting('userPassword') if $password eq '';
 			$password eq $$pass{'password'} || return 'bad_password';
 		}
