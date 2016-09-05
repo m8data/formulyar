@@ -15,7 +15,7 @@
 		<script>var source2 = "";</script>
 	</xsl:template>
 	<xsl:template name="TitleAndMisk">
-		<title><xsl:value-of select="$start/@avatar"/>: Админка</title>
+		<title><xsl:value-of select="$start/@avatar"/>: административный раздел</title>
 	</xsl:template>
 	<!--	
 

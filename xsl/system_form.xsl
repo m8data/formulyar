@@ -659,17 +659,18 @@
 					<xsl:text> | </xsl:text>-->
 				<xsl:choose>
 					<xsl:when test="$ctrl = 'formulyar' ">
-						<xsl:for-each select="document( concat( $start/@DOCUMENT_ROOT, '/m8/avatar.xml' ) )/*/*">
+						<!--<xsl:for-each select="document( concat( $start/@DOCUMENT_ROOT, '/m8/avatar.xml' ) )/*/*">
 							<a href="/a/{@id}/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:gray">
 								<xsl:value-of select="@title"/>
 							</a>
 							<xsl:if test="position()!=last()">
 								<xsl:text> | </xsl:text>
 							</xsl:if>
-						</xsl:for-each>
+						</xsl:for-each>-->
+						<a href="/a/{$avatar}/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:orange">публичный раздел</a>
 					</xsl:when>
 					<xsl:otherwise>
-						<a href="/a/formulyar/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:gray">Редактировать</a>
+						<a href="/a/formulyar/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:brown">aдминистративный раздел</a>
 					</xsl:otherwise>
 				</xsl:choose>
 				<!--<xsl:text> | </xsl:text>

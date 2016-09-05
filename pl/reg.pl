@@ -52,6 +52,7 @@ my $passwordFile = 'password.txt';
 my $sessionFile = 'session.json';
 my $stylesheetDir = 'xsl';
 my $defaultAvatar = 'formulyar';
+my $startAvatar = 'start';
 my $defaultAuthor = 'guest';
 my $defaultFact = 'n';
 my $admin = 'admin';
@@ -131,7 +132,9 @@ if ( $ARGV[0] ){
 			make_path( $ROOT_DIR.'m8', { chmod => $chmod } )
 		}
 	}
-	&getAvatar;
+	
+	if ( &getAvatar(1) ){ rmtree $planDir.'/'.$startAvatar if -d $planDir.'/'.$startAvatar }
+	else { symlink( $disk.$ROOT_DIR.$planDir.'/formulyar/doc/'.$startAvatar => $disk.$ROOT_DIR.$planDir.'/'.$startAvatar ) }
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
 	-d $auraDir.'/m8' || symlink( $disk.$ROOT_DIR.'m8' => $disk.$ROOT_DIR.$auraDir.'/m8' );
 	my @ava = &getDir( $planDir, 1 );
@@ -169,8 +172,8 @@ else{
 	&setFile( $logPath.'/env.json', $JSON->encode(\%ENV) ) if $dbg;
 	my $q = CGI->new();
 	$q->charset('utf-8');
-	my %cookie;
-	&initProc( \%temp, \%cookie );
+	
+	&initProc( \%temp );
 	if ( $temp{'format'} eq 'pdf' or $temp{'format'} eq 'doc' ){
 		&setWarn( "  Выдача не текстовой информации (pdf, docx)" );#	
 		my $extensiton = $temp{'format'};	
@@ -214,6 +217,7 @@ else{
 	else{
 		&setWarn( "  Выдача текстовой информации" );
 		#&initProc( \%temp, \%cookie );
+		my %cookie;
 		&washProc( \%temp, \%cookie ) if $temp{'REQUEST_METHOD'} eq 'POST' or $temp{'QUERY_STRING'};
 		$temp{'fact'} = $temp{'quest'} = $defaultFact if not defined $temp{'fact'};	
 		$temp{'ctrl'} = $defaultAvatar if $temp{'mission'} eq $defaultAvatar;	
@@ -310,7 +314,7 @@ exit;
 
 ######### функции первого порядка ##########
 sub initProc{
-	my ( $temp, $cookie )=@_; 
+	my ( $temp )=@_; 
 	&setWarn( "		iP @_" );
 	$$temp{'time'} = time;
 	( $$temp{'seconds'}, $$temp{'microseconds'} ) = gettimeofday;
@@ -333,9 +337,9 @@ sub initProc{
 		}
 	}
 	if ( $$temp{'user'} ){ $$temp{'author'} = $$temp{'user'} }
-	else { $$cookie{'user'} = $$temp{'author'} = $$temp{'user'} = $defaultAuthor }
+	else { $$temp{'user'} = $$temp{'author'} = $defaultAuthor } #$$cookie{'user'} = 
 	if ( $$temp{'avatar'} ){ $$temp{'ctrl'} = $$temp{'avatar'} }
-	else { $$cookie{'avatar'} = $$temp{'ctrl'} = $$temp{'avatar'} = &getSetting('avatar') || &getAvatar || $defaultAvatar }
+	else { $$temp{'avatar'} = $$temp{'ctrl'} = &getSetting('avatar') || &getAvatar || $startAvatar } #$$cookie{'avatar'} = 
 	$$temp{'mission'} = $$temp{'format'} = 'html';
 	$$temp{'ajax'} = $$temp{'HTTP_X_REQUESTED_WITH'} if $$temp{'HTTP_X_REQUESTED_WITH'}; 
 	$$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/ or $temp{'HTTP_USER_AGENT'}=~m!Qt/4.6.1!;
@@ -504,7 +508,7 @@ sub washProc{
 				}
 			}
 			elsif ( $$temp{'control'} eq 'start'){
-				&getAvatar;
+				&getAvatar(1);
 			}
 			else {
 				&setWarn ('		wP    Работа с глобальными параметрами');
@@ -895,7 +899,7 @@ sub dryProc2 {
 	}
 	my $time1 = time;
 	my $time2;		
-	for my $authorName ( &getDir( $planDir, 1 ) ){ 
+	for my $authorName ( grep{ not /^_/ and $_ ne $defaultAvatar } &getDir( $planDir, 1 ) ){ 
 		print REINDEX "authorName	$authorName \n";
 		warn '		authorName  '.$authorName;
 		
@@ -1033,20 +1037,6 @@ sub dryProc2 {
 	close (REINDEX);
 }
 
-sub getAvatar {
-	my %avatar;
-	my $count = 0;
-	my $ava;
-	for my $avatarName ( grep { -e $planDir.'/'.$_.'/'.$stylesheetDir.'/title.txt'} &getDir( $planDir, 1 ) ){
-		&setWarn ("		getAvatar   Найден аватар $avatarName");
-		$avatar{'unit'}[$count]{'id'} = $avatarName;
-		$avatar{'unit'}[$count]{'title'} = Encode::decode_utf8( &getFile( $planDir.'/'.$avatarName.'/'.$stylesheetDir.'/title.txt' ) );
-		$ava = $avatarName if $avatarName ne $defaultAvatar;
-		$count++;
-	}
-	&setXML ( 'm8', 'avatar', \%avatar );
-	return $ava if $count == 2;
-}
 
 
 
@@ -1105,13 +1095,8 @@ sub m8req {
 	elsif ( $$temp{'author'} and $$temp{'author'} ne $$temp{'ctrl'} ){ $dir .= '/'.$$temp{'author'} }
 	return $dir;
 }
-sub getID {
-	my ( $name )=@_;
-#	&setWarn("						gI  @_" );
-	if ($name=~m!^/m8/[dirn]/[dirn][\d_\-]*$! or $name=~m!^/m8/author/[a-z]{2}[\w\d]*$!){ $name=~s!^/!!; return $name }
-	elsif ($name=~m!^([dirn])[\d_\-]*$!){ return 'm8/'.$1.'/'.$name }
-	else { return $authorPath.'/'.$name }
-}
+
+
 
 sub setFile {
 	my ( $file, $text, $add )=@_;
@@ -1210,13 +1195,20 @@ sub setWarn {
 		print FILE $text, "\n";#  $c[3], ' ' - секунда
 	close (FILE);
 }
-
 sub setMessage {
 	open (REINDEX, '>>reindex.txt')|| die "Ошибка при открытии файла reindex.txt: $!\n";
 		print REINDEX $_[0]."\n";#  $c[3], ' ' - секунда
 	close (REINDEX);
 }
 
+
+sub getID {
+	my ( $name )=@_;
+#	&setWarn("						gI  @_" );
+	if ($name=~m!^/m8/[dirn]/[dirn][\d_\-]*$! or $name=~m!^/m8/author/[a-z]{2}[\w\d]*$!){ $name=~s!^/!!; return $name }
+	elsif ($name=~m!^([dirn])[\d_\-]*$!){ return 'm8/'.$1.'/'.$name }
+	else { return $authorPath.'/'.$name }
+}
 sub getFile {
 	&setWarn( "						gF @_" );
 	my $file = $_[0];
@@ -1266,7 +1258,6 @@ sub getSetting {
 	else { &setFile( $configPath.'/'.$key.'.txt', $setting{$key} ) }
 	return $setting{$key}
 }
-
 sub getDoc {
 	my ( $temp, $adminMode, $xslFile )=@_;
 	my $doc = XML::LibXML::Document->new( "1.0", "UTF-8" );
@@ -1302,6 +1293,22 @@ sub getDoc {
 	&setFile( $tempFile, $doc );
 	return $doc
 }
+sub getAvatar {
+	&setWarn("		gA @_");
+	my $setxml = $_[0];
+	my %avatar;
+	my $count = 0;
+	my $ava;
+	for my $avatarName ( grep { not /^_/ and -e $planDir.'/'.$_.'/'.$stylesheetDir.'/title.txt' } &getDir( $planDir, 1 ) ){
+		&setWarn ("		getAvatar   Найден аватар $avatarName");
+		$avatar{'unit'}[$count]{'id'} = $avatarName;
+		$avatar{'unit'}[$count]{'title'} = Encode::decode_utf8( &getFile( $planDir.'/'.$avatarName.'/'.$stylesheetDir.'/title.txt' ) );
+		$ava = $avatarName if $avatarName ne $startAvatar;
+		$count++;
+	}
+	&setXML ( 'm8', 'avatar', \%avatar ) if $setxml;
+	return $ava;
+}
 sub getTriple {
 	&setWarn("		gT @_");
 	my ( $user, $name )=@_;
@@ -1312,6 +1319,8 @@ sub getTriple {
 	&setWarn("		gT return: @value");
 	return @value 
 }
+
+
 sub delDir {
 	#&setWarn( "						dD @_" );
 	my ( $dirname, $subdir)=@_;
@@ -1340,6 +1349,8 @@ sub delDir {
 	}
 	return $count
 }
+
+
 sub utfText {
 	my ( $value ) = @_;
 	$value =~ tr/+/ /;
