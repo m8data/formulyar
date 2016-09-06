@@ -106,8 +106,8 @@ my $chmod;
 
 
 if ( $ARGV[0] ){
-	my $aName = $ARGV[0];
-	$ROOT_DIR = $rootFolder.$aName.'/'.$rootDir.'/';
+	#my $aName = $ARGV[0];
+	$ROOT_DIR = $rootFolder.$ARGV[0].'/'.$rootDir.'/';
 	chdir $ROOT_DIR;
 	$chmod = &getSetting('chMod');
 	&setWarn (' Ответ на запрос с локалхоста', $log1);
@@ -121,7 +121,7 @@ if ( $ARGV[0] ){
 	#}
 	#-d $defaultNumberPath || make_path( $defaultNumberPath, { chmod => $chmod } );
 	if ( not -d 'm8' ){
-		warn 'check $tempfsFolder.$aName';
+		warn 'check tempfsFolder';
 		if ( -d $tempfsFolder.'m8/'.$ARGV[0] ){
 			warn 'add '.$tempfsFolder.'m8/'.$ARGV[0];
 			make_path( $tempfsFolder.'m8/'.$ARGV[0], { chmod => $chmod } );
@@ -218,6 +218,7 @@ else{
 		&setWarn( "  Выдача текстовой информации" );
 		#&initProc( \%temp, \%cookie );
 		my %cookie;
+		$temp{'user'} = $temp{'author'} = $cookie{'user'} = $defaultAuthor if not -d $planDir.'/'.$temp{'user'}; 
 		&washProc( \%temp, \%cookie ) if $temp{'REQUEST_METHOD'} eq 'POST' or $temp{'QUERY_STRING'};
 		$temp{'fact'} = $temp{'quest'} = $defaultFact if not defined $temp{'fact'};	
 		$temp{'ctrl'} = $defaultAvatar if $temp{'mission'} eq $defaultAvatar;	
@@ -1048,7 +1049,7 @@ sub parseNew {
 		if ($$temp{'login'} ne 'guest'){
 			defined $$pass{'password'} and $$pass{'password'} || return 'no_password';
 			my $userPath = $userDir.'/'.$$temp{'login'};
-			-d $userPath || return 'no_user';
+			-d $userPath && -d $planDir.'/'.$$temp{'login'} || return 'no_user';
 			my $password = &getFile( $userPath.'/'.$passwordFile );
 			$password = &getSetting('userPassword') if $password eq '';
 			$password eq $$pass{'password'} || return 'bad_password';

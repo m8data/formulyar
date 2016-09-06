@@ -557,7 +557,7 @@
 							<form style="padding: 2em" action="/{$start/@m8path}" method="get">
 								<input type="hidden" name="logout" value="1"/>
 								<xsl:if test="$start/@error='no_user'">
-									<div style="color: red">Юзер с данным именем не зарегистрирован</div>
+									<div style="color: red">Пользователь с данным именем не зарегистрирован</div>
 									<br/>
 								</xsl:if>
 						
@@ -584,7 +584,7 @@
 							<form method="get" id="rs_first">
 								<input type="hidden" name="author"/>
 								<xsl:if test="@history='busy'">
-									<div style="color: red">имя уже занято </div>
+									<div style="color: red">Имя уже занято </div>
 									<!-- -->
 								</xsl:if>
 					Имя: <input type="text" name="new_author"/>
