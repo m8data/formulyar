@@ -133,7 +133,7 @@ if ( $ARGV[0] ){
 		}
 	}
 	
-	if ( &getAvatar(1) ){ rmtree $planDir.'/'.$startAvatar if -d $planDir.'/'.$startAvatar }
+	if ( &getAvatar(1) ){ rmdir $planDir.'/'.$startAvatar if -d $planDir.'/'.$startAvatar }#здесь нельзя удалять через rmtree
 	else { symlink( $disk.$ROOT_DIR.$planDir.'/formulyar/doc/'.$startAvatar => $disk.$ROOT_DIR.$planDir.'/'.$startAvatar ) }
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
 	-d $auraDir.'/m8' || symlink( $disk.$ROOT_DIR.'m8' => $disk.$ROOT_DIR.$auraDir.'/m8' );
