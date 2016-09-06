@@ -115,7 +115,7 @@
 	<xsl:variable name="quest" select="$start/@quest"/>
 	<xsl:variable name="xsStartID" select="m8:dir( $fact )"/>
 	<xsl:variable name="sStartID" select="m8:dir( $fact, $author, $quest )"/>
-	<xsl:variable name="startID" select="concat( '/', $ctrl, $sStartID )"/>
+	<xsl:variable name="startID" select="concat( '/a/', $ctrl, $sStartID )"/>
 	<xsl:variable name="startGroup" select="$start/@group"/>
 	<xsl:variable name="user" select="$start/@user"/>
 	<xsl:variable name="time" select="$start/@time"/>
@@ -540,72 +540,79 @@
 
 	-->
 	<xsl:template name="authorDef">
-		<xsl:if test="/*/*/@referer"> </xsl:if>
-		<div style="text-align: center; padding: 2em; color: red">
-			<xsl:value-of select="@history"/>
-		</div>
-		<table width="100%" cellpadding="6">
-			<tr>
-				<td valign="top" align="center">
-					<h1>Вход</h1>
-					<div>Укажите ваши имя и пароль</div>
-					<form style="padding: 2em" action="/" method="get">
-						<input type="hidden" name="logout" value="1"/>
-						<xsl:if test="$start/@error='no_user'">
-							<div style="color: red">Юзер с данным именем не зарегистрирован</div>
-							<br/>
-						</xsl:if>
+		<html>
+			<head>
+				<xsl:call-template name="TitleAndMisk"/>
+			</head>
+			<body>
+				<xsl:if test="/*/*/@referer"> </xsl:if>
+				<div style="text-align: center; padding: 2em; color: red">
+					<xsl:value-of select="@history"/>
+				</div>
+				<table width="100%" cellpadding="6">
+					<tr>
+						<td valign="top" align="center">
+							<h1>Вход</h1>
+							<div>Укажите ваши логин и пароль</div>
+							<form style="padding: 2em" action="/{$start/@m8path}" method="get">
+								<input type="hidden" name="logout" value="1"/>
+								<xsl:if test="$start/@error='no_user'">
+									<div style="color: red">Пользователь с данным именем не зарегистрирован</div>
+									<br/>
+								</xsl:if>
 						
-					Юзер: <input type="text" name="login"/>
-						<!-- value="{$login}"-->
-						<br/>
-						<br/>
-						<xsl:if test="$start/@error='bad_password'">
-							<div style="color: red">Пароль указан не верно</div>
-							<br/>
-						</xsl:if>
-						<xsl:if test="$start/@error='no_password'">
-							<div style="color: red">Укажите пароль</div>
-							<br/>
-						</xsl:if>
+						Логин: <input type="text" name="login"/>
+								<!-- value="{$login}"-->
+								<br/>
+								<br/>
+								<xsl:if test="$start/@error='bad_password'">
+									<div style="color: red">Пароль указан не верно</div>
+									<br/>
+								</xsl:if>
+								<xsl:if test="$start/@error='no_password'">
+									<div style="color: red">Укажите пароль</div>
+									<br/>
+								</xsl:if>
 					Пароль: <input type="password" name="password"/>
-						<br/>
-						<br/>
-						<button type="submit">Go!</button>
-					</form>
-				</td>
-				<td valign="top" align="center" style="display: none">
-					<h1>Регистрация</h1>
-					<form method="get" id="rs_first">
-						<input type="hidden" name="author"/>
-						<xsl:if test="@history='busy'">
-							<div style="color: red">имя уже занято </div>
-							<!-- -->
-						</xsl:if>
+								<br/>
+								<br/>
+								<button type="submit">Войти</button>
+							</form>
+						</td>
+						<td valign="top" align="center" style="display: none">
+							<h1>Регистрация</h1>
+							<form method="get" id="rs_first">
+								<input type="hidden" name="author"/>
+								<xsl:if test="@history='busy'">
+									<div style="color: red">Имя уже занято </div>
+									<!-- -->
+								</xsl:if>
 					Имя: <input type="text" name="new_author"/>
-						<!---->
-						<br/>(без пробелов латиницей)                                        <br/>
-						<br/>
-						<xsl:if test="@history and (@history='bad_retype' or @history='no_password')">
-							<div style="color: red">
-								<xsl:choose>
-									<xsl:when test="@history='bad_retype'">Повторение пароля не совпало. Введите заново.</xsl:when>
-									<xsl:when test="@history='no_password'">Задайте пароль</xsl:when>
-								</xsl:choose>
-							</div>
-						</xsl:if>
+								<!---->
+								<br/>(без пробелов латиницей)                                        <br/>
+								<br/>
+								<xsl:if test="@history and (@history='bad_retype' or @history='no_password')">
+									<div style="color: red">
+										<xsl:choose>
+											<xsl:when test="@history='bad_retype'">Повторение пароля не совпало. Введите заново.</xsl:when>
+											<xsl:when test="@history='no_password'">Задайте пароль</xsl:when>
+										</xsl:choose>
+									</div>
+								</xsl:if>
 					Пароль: <input type="password" name="new_password"/>
-						<br/>
-						<br/>
+								<br/>
+								<br/>
 					Повтор: <input type="password" name="new_password2"/>
-						<br/>
-						<br/>
-						<button type="submit" formaction="/">Регистрация</button>
-						<br/>
-					</form>
-				</td>
-			</tr>
-		</table>
+								<br/>
+								<br/>
+								<button type="submit" formaction="/">Регистрация</button>
+								<br/>
+							</form>
+						</td>
+					</tr>
+				</table>
+			</body>
+		</html>
 	</xsl:template>
 	<!--
 
@@ -645,22 +652,25 @@
 
 	-->
 	<xsl:template name="footer">
-			<xsl:if test="$user != 'guest' or $start/@debug">
-			<div style="position: fixed;  bottom: 5px; left: 5px; z-index: 1; color:gray">
+		<xsl:if test="$user != 'guest'">
+			<!-- or $start/@debug-->
+			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray">
 				<!--<a href="/" style="color:gray">START</a>
 					<xsl:text> | </xsl:text>-->
 				<xsl:choose>
 					<xsl:when test="$ctrl = 'formulyar' ">
-						<xsl:for-each select="document( concat( $start/@DOCUMENT_ROOT, '/avatar.xml' ) )/*/*">
-							<a href="/{@id}/m8/{substring($fact,1,1)}/{$fact}/{$user}/{$quest}" style="color:gray">
-								<xsl:value-of select="@id"/>
+						<!--<xsl:for-each select="document( concat( $start/@DOCUMENT_ROOT, '/m8/avatar.xml' ) )/*/*">
+							<a href="/a/{@id}/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:gray">
+								<xsl:value-of select="@title"/>
 							</a>
-							<xsl:if test="position()!=last()"><xsl:text> | </xsl:text></xsl:if>
-						</xsl:for-each>
-						
+							<xsl:if test="position()!=last()">
+								<xsl:text> | </xsl:text>
+							</xsl:if>
+						</xsl:for-each>-->
+						<a href="/a/{$avatar}/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:orange">публичный раздел</a>
 					</xsl:when>
 					<xsl:otherwise>
-						<a href="/formulyar/m8/{substring($fact,1,1)}/{$fact}/{$user}/{$quest}" style="color:gray">edit</a>
+						<a href="/a/formulyar/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:brown">aдминистративный раздел</a>
 					</xsl:otherwise>
 				</xsl:choose>
 				<!--<xsl:text> | </xsl:text>
@@ -670,21 +680,24 @@
 					<xsl:text> | </xsl:text>
 					<a href="/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}/port.xml" style="color:gray">xml</a>-->
 			</div>
-			</xsl:if>
-			<xsl:if test="$user != 'guest' ">
+		</xsl:if>
+		<xsl:if test="$user != 'guest' ">
 			<!--//-->
-			<div style="position: fixed; bottom: 5px; right: 5px; color: gray; z-index: 1">
+			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray; display: none">
 				<xsl:value-of select="$avatar"/>
+			</div>
+			<div style="position: fixed; bottom: 5px; right: 5px; color: gray; z-index: 1">
+				<xsl:value-of select="$start/@version"/>
 				<xsl:text> | </xsl:text>
 				<!--<xsl:text> &lt;- </xsl:text>-->
-						<xsl:choose>
-							<xsl:when test="$start/@debug">
-								<a href="/_avatar/{$avatar}{m8:dir( $fact, $author, $quest )}" style="color: purple">debug on</a>
-							</xsl:when>
-							<xsl:otherwise>
-								<a href="/_avatar/{$avatar}{m8:dir( $fact, $author, $quest )}" style="color: gray">debug off</a>
-							</xsl:otherwise>
-						</xsl:choose>
+				<xsl:choose>
+					<xsl:when test="$start/@debug">
+						<a href="/a/{$ctrl}{m8:dir( $fact, $author, $quest )}/?debug=switch" style="color: purple">debug on</a>
+					</xsl:when>
+					<xsl:otherwise>
+						<a href="/a/{$ctrl}{m8:dir( $fact, $author, $quest )}/?debug=switch" style="color: gray">debug off</a>
+					</xsl:otherwise>
+				</xsl:choose>
 				<xsl:text> | </xsl:text>
 				<!--<xsl:if test="$calcName">
 						<xsl:value-of select="$calcName"/>
@@ -696,7 +709,7 @@
 				<xsl:text> |  </xsl:text>
 				<xsl:value-of select="$user"/>
 				<xsl:text> | </xsl:text>
-				<a href="/m8/?logout=true" style="color: red">выйти</a>
+				<a href="/a/{$avatar}{m8:dir( $fact, $author, $quest )}/?logout=true" style="color: red">выйти</a>
 			</div>
 		</xsl:if>
 	</xsl:template>
