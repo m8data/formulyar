@@ -8,14 +8,18 @@
 
 	-->
 	<xsl:template name="Head2">
-		<script src="/formulyar/js/jquery.min-1.9.0.js"/>
+		<script src="/p/formulyar/js/jquery.min-1.9.0.js"/>
 		<script>var source = "";</script>
 		<!-- по какой-то причине, если не втавить этот тэг, то предыдущий открывающий тег скрипта не закроется //
 		<script src="/system/a/js/xalio.js"/>-->
 		<script>var source2 = "";</script>
 	</xsl:template>
 	<xsl:template name="TitleAndMisk">
+<<<<<<< HEAD
 		<title><xsl:value-of select="$start/@avatar"/>: Админка</title>
+=======
+		<title><xsl:value-of select="$start/@avatar"/>: административный раздел</title>
+>>>>>>> d547d9c381a0dae64e684b2983354d6e51b2146e
 	</xsl:template>
 	<!--	
 
@@ -345,8 +349,8 @@
 			</xsl:choose>
 		</div>
 		<xsl:message> 
-								@@@@@ - Зона генерации нового (END) - @@@@@
-				</xsl:message>
+			@@@@@ - Зона генерации нового (END) - @@@@@
+		</xsl:message>
 	</xsl:template>
 	<!--
 
@@ -388,6 +392,10 @@
 												<a href="/a/{$ctrl}/m8/{substring($pName,1,1)}/{$pName}">
 													<span style="font-size: .8em; color: black">
 														<xsl:choose>
+															<xsl:when test="$pName = 'i' ">имя</xsl:when>
+															<xsl:when test="$pName = 'n' ">файл</xsl:when>
+															<xsl:when test="$pName = 'd' ">описание</xsl:when>
+															<xsl:when test="$pName = 'r' ">перемещение</xsl:when>
 															<xsl:when test="$pName=$fact">по умолчанию</xsl:when>
 															<xsl:otherwise>
 																<xsl:apply-templates select="." mode="simpleName"/>
