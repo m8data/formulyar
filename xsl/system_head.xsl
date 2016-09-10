@@ -32,7 +32,8 @@
 		<xsl:message terminate="no">interface match="/"</xsl:message>
 		<xsl:variable name="factIndex" select="m8:path( $fact, 'index')"/>
 		<xsl:choose>
-			<xsl:when test="$start/@path = '/m8' or $start/@path=concat( '/', $ctrl, '/m8' ) or $start/@path = '/formulyar' or $start/@path = '/a/formulyar' ">
+			<xsl:when test="$start/@user='guest' and $start/@mission='formulyar'"><!-- or $start/@ipath='a' -->
+			<!--<xsl:when test="$start/@path = '/m8' or $start/@path=concat( '/', $ctrl, '/m8' ) or $start/@path = '/formulyar' or $start/@path = '/a/formulyar' ">-->
 				<xsl:call-template name="authorDef"/>
 			</xsl:when>
 			<xsl:when test="$factIndex/role/role1">
