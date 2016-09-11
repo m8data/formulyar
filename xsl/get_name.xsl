@@ -224,7 +224,7 @@
 			</xsl:choose>
 		</xsl:variable>
 		<xsl:message>
-			================ getParent ================
+			================ getParent 2 ================
 			currentFactName: <xsl:value-of select="$currentFactName"/>
 			parentFactName: <xsl:value-of select="$parentFactName"/>
 			parentAuthorName: <xsl:value-of select="$parentAuthorName"/>
@@ -245,6 +245,7 @@
 				<xsl:message>			Вывод результата:  <xsl:value-of select="$parentFactName"/>
 				</xsl:message>
 				<xsl:copy-of select="exsl:node-set($newResult)/*"/>
+				<xsl:message>			Вывод результата (end)				</xsl:message>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:call-template name="getParent">

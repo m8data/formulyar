@@ -8,12 +8,12 @@
 		<html>
 			<head>
 				<title>Старт</title>
-				<link rel="icon" type="image/ico" href="/p/{$avatar}/img/favicon.ico" />
+				<link rel="icon" type="image/ico" href="{$start/@prefix}p/{$avatar}/img/favicon.ico" />
 			</head>
 			<body>
 				<div style="width: 800px; margin: 1em auto">
 				<h1>Домашняя страница сайта</h1>
-				<xsl:apply-templates select="document(  concat( $start/@DOCUMENT_ROOT, '/', $authDir, '/start/author.xml' ) )/*" mode="baseReport"/>
+				<xsl:apply-templates select="document(  concat( $start/@DOCUMENT_ROOT, $start/@prefix, $authDir, '/start/author.xml' ) )/*" mode="baseReport"/>
 				<xsl:call-template name="footer"/>
 				</div>
 			</body>

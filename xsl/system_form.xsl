@@ -10,19 +10,19 @@
 		<xsl:param name="level4"/>
 		<xsl:choose>
 			<xsl:when test="$level4">
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, '/m8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3, '/', $level4, '.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3, '/', $level4, '.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:when test="$level3">
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, '/m8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1, '/', $level3, '.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1, '/', $level3, '.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:when test="$level2">
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, '/m8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:when test="$level1">
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, '/m8/author/', $level1, '/type.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/author/', $level1, '/type.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, '/m8/n/n/', $author, '/n/port.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/n/n/', $author, '/n/port.xml' ) )/*"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
@@ -36,13 +36,13 @@
 				<xsl:variable name="role" select="m8:path( $level1, 'index' )/role/*"/>
 				<xsl:choose>
 					<xsl:when test="$level1 and $level2 and $level4 and $level3='*' and $role[@superfile=$level4] and m8:path( $level1, $role[@superfile=$level4]/@file )/*[name()=$level2]/*">
-						<func:result select="document( concat( $start/@DOCUMENT_ROOT, '/m8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', name(m8:path( $level1, $role[@superfile=$level4]/@file )/*[name()=$level2]/*), '/', $level4, '.xml' ) )/*"/>
+						<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', name(m8:path( $level1, $role[@superfile=$level4]/@file )/*[name()=$level2]/*), '/', $level4, '.xml' ) )/*"/>
 					</xsl:when>
 					<xsl:when test="$level1 and $level2 and $level4 and $role[@superfile=$level4] and m8:path( $level1, $role[@superfile=$level4]/@file )/*[name()=$level2]/*[name()=$level3]">
-						<func:result select="document( concat( $start/@DOCUMENT_ROOT, '/m8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3, '/', $level4, '.xml' ) )/*"/>
+						<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3, '/', $level4, '.xml' ) )/*"/>
 					</xsl:when>
 					<xsl:when test="$level1 and $level2 and not($level4) and $role[@superfile=$level3] and m8:path( $level1, $role[@superfile=$level3]/@file )/*[name()=$level2]/*[name()=$level1]">
-						<func:result select="document( concat( $start/@DOCUMENT_ROOT, '/m8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1, '/', $level3, '.xml' ) )/*"/>
+						<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1, '/', $level3, '.xml' ) )/*"/>
 					</xsl:when>
 					<xsl:otherwise>
 						<xsl:variable name="nullElement">
@@ -62,7 +62,7 @@
 			<xsl:when test="$level2">
 				<xsl:choose>
 					<xsl:when test="$level1 and ( $level2='index' or $level2='value' or m8:path( $level1, 'index' )/*/*[@file=$level2] )">
-						<func:result select="document( concat( $start/@DOCUMENT_ROOT, '/m8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '.xml' ) )/*"/>
+						<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '.xml' ) )/*"/>
 					</xsl:when>
 					<xsl:otherwise>
 						<xsl:variable name="nullElement">
@@ -73,10 +73,10 @@
 				</xsl:choose>
 			</xsl:when>
 			<xsl:when test="$level1">
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, '/m8/author/', $level1, '/type.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/author/', $level1, '/type.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, '/m8/n/n/', $author, '/n/port.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/n/n/', $author, '/n/port.xml' ) )/*"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
@@ -86,16 +86,16 @@
 		<xsl:param name="level3"/>
 		<xsl:choose>
 			<xsl:when test="$level3">
-				<func:result select="concat( '/m8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3 )"/>
+				<func:result select="concat( 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3 )"/>
 			</xsl:when>
 			<xsl:when test="$level2">
-				<func:result select="concat( '/m8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1 )"/>
+				<func:result select="concat( 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1 )"/>
 			</xsl:when>
 			<xsl:when test="$level1">
-				<func:result select="concat( '/m8/', substring( $level1, 1, 1 ), '/', $level1 )"/>
+				<func:result select="concat( 'm8/', substring( $level1, 1, 1 ), '/', $level1 )"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="'/m8'"/>
+				<func:result select="'m8'"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
@@ -115,7 +115,7 @@
 	<xsl:variable name="quest" select="$start/@quest"/>
 	<xsl:variable name="xsStartID" select="m8:dir( $fact )"/>
 	<xsl:variable name="sStartID" select="m8:dir( $fact, $author, $quest )"/>
-	<xsl:variable name="startID" select="concat( '/a/', $ctrl, $sStartID )"/>
+	<xsl:variable name="startID" select="concat( $start/@prefix, 'a/', $ctrl, '/', $sStartID )"/>
 	<xsl:variable name="startGroup" select="$start/@group"/>
 	<xsl:variable name="user" select="$start/@user"/>
 	<xsl:variable name="time" select="$start/@time"/>
@@ -142,6 +142,7 @@
 				<xsl:value-of select="substring( $fact, 1, 1 )"/>
 			</xsl:otherwise>
 		</xsl:choose>
+		<xsl:message>	--- end variable set --- </xsl:message>
 	</xsl:variable>
 	<!--
 
@@ -331,7 +332,7 @@
 					</xsl:if>
 				</input>
 				<xsl:if test="name($selectedValue) != 'r'">
-					<a href="/base/{name($selectedValue)}/value.tsv">text</a>|<a href="/m8/{substring(name($selectedValue),1,1)}/{name($selectedValue)}/value.xml">xml</a>
+					<a href="{$start/@prefix}base/{name($selectedValue)}/value.tsv">text</a>|<a href="{$start/@prefix}m8/{substring(name($selectedValue),1,1)}/{name($selectedValue)}/value.xml">xml</a>
 				</xsl:if>
 			</xsl:when>
 			<!--
@@ -540,59 +541,11 @@
 
 	-->
 	<xsl:template name="authorDef">
-<<<<<<< HEAD
-				<html>
-=======
 		<html>
->>>>>>> d547d9c381a0dae64e684b2983354d6e51b2146e
 			<head>
 				<xsl:call-template name="TitleAndMisk"/>
 			</head>
 			<body>
-<<<<<<< HEAD
-		<xsl:if test="/*/*/@referer"> </xsl:if>
-		<div style="text-align: center; padding: 2em; color: red">
-			<xsl:value-of select="@history"/>
-		</div>
-		<table width="100%" cellpadding="6">
-			<tr>
-				<td valign="top" align="center">
-					<h1>Вход</h1>
-					<div>Укажите ваши логин и пароль</div>
-					<form style="padding: 2em" action="/formulyar/" method="get">
-						<input type="hidden" name="logout" value="1"/>
-						<xsl:if test="$start/@error='no_user'">
-							<div style="color: red">Юзер с данным именем не зарегистрирован</div>
-							<br/>
-						</xsl:if>
-						
-						Логин: <input type="text" name="login"/>
-						<!-- value="{$login}"-->
-						<br/>
-						<br/>
-						<xsl:if test="$start/@error='bad_password'">
-							<div style="color: red">Пароль указан не верно</div>
-							<br/>
-						</xsl:if>
-						<xsl:if test="$start/@error='no_password'">
-							<div style="color: red">Укажите пароль</div>
-							<br/>
-						</xsl:if>
-					Пароль: <input type="password" name="password"/>
-						<br/>
-						<br/>
-						<button type="submit">Войти</button>
-					</form>
-				</td>
-				<td valign="top" align="center" style="display: none">
-					<h1>Регистрация</h1>
-					<form method="get" id="rs_first">
-						<input type="hidden" name="author"/>
-						<xsl:if test="@history='busy'">
-							<div style="color: red">имя уже занято </div>
-							<!-- -->
-						</xsl:if>
-=======
 				<xsl:if test="/*/*/@referer"> </xsl:if>
 				<div style="text-align: center; padding: 2em; color: red">
 					<xsl:value-of select="@history"/>
@@ -602,7 +555,7 @@
 						<td valign="top" align="center">
 							<h1>Вход</h1>
 							<div>Укажите ваши логин и пароль</div>
-							<form style="padding: 2em" action="/{$start/@m8path}" method="get">
+							<form style="padding: 2em" action="{$start/@prefix}{$start/@m8path}" method="get">
 								<input type="hidden" name="logout" value="1"/>
 								<xsl:if test="$start/@error='no_user'">
 									<div style="color: red">Пользователь с данным именем не зарегистрирован</div>
@@ -635,7 +588,6 @@
 									<div style="color: red">Имя уже занято </div>
 									<!-- -->
 								</xsl:if>
->>>>>>> d547d9c381a0dae64e684b2983354d6e51b2146e
 					Имя: <input type="text" name="new_author"/>
 								<!---->
 								<br/>(без пробелов латиницей)                                        <br/>
@@ -652,27 +604,15 @@
 								<br/>
 								<br/>
 					Повтор: <input type="password" name="new_password2"/>
-<<<<<<< HEAD
-						<br/>
-						<br/>
-						<button type="submit" formaction="/">Регистрация</button>
-						<br/>
-					</form>
-				</td>
-			</tr>
-		</table>
-		</body>
-=======
 								<br/>
 								<br/>
-								<button type="submit" formaction="/">Регистрация</button>
+								<button type="submit" formaction="{$start/@prefix}">Регистрация</button>
 								<br/>
 							</form>
 						</td>
 					</tr>
 				</table>
 			</body>
->>>>>>> d547d9c381a0dae64e684b2983354d6e51b2146e
 		</html>
 	</xsl:template>
 	<!--
@@ -716,17 +656,12 @@
 		<xsl:if test="$user != 'guest'">
 			<!-- or $start/@debug-->
 			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray">
-				<!--<a href="/" style="color:gray">START</a>
+				<!--<a href="{$start/@prefix}" style="color:gray">START</a>
 					<xsl:text> | </xsl:text>-->
 				<xsl:choose>
 					<xsl:when test="$ctrl = 'formulyar' ">
-<<<<<<< HEAD
-						<xsl:for-each select="document( concat( $start/@DOCUMENT_ROOT, '/avatar.xml' ) )/*/*">
-							<a href="/formulyar/{@id}/m8/{substring($fact,1,1)}/{$fact}/{$user}/{$quest}" style="color:gray">
-								<xsl:value-of select="@id"/>
-=======
 						<!--<xsl:for-each select="document( concat( $start/@DOCUMENT_ROOT, '/m8/avatar.xml' ) )/*/*">
-							<a href="/a/{@id}/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:gray">
+							<a href="{$start/@prefix}a/{@id}/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:gray">
 								<xsl:value-of select="@title"/>
 >>>>>>> d547d9c381a0dae64e684b2983354d6e51b2146e
 							</a>
@@ -734,22 +669,18 @@
 								<xsl:text> | </xsl:text>
 							</xsl:if>
 						</xsl:for-each>-->
-						<a href="/a/{$avatar}/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:orange">публичный раздел</a>
+						<a href="{$start/@prefix}a/{$avatar}/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:orange">публичный раздел</a>
 					</xsl:when>
 					<xsl:otherwise>
-<<<<<<< HEAD
-						<a href="/formulyar/formulyar/m8/{substring($fact,1,1)}/{$fact}/{$user}/{$quest}" style="color:gray">edit</a>
-=======
-						<a href="/a/formulyar/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:brown">aдминистративный раздел</a>
->>>>>>> d547d9c381a0dae64e684b2983354d6e51b2146e
+						<a href="{$start/@prefix}a/formulyar/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:brown">aдминистративный раздел</a>
 					</xsl:otherwise>
 				</xsl:choose>
 				<!--<xsl:text> | </xsl:text>
-					<a href="/system/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:gray">sys</a>
+					<a href="{$start/@prefix}system/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:gray">sys</a>
 					<xsl:text> | </xsl:text>
-					<a href="/m8/{substring($fact,1,1)}/{$fact}/{$author}" style="color:gray">refresh</a>
+					<a href="{$start/@prefix}m8/{substring($fact,1,1)}/{$fact}/{$author}" style="color:gray">refresh</a>
 					<xsl:text> | </xsl:text>
-					<a href="/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}/port.xml" style="color:gray">xml</a>-->
+					<a href="{$start/@prefix}m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}/port.xml" style="color:gray">xml</a>-->
 			</div>
 		</xsl:if>
 		<xsl:if test="$user != 'guest' ">
@@ -761,41 +692,26 @@
 				<xsl:value-of select="$start/@version"/>
 				<xsl:text> | </xsl:text>
 				<!--<xsl:text> &lt;- </xsl:text>-->
-<<<<<<< HEAD
-						<xsl:choose>
-							<xsl:when test="$start/@debug">
-								<a href="/formulyar/{$avatar}{m8:dir( $fact, $author, $quest )}" style="color: purple">debug on</a>
-							</xsl:when>
-							<xsl:otherwise>
-								<a href="/formulyar/{$avatar}{m8:dir( $fact, $author, $quest )}" style="color: gray">debug off</a>
-							</xsl:otherwise>
-						</xsl:choose>
-=======
 				<xsl:choose>
 					<xsl:when test="$start/@debug">
-						<a href="/a/{$ctrl}{m8:dir( $fact, $author, $quest )}/?debug=switch" style="color: purple">debug on</a>
+						<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact, $author, $quest )}/?debug=switch" style="color: purple">debug on</a>
 					</xsl:when>
 					<xsl:otherwise>
-						<a href="/a/{$ctrl}{m8:dir( $fact, $author, $quest )}/?debug=switch" style="color: gray">debug off</a>
+						<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact, $author, $quest )}/?debug=switch" style="color: gray">debug off</a>
 					</xsl:otherwise>
 				</xsl:choose>
->>>>>>> d547d9c381a0dae64e684b2983354d6e51b2146e
 				<xsl:text> | </xsl:text>
 				<!--<xsl:if test="$calcName">
 						<xsl:value-of select="$calcName"/>
 						<xsl:text> | </xsl:text>
 					</xsl:if>-->
-				<a href="/formulyar/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}/port.xml" style="color:gray">
+				<a href="{$start/@prefix}formulyar/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}/port.xml" style="color:gray">
 					<xsl:value-of select="$localtime"/>
 				</a>
 				<xsl:text> |  </xsl:text>
 				<xsl:value-of select="$user"/>
 				<xsl:text> | </xsl:text>
-<<<<<<< HEAD
-				<a href="/formulyar/?logout=true" style="color: red">выйти</a>
-=======
-				<a href="/a/{$avatar}{m8:dir( $fact, $author, $quest )}/?logout=true" style="color: red">выйти</a>
->>>>>>> d547d9c381a0dae64e684b2983354d6e51b2146e
+				<a href="{$start/@prefix}a/{$avatar}/{m8:dir( $fact, $author, $quest )}/?logout=true" style="color: red">выйти</a>
 			</div>
 		</xsl:if>
 	</xsl:template>

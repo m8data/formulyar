@@ -8,18 +8,14 @@
 
 	-->
 	<xsl:template name="Head2">
-		<script src="/p/formulyar/js/jquery.min-1.9.0.js"/>
+		<script src="{$start/@prefix}p/formulyar/js/jquery.min-1.9.0.js"/>
 		<script>var source = "";</script>
 		<!-- по какой-то причине, если не втавить этот тэг, то предыдущий открывающий тег скрипта не закроется //
-		<script src="/system/a/js/xalio.js"/>-->
+		<script src="{$start/@prefix}system/a/js/xalio.js"/>-->
 		<script>var source2 = "";</script>
 	</xsl:template>
 	<xsl:template name="TitleAndMisk">
-<<<<<<< HEAD
-		<title><xsl:value-of select="$start/@avatar"/>: Админка</title>
-=======
 		<title><xsl:value-of select="$start/@avatar"/>: административный раздел</title>
->>>>>>> d547d9c381a0dae64e684b2983354d6e51b2146e
 	</xsl:template>
 	<!--	
 
@@ -28,13 +24,13 @@
 	<xsl:template name="startBody">
 		<xsl:call-template name="footer"/>
 		<!--<div style="position: fixed; bottom: 5px; left: 5px; z-index: 1">
-			<a href="/teplotn/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}">calculator</a>
+			<a href="{$start/@prefix}teplotn/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}">calculator</a>
 			<xsl:text> | </xsl:text>
-			<a href="/system/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}">sys</a>
+			<a href="{$start/@prefix}system/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}">sys</a>
 			<xsl:text> | </xsl:text>
-			<a href="/xalio/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}">refresh</a>
+			<a href="{$start/@prefix}xalio/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}">refresh</a>
 			<xsl:text> | </xsl:text>
-			<a href="/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}/port.xml">xml</a>
+			<a href="{$start/@prefix}m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}/port.xml">xml</a>
 		</div>
 		<div style="position: fixed; bottom: 5px; right: 5px; color: gray; z-index: 1">
 			<span title="аватар"><xsl:value-of select="$avatar"/></span>
@@ -44,7 +40,7 @@
 				<xsl:text> |  </xsl:text>
 				<xsl:value-of select="$user"/>
 				<xsl:text> |  </xsl:text>
-				<a href="/m8/?logout=true" style="color: red">выйти</a>
+				<a href="{$start/@prefix}m8/?logout=true" style="color: red">выйти</a>
 			</xsl:if>
 		</div>-->
 		<xsl:apply-templates select="." mode="start"/>
@@ -69,7 +65,7 @@
 					<xsl:with-param name="count" select="$count+1"/>
 				</xsl:call-template>
 				<xsl:text> / </xsl:text>
-				<a href="/a/{$ctrl}{m8:dir( $parentFactName, $parentAuthorName, $parentQuestName )}">
+				<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $parentFactName, $parentAuthorName, $parentQuestName )}">
 					<xsl:apply-templates select="$parentQuest" mode="titleWord"/>
 				</a>
 				<xsl:text> </xsl:text>
@@ -100,7 +96,7 @@
 												<xsl:if test="position()!=1">
 													<xsl:text> / </xsl:text>
 												</xsl:if>
-												<a href="/a/{$ctrl}{m8:dir( name(), $avatar, . )}" xml:lang="здесь сознательно указываем автором аватар, т.к. в хлебных крошках переход по типам, а они задаются главным юзером">
+												<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( name(), $avatar, . )}" xml:lang="здесь сознательно указываем автором аватар, т.к. в хлебных крошках переход по типам, а они задаются главным юзером">
 													<xsl:if test="name()!=.">
 														<xsl:attribute name="style">background: #FDD; padding: .1em; margin: .1em</xsl:attribute>
 													</xsl:if>
@@ -127,24 +123,24 @@
 													</xsl:variable>
 													<xsl:if test="exsl:node-set($siblings)/*[name()=$fact]/preceding-sibling::*">
 														<xsl:variable name="predName" select="name(exsl:node-set($siblings)/*[name()=$fact]/preceding-sibling::*[1])"/>
-														<a href="/a/{$ctrl}/m8/{substring($predName,1,1)}/{$predName}">
+														<a href="{$start/@prefix}a/{$ctrl}/m8/{substring($predName,1,1)}/{$predName}">
 															<xsl:apply-templates select="exsl:node-set($siblings)/*[name()=$fact]/preceding-sibling::*[1]" mode="simpleName"/>&#9668;</a>
 													</xsl:if>
 													<xsl:choose>
 														<xsl:when test="$startTypeName = 'r' ">&#160;&#160;X&#160;&#160;</xsl:when>
 														<xsl:otherwise>
-															<a href="/a/{$ctrl}{ m8:dir( $startTypeName) }">&#160;&#160;X&#160;&#160;</a>
+															<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $startTypeName) }">&#160;&#160;X&#160;&#160;</a>
 														</xsl:otherwise>
 														<!--, $author, $quest -->
 													</xsl:choose>
 													<xsl:if test="exsl:node-set($siblings)/*[name()=$fact]/following-sibling::*">
 														<xsl:variable name="nextName" select="name(exsl:node-set($siblings)/*[name()=$fact]/following-sibling::*[1])"/>
-														<a href="/a/{$ctrl}/m8/{substring($nextName,1,1)}/{$nextName}">&#9658;<xsl:apply-templates select="exsl:node-set($siblings)/*[name()=$fact]/following-sibling::*[1]" mode="simpleName"/>
+														<a href="{$start/@prefix}a/{$ctrl}/m8/{substring($nextName,1,1)}/{$nextName}">&#9658;<xsl:apply-templates select="exsl:node-set($siblings)/*[name()=$fact]/following-sibling::*[1]" mode="simpleName"/>
 														</a>
 													</xsl:if>
 												</xsl:when>
 												<xsl:otherwise>
-													<a href="/a/{$ctrl}/">X</a>
+													<a href="{$start/@prefix}a/{$ctrl}/">X</a>
 												</xsl:otherwise>
 											</xsl:choose>
 										</td>
@@ -159,7 +155,7 @@
 							<xsl:message>Красная карта</xsl:message>
 							<div style="margin: 2em; padding: 1em; background: #FED">
 								<div style="float: right">
-									<a href="/a/{$ctrl}/">X</a>
+									<a href="{$start/@prefix}a/{$ctrl}/">X</a>
 								</div>
 								<br style="clear: both"/>
 							</div>
@@ -184,7 +180,7 @@
 									<xsl:for-each select="m8:path( 'r', $actionAuthor, $fact, 'dock' )/*[name() != $fact]">
 										<xsl:sort select="*/*/@time"/>
 										<div>
-											<a href="/a/{$ctrl}{m8:dir( name(), $actionAuthor, $fact )}">
+											<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( name(), $actionAuthor, $fact )}">
 												<xsl:value-of select="position()"/>.
 													<xsl:text> </xsl:text>
 												<xsl:apply-templates select="m8:path( name(), $actionAuthor, $fact, 'port' )/r/*" mode="simpleName"/>
@@ -195,7 +191,7 @@
 									</xsl:for-each>
 									<div>
 										<xsl:text>+</xsl:text>
-										<form action="{concat( '/a/', $ctrl, m8:dir( $fact ) )}">
+										<form action="{concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ) )}">
 											<select name="r" onchange="this.form.submit()">
 												<option/>
 												<xsl:for-each select="m8:path( 'r', concat( 'predicate_', $protoTypeName ) )/*[name()=$avatar]/*">
@@ -228,7 +224,7 @@
 										<xsl:variable name="currentAuthorName" select="name(..)"/>
 										<xsl:variable name="currentQuestName" select="name()"/>
 										<div style="font-size: 1.4em; padding: .1em">
-											<a href="/a/{$ctrl}/m8/{substring($subjectName,1,1)}/{$subjectName}/{$currentAuthorName}/{$currentQuestName}">
+											<a href="{$start/@prefix}a/{$ctrl}/m8/{substring($subjectName,1,1)}/{$subjectName}/{$currentAuthorName}/{$currentQuestName}">
 												<xsl:value-of select="$position"/>
 												<xsl:text>. </xsl:text>
 												<xsl:if test="$subjectName != $currentQuestName">
@@ -247,7 +243,7 @@
 												<xsl:if test="120 > $time - m8:path( $currentQuestName, 'role1' )/*[name()=$currentAuthorName]/*/@time">
 													<xsl:text> </xsl:text>
 													<sup style="color: magenta">change</sup>
-													<embed src="/xalio/mp3/message.mp3" autostart="true" hidden="true" loop="true" width="0" height="0" align="bottom"> </embed>
+													<embed src="{$start/@prefix}xalio/mp3/message.mp3" autostart="true" hidden="true" loop="true" width="0" height="0" align="bottom"> </embed>
 												</xsl:if>
 											</xsl:if>
 										</div>
@@ -267,7 +263,7 @@
 					<xsl:for-each select="m8:path( $fact, 'role3' )/*[name()=$user]/*">
 						<xsl:sort select="@time"/>
 						<div>
-							<a href="/a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}/{name(..)}" style="color: gray">
+							<a href="{$start/@prefix}a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}/{name(..)}" style="color: gray">
 								<xsl:apply-templates select="." mode="simpleName"/>
 							</a>
 						</div>
@@ -284,7 +280,7 @@
 						<xsl:variable name="cQuest" select="name()"/>
 						<div>
 							<xsl:for-each select="m8:path( $fact, $cAuthor, $cQuest, 'dock' )/*">
-								<a href="/a/{$ctrl}{m8:dir( name(), $cAuthor, $cQuest )}" style="color: gray">
+								<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( name(), $cAuthor, $cQuest )}" style="color: gray">
 									<xsl:apply-templates select="." mode="simpleName"/>
 								</a>
 							</xsl:for-each>
@@ -299,7 +295,7 @@
 					<xsl:for-each select="m8:path( $fact, 'role1' )/*[name()=$user]/*[name()!=$fact]">
 						<xsl:sort select="@time"/>
 						<div>
-							<a href="/a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}/{name(..)}" style="color: gray">
+							<a href="{$start/@prefix}a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}/{name(..)}" style="color: gray">
 								<xsl:apply-templates select="." mode="simpleName"/>
 							</a>
 						</div>
@@ -313,7 +309,7 @@
 					<xsl:for-each select="m8:path( $fact, 'quest' )/*[name()=$user]/*[name()!=$fact]">
 								<xsl:sort select="@time"/>
 								<div>
-									<a href="/a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}/{name(..)}/{$fact}" style="color: gray">
+									<a href="{$start/@prefix}a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}/{name(..)}/{$fact}" style="color: gray">
 										<xsl:apply-templates select="." mode="simpleName"/>
 									</a>
 								</div>
@@ -325,7 +321,7 @@
 									@@@@@ - Зона генерации нового - @@@@@
 				</xsl:message>
 		<div style="position: fixed; bottom: 50px; left: 50px; font-size: 2em; background-color: green; opacity: 0.5; padding: 1em; padding-bottom: 0; border-radius: 2em; ">
-			<form action="/a/{$ctrl}{m8:dir($fact)}/">
+			<form action="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact )}/">
 				<span style="font-size: 11pt; color: white">Добавить: </span>
 				<input type="hidden" name="quest" value="{$fact}"/>
 				<select name="a" onchange="this.form.submit()">
@@ -344,7 +340,7 @@
 					<a style="color: white; margin-top: auto" href="{$startID}/?a={$fact}">+</a>
 				</xsl:when>
 				<xsl:otherwise>
-					<a style="color: white; margin-top: auto" href="/a/{$ctrl}/m8/?a={$fact}">+</a>
+					<a style="color: white; margin-top: auto" href="{$start/@prefix}a/{$ctrl}/m8/?a={$fact}">+</a>
 				</xsl:otherwise>
 			</xsl:choose>
 		</div>
@@ -389,7 +385,7 @@
 										<xsl:variable name="pName" select="name()"/>
 										<tr>
 											<th valign="top" align="right">
-												<a href="/a/{$ctrl}/m8/{substring($pName,1,1)}/{$pName}">
+												<a href="{$start/@prefix}a/{$ctrl}/m8/{substring($pName,1,1)}/{$pName}">
 													<span style="font-size: .8em; color: black">
 														<xsl:choose>
 															<xsl:when test="$pName = 'i' ">имя</xsl:when>
@@ -415,7 +411,7 @@
 																</xsl:call-template>
 															</td>
 															<td valign="top">
-																<a href="/a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}">q</a>
+																<a href="{$start/@prefix}a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}">q</a>
 															</td>
 															<td valign="top">
 																<xsl:choose>
@@ -436,7 +432,7 @@
 																			<a href="{$startID}/?r={$typeParentName}" title="{$newTypeTitle}">^</a>
 																		</xsl:if>
 																		<xsl:text> </xsl:text>
-																		<a href="/a/{$ctrl}{m8:dir( $factTypeName )}/?a0={name($startPort/r/*/*)}&amp;a5={$quest}">
+																		<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $factTypeName )}/?a0={name($startPort/r/*/*)}&amp;a5={$quest}">
 																			<b>x</b>
 																		</a>
 																	</xsl:when>
@@ -448,7 +444,7 @@
 															<td valign="top">
 																<xsl:if test="$adminMode">
 																	<sup>
-																		<a href="/m8/{substring(name(),1,1)}/{name()}/value.xml" style="color:gray; font-size:.6em">
+																		<a href="{$start/@prefix}m8/{substring(name(),1,1)}/{name()}/value.xml" style="color:gray; font-size:.6em">
 																			<xsl:value-of select="name()"/>
 																		</a>
 																	</sup>
@@ -463,7 +459,7 @@
 								</table>
 							</xsl:when>
 							<xsl:otherwise>
-								<a href="/a/{$ctrl}{m8:dir( $factTypeName )}/?a0={name($startPort/r/*/*)}&amp;a5={$quest}">удалить объект</a>
+								<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $factTypeName )}/?a0={name($startPort/r/*/*)}&amp;a5={$quest}">удалить объект</a>
 							</xsl:otherwise>
 						</xsl:choose>
 					</div>
