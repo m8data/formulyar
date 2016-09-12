@@ -47,7 +47,8 @@ my %setting = (
 	'userPassword'	=> 'example',
 	'forceDbg'		=> 0,
 	'chMod'			=> '0777',
-	'avatar'		=> undef
+	'avatar'		=> undef,
+	'wwwRoot'		=> '/var/www'
 );
 my $passwordFile = 'password.txt';
 my $sessionFile = 'session.json';
@@ -100,6 +101,7 @@ my $JSON = JSON->new->utf8;
 my $XML2JSON = XML::XML2JSON->new(pretty => 'true');
 
 
+
 my $dbg;
 #my $chmod;
 
@@ -112,24 +114,33 @@ my @rootPath = splice( @bin, 1, -3 );
 my $rootPath = join '/', @rootPath;
 #shift @bin;
 	
-my $siteDir = $rootPath[$#rootPath];
+#my $siteDir = $rootPath[$#rootPath];
 
 my $ROOT_DIR = '/'.$rootPath.'/';
-my $framework_folder = $disk.$ROOT_DIR;
+#my $framework_folder = $disk.$ROOT_DIR;
 warn 'rootPath: '.$rootPath;
 warn 'ROOT_DIR: '.$ROOT_DIR;
 
 chdir $ROOT_DIR;
 my $chmod = &getSetting('chMod');
-
+my $wwwRoot = &getSetting('wwwRoot');
+my @wwwRoot = split '/', $wwwRoot;
+my @prefix = splice( @rootPath, @wwwRoot );
+my $pref = join '/', @prefix;
+my $prefix = '/';
+$prefix .= $pref.'/' if @prefix;
+warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){
 	my %temp;
+	
 	$temp{DOCUMENT_ROOT}=$ENV{DOCUMENT_ROOT};
 	chop $temp{DOCUMENT_ROOT} if $temp{DOCUMENT_ROOT}=~m!/$!;
-	$framework_folder =~ m!$ENV{DOCUMENT_ROOT}(.*)!;
-	$temp{'prefix'} = '/'.$1;
-	my $prefix = $1;
+	#$framework_folder =~ m!$ENV{DOCUMENT_ROOT}(.*)!;
+	#$temp{'prefix'} = '/'.$1;
+	#my $prefix = $1;
+	$temp{'prefix'} = $prefix;
+	chop $prefix;
 	$prefix =~ tr!/!.!;
 	
 	$temp{'ROOT_DIR'} = $ROOT_DIR;
@@ -327,13 +338,13 @@ else {
 	&setWarn (' Ответ на запрос с локалхоста', $log1);
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
 	-d $planDir.'/'.$defaultAuthor || make_path( $planDir.'/'.$defaultAuthor, { chmod => $chmod } );
-	#-e '.htaccess' || &setFile( 'zc.htaccess', 'DirectoryIndex /p/formulyar/pl/reg.pl');
+	
 	if ( not -d 'm8' ){
 		warn 'check tempfsFolder';
-		if ( -d $tempfsFolder.'m8/'.$siteDir ){
-			warn 'add '.$tempfsFolder.'m8/'.$siteDir;
-			make_path( $tempfsFolder.'m8/'.$siteDir, { chmod => $chmod } );
-			symlink( $disk.$tempfsFolder.'m8/'.$siteDir => $disk.$ROOT_DIR.'m8' )
+		if ( -d $tempfsFolder.'m8'.$prefix ){
+			warn 'add '.$tempfsFolder.'m8'.$prefix;
+			make_path( $tempfsFolder.'m8'.$prefix, { chmod => $chmod } );
+			symlink( $disk.$tempfsFolder.'m8'.$prefix => $disk.$ROOT_DIR.'m8' )
 		}
 		else {
 			warn 'add '.$ROOT_DIR.'m8';
@@ -354,11 +365,12 @@ else {
 	for my $format ( keys %formatDir ){
 		-d $format || symlink( $disk.$ROOT_DIR.$auraDir => $disk.$ROOT_DIR.$format );
 	}
+	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'p/formulyar/pl/reg.pl' ); #-e '.htaccess' || 
 	&dryProc2( @ARGV ) if @ARGV;	
 	if ( 0 and &getSetting('forceDbg') ){
 		my $zip = Archive::Zip->new();
 		$zip->addTree( $ROOT_DIR );
-		unless ( $zip->writeToFileNamed( '../formulyar_'.$siteDir.'.zip') == AZ_OK ) {
+		unless ( $zip->writeToFileNamed( '../formulyar.zip') == AZ_OK ) {
 			die 'write error';
 		}
 	
@@ -889,9 +901,9 @@ sub dryProc2 {
 		warn '		authorName  '.$authorName;
 		
 		my $tsvPath = $planDir.'/'.$authorName.'/tsv';
-		-e $tsvPath.'/d/n/time.txt' || &setFile( $tsvPath.'/d/n/time.txt', '0.1' );
-		-e $tsvPath.'/d/value.tsv' || &setFile( $tsvPath.'/d/value.tsv', ( join "\t", @mainTriple ) );
-		-e $tsvPath.'/i/value.tsv' || &setFile( $tsvPath.'/i/value.tsv' );
+		&setFile( $tsvPath.'/d/n/time.txt', '0.1' );
+		&setFile( $tsvPath.'/d/value.tsv', ( join "\t", @mainTriple ) );
+		&setFile( $tsvPath.'/i/value.tsv' );
 		
 		if ( not defined $stat{$authorName} ){
 			for ( 'add', 'n_delR', 'n_delN' ){ $stat{$authorName}{$_} = 0 }
@@ -1089,11 +1101,20 @@ sub setFile {
 	
 	my @path = split '/', $file;
 	my $fileName = pop @path;
-	my $dir = join '/', @path;
-	-d $dir || make_path( $dir, { chmod => $chmod } );
+	if ( @path ){
+		my $dir = join '/', @path;
+		-d $dir || make_path( $dir, { chmod => $chmod } );
+	}
 	my $mode = '>';#>:encoding(UTF-8)
-	$mode = '>'.$mode if $add;
-	open (FILE, $mode, $dir.'/'.$fileName)|| die "Error opening file $file: $!\n";
+	if ( $add ){ $mode = '>'.$mode }
+	elsif ( -e $file  ){
+		#my @result = ;
+		my $result = join '\n', &getFile( $file );
+		if ( not $text and not $result ){ return }
+		elsif ( $text and $result and ( $result eq $text ) ){ return $text }
+		else { unlink $file }
+	}
+	open (FILE, $mode, $file )|| die "Error opening file $file: $!\n";
 		if ($text){
 			chomp $text;
 			print FILE $text; #на входе может быть '0' поэтому не просто "if $text"
@@ -1103,7 +1124,7 @@ sub setFile {
 	if ( $dbg and $file=~/.xml$/ ){
 		-d $trashPath || make_path( $trashPath, { chmod => $chmod } );
 		#my $file = $trashPath.'/'.$path[$#path].'_'.$fileName;
-		copy $dir.'/'.$fileName, $trashPath.'/'.$path[$#path].'_'.$fileName;
+		copy $file, $trashPath.'/'.$path[$#path].'_'.$fileName;
 		#open (FILE, $mode, $file )|| die "Error opening file $file: $!\n";#$path[2].'-'.
 		#	print FILE $text if $text;
 		#	print FILE "\n" if $add;
@@ -1238,8 +1259,7 @@ sub getJSON {
 sub getSetting {
 	my ( $key ) = @_;
 	&setWarn("						getSetting  @_" );	
-	if ( -e $configPath.'/'.$key.'.txt' ){ $setting{$key} = &getFile( $configPath.'/'.$key.'.txt' ) }
-	else { &setFile( $configPath.'/'.$key.'.txt', $setting{$key} ) }
+	&setFile( $configPath.'/'.$key.'.txt', $setting{$key} );
 	return $setting{$key}
 }
 sub getDoc {
