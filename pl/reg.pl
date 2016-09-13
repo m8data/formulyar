@@ -48,7 +48,7 @@ my %setting = (
 	'forceDbg'		=> 0,
 	'chMod'			=> '0777',
 	'avatar'		=> '',
-	'wwwRoot'		=> '/var/www'
+	'wwwRoot'		=> 3
 );
 my $passwordFile = 'password.txt';
 my $sessionFile = 'session.json';
@@ -119,9 +119,7 @@ chdir $ROOT_DIR;
 
 my $chmod = $setting{'chMod'};
 $chmod = &getSetting('chMod');
-my $wwwRoot = &getSetting('wwwRoot');
-my @wwwRoot = split '/', $wwwRoot;
-my @prefix = splice( @rootPath, @wwwRoot );
+my @prefix = splice( @rootPath, &getSetting('wwwRoot') );
 my $pref = join '/', @prefix;
 my $prefix = '/';
 $prefix .= $pref.'/' if @prefix;
