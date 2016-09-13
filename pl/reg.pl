@@ -25,7 +25,7 @@ use XML::LibXSLT; #идет в составе XML::LibXML
 use Digest::MurmurHash3 qw( murmur128_x64 );
 use XML::XML2JSON;
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
-use FindBin qw($Bin);
+#use FindBin qw($Bin);
 
 use Time::HiRes qw( time gettimeofday );#gettimeofday
 
@@ -106,12 +106,12 @@ my $XML2JSON = XML::XML2JSON->new(pretty => 'true');
 my $dbg;
 #my $chmod;
 
-warn (' Bin: '.$Bin);
-my @bin = split '/', $Bin;
+warn (' Bin: '.$0);
+my @bin = split '/', $0;
 
 my $disk = '';
 $disk = $bin[0] if $bin[0];
-my @rootPath = splice( @bin, 1, -3 );
+my @rootPath = splice( @bin, 1, -4 );
 my $rootPath = join '/', @rootPath;
 my $ROOT_DIR = '/'.$rootPath.'/';
 
@@ -338,8 +338,8 @@ else {
 	if ( not -d 'm8' ){
 		warn 'check tempfsFolder';
 		if ( -d $tempfsFolder.'m8'.$prefix ){
-			warn 'add '.$tempfsFolder.'m8'.$prefix;
-			make_path( $tempfsFolder.'m8'.$prefix, { chmod => $chmod } );
+			warn 'link from '.$tempfsFolder.'m8'.$prefix;
+			#make_path( $tempfsFolder.'m8'.$prefix, { chmod => $chmod } );
 			symlink( $disk.$tempfsFolder.'m8'.$prefix => $disk.$ROOT_DIR.'m8' )
 		}
 		else {
