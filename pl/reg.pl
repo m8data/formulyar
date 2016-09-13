@@ -88,7 +88,8 @@ my $guest_log = $logPath.'/guest_log.txt';
 #my $rootDir = 'public_html';
 my $userDir = 'u';
 my $auraDir = 'a';
-my $planDir = 'p';
+my $planeDir = '.plane';
+my $planeDir_link = 'p';
 my $indexDir = 'm8';
 
 my $trashPath = $logPath.'/trash';
@@ -159,7 +160,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	$temp{'time'} = time;
 	( $temp{'seconds'}, $temp{'microseconds'} ) = gettimeofday;
 	$temp{'record'} = 0;
-	$temp{'version'} = &getFile( $planDir.'/'.$defaultAvatar.'/version.txt' ) || 'v0';
+	$temp{'version'} = &getFile( $planeDir.'/'.$defaultAvatar.'/version.txt' ) || 'v0';
 	for my $param ( @transaction ){	
 		&setWarn('  ENV '.$param.': '.$ENV{$param});
 		$temp{$param} = $ENV{$param} 
@@ -219,11 +220,11 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		elsif ( $temp{'format'} eq 'doc' ){
 			&setWarn( "   Формирование doc-файла" );#
 			rmtree $temp{'m8path'}.'/report' if -d $temp{'m8path'}.'/report'; 
-			dircopy $planDir.'/'.$temp{'avatar'}.'/template/report', $temp{'m8path'}.'/report';
-			-e $temp{'m8path'}.'/report/_rels/.rels' || copy( $planDir.'/'.$temp{'avatar'}.'/template/report/_rels/.rels', $temp{'m8path'}.'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
+			dircopy $planeDir.'/'.$temp{'avatar'}.'/template/report', $temp{'m8path'}.'/report';
+			-e $temp{'m8path'}.'/report/_rels/.rels' || copy( $planeDir.'/'.$temp{'avatar'}.'/template/report/_rels/.rels', $temp{'m8path'}.'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
 			my $xmlFile = $ROOT_DIR.$temp{'m8path'}.'/temp.xml';
 			&setFile( $xmlFile, &getDoc( \%temp ) );
-			my $xslFile = $ROOT_DIR.$planDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
+			my $xslFile = $ROOT_DIR.$planeDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
 			my $documentFile = $ROOT_DIR.$temp{'m8path'}.'/report/word/document.xml';
 			my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$ROOT_DIR.$logPath.'/xsltproc_doc.txt' );#
 			&setWarn( "   documntXML: $status" );#
@@ -247,7 +248,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	else{
 		&setWarn( "  Выдача текстовой информации" );
 		my %cookie;
-		$temp{'user'} = $temp{'author'} = $cookie{'user'} = $defaultAuthor if not -d $planDir.'/'.$temp{'user'}; 
+		$temp{'user'} = $temp{'author'} = $cookie{'user'} = $defaultAuthor if not -d $planeDir.'/'.$temp{'user'}; 
 		&washProc( \%temp, \%cookie ) if $temp{'REQUEST_METHOD'} eq 'POST' or $temp{'QUERY_STRING'};
 		$temp{'fact'} = $temp{'quest'} = $defaultFact if not defined $temp{'fact'};	
 		$temp{'ctrl'} = $defaultAvatar if $temp{'mission'} eq $defaultAvatar;	
@@ -298,7 +299,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 				$doc = &getDoc( \%temp );
 				if ( $temp{'format'} eq 'html' ){
 					&setWarn("     Вывод temp-а под аватаром: $temp{'ctrl'}");
-					my $xslFile = $planDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
+					my $xslFile = $planeDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
 					if ( 1 or defined $universe{'serverTranslate'} ){
 						&setWarn('      Преобразование на сервере');
 						if (0){
@@ -332,8 +333,9 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 }
 else {
 	&setWarn (' Ответ на запрос с локалхоста', $log1);
+	-d $planeDir_link || symlink( $disk.$ROOT_DIR.$planeDir => $disk.$ROOT_DIR.$planeDir_link );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
-	-d $planDir.'/'.$defaultAuthor || make_path( $planDir.'/'.$defaultAuthor, { chmod => $chmod } );
+	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
 	
 	if ( not -d 'm8' ){
 		warn 'check tempfsFolder';
@@ -349,12 +351,13 @@ else {
 	}
 	
 	if ( &getAvatar(1) and ( &getSetting('avatar') ne $startAvatar ) ){ 
-		rmdir $planDir.'/'.$startAvatar if -d $planDir.'/'.$startAvatar 
+		rmdir $planeDir.'/'.$startAvatar if -d $planeDir.'/'.$startAvatar 
 	}#здесь нельзя удалять через rmtree
-	else { symlink( $disk.$ROOT_DIR.$planDir.'/formulyar/'.$startAvatar => $disk.$ROOT_DIR.$planDir.'/'.$startAvatar ) }
+	else { symlink( $disk.$ROOT_DIR.$planeDir.'/formulyar/'.$startAvatar => $disk.$ROOT_DIR.$planeDir.'/'.$startAvatar ) }
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
 	-d $auraDir.'/m8' || symlink( $disk.$ROOT_DIR.'m8' => $disk.$ROOT_DIR.$auraDir.'/m8' );
-	my @ava = &getDir( $planDir, 1 );
+	
+	my @ava = &getDir( $planeDir, 1 );
 	for my $ava ( @ava ){
 		-d $auraDir.'/'.$ava || make_path( $auraDir.'/'.$ava, { chmod => $chmod } );
 		-d $auraDir.'/'.$ava.'/m8' || symlink( $disk.$ROOT_DIR.'m8' => $disk.$ROOT_DIR.$auraDir.'/'.$ava.'/m8' );
@@ -801,19 +804,19 @@ sub spinProc {
 		&setXML ( $metter, 'index', \%index );
 	}
 	}
-	my $questDir = $planDir.'/'.$author.'/tsv/'.$name.'/'.$quest;
+	my $questDir = $planeDir.'/'.$author.'/tsv/'.$name.'/'.$quest;
 	if ( $add ){
 		&setWarn("		wP   Добавление директории $questDir в базу");
-		&setFile ( $planDir.'/'.$author.'/tsv/'.$name.'/'.$quest.'/time.txt', $time ); #ss
+		&setFile ( $planeDir.'/'.$author.'/tsv/'.$name.'/'.$quest.'/time.txt', $time ); #ss
 	}
 	else{
 		&setWarn("		wP   Удаление директории $questDir из базы");
 		rmtree $questDir;
-		if ( not &getDir ( $planDir.'/'.$author.'/tsv/'.$name, 1 ) ){
-			rmtree $planDir.'/'.$author.'/tsv/'.$name;
-			if ( not &getDir( $planDir.'/'.$author.'/tsv', 1 ) ){
+		if ( not &getDir ( $planeDir.'/'.$author.'/tsv/'.$name, 1 ) ){
+			rmtree $planeDir.'/'.$author.'/tsv/'.$name;
+			if ( not &getDir( $planeDir.'/'.$author.'/tsv', 1 ) ){
 				&setXML( 'm8/d/'.$value[0], 'value' );
-				rmtree $planDir.'/'.$author.'/tsv';
+				rmtree $planeDir.'/'.$author.'/tsv';
 			}
 			if ( $value[3]=~/^i\d+$/ ){
 				&setWarn("		dN    Проверка на идентификатор");
@@ -894,11 +897,11 @@ sub dryProc2 {
 	}
 	my $time1 = time;
 	my $time2;		
-	for my $authorName ( grep{ not /^_/ and $_ ne $defaultAvatar } &getDir( $planDir, 1 ) ){ 
+	for my $authorName ( grep{ not /^_/ and $_ ne $defaultAvatar } &getDir( $planeDir, 1 ) ){ 
 		print REINDEX "authorName	$authorName \n";
 		warn '		authorName  '.$authorName;
 		
-		my $tsvPath = $planDir.'/'.$authorName.'/tsv';
+		my $tsvPath = $planeDir.'/'.$authorName.'/tsv';
 		&setFile( $tsvPath.'/d/n/time.txt', '0.1' );
 		&setFile( $tsvPath.'/d/value.tsv', ( join "\t", @mainTriple ) );
 		&setFile( $tsvPath.'/i/value.tsv' );
@@ -1043,7 +1046,7 @@ sub parseNew {
 		if ($$temp{'login'} ne 'guest'){
 			defined $$pass{'password'} and $$pass{'password'} || return 'no_password';
 			my $userPath = $userDir.'/'.$$temp{'login'};
-			-d $userPath && -d $planDir.'/'.$$temp{'login'} || return 'no_user';
+			-d $userPath && -d $planeDir.'/'.$$temp{'login'} || return 'no_user';
 			my $password = &getFile( $userPath.'/'.$passwordFile );
 			$password = &getSetting('userPassword') if $password eq '';
 			$password eq $$pass{'password'} || return 'bad_password';
@@ -1156,7 +1159,7 @@ sub setName {
 	my ( $type, $author, @value )=@_;
 	&setWarn( "					sN @_" );
 	my $name;
-	my $tsvPath = $planDir.'/'.$author.'/tsv';
+	my $tsvPath = $planeDir.'/'.$author.'/tsv';
 	if (@value){
 		@value = ( join( "\t", @value ) ) if $type eq 'd'; 
 		my $value = join "\n", @value;
@@ -1302,10 +1305,10 @@ sub getAvatar {
 	my %avatar;
 	my $count = 0;
 	my $ava;
-	for my $avatarName ( grep { not /^_/ and -e $planDir.'/'.$_.'/'.$stylesheetDir.'/title.txt' } &getDir( $planDir, 1 ) ){
+	for my $avatarName ( grep { not /^_/ and -e $planeDir.'/'.$_.'/'.$stylesheetDir.'/title.txt' } &getDir( $planeDir, 1 ) ){
 		&setWarn ("		getAvatar   Найден аватар $avatarName");
 		$avatar{'unit'}[$count]{'id'} = $avatarName;
-		$avatar{'unit'}[$count]{'title'} = Encode::decode_utf8( &getFile( $planDir.'/'.$avatarName.'/'.$stylesheetDir.'/title.txt' ) );
+		$avatar{'unit'}[$count]{'title'} = Encode::decode_utf8( &getFile( $planeDir.'/'.$avatarName.'/'.$stylesheetDir.'/title.txt' ) );
 		$ava = $avatarName if $avatarName ne $startAvatar;
 		$count++;
 	}
@@ -1315,7 +1318,7 @@ sub getAvatar {
 sub getTriple {
 	&setWarn("		gT @_");
 	my ( $user, $name )=@_;
-	my $val = &getFile( $planDir.'/'.$user.'/tsv/'.$name.'/value.tsv' );
+	my $val = &getFile( $planeDir.'/'.$user.'/tsv/'.$name.'/value.tsv' );
 	&setWarn("		gT val: $val");
 	my @value = ( split "\t", $val );
 	unshift @value, $name;
