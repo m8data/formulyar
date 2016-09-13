@@ -47,7 +47,7 @@ my %setting = (
 	'userPassword'	=> 'example',
 	'forceDbg'		=> 0,
 	'chMod'			=> '0777',
-	'avatar'		=> undef,
+	'avatar'		=> '',
 	'wwwRoot'		=> '/var/www'
 );
 my $passwordFile = 'password.txt';
@@ -112,17 +112,12 @@ my $disk = '';
 $disk = $bin[0] if $bin[0];
 my @rootPath = splice( @bin, 1, -3 );
 my $rootPath = join '/', @rootPath;
-#shift @bin;
-	
-#my $siteDir = $rootPath[$#rootPath];
-
 my $ROOT_DIR = '/'.$rootPath.'/';
-#my $framework_folder = $disk.$ROOT_DIR;
-warn 'rootPath: '.$rootPath;
-warn 'ROOT_DIR: '.$ROOT_DIR;
 
 chdir $ROOT_DIR;
-my $chmod = &getSetting('chMod');
+
+my $chmod = $setting{'chMod'};
+$chmod = &getSetting('chMod');
 my $wwwRoot = &getSetting('wwwRoot');
 my @wwwRoot = split '/', $wwwRoot;
 my @prefix = splice( @rootPath, @wwwRoot );
@@ -132,6 +127,7 @@ $prefix .= $pref.'/' if @prefix;
 warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){
+	warn 'WEB out!!';
 	my %temp;
 	
 	$temp{DOCUMENT_ROOT}=$ENV{DOCUMENT_ROOT};
@@ -352,7 +348,9 @@ else {
 		}
 	}
 	
-	if ( &getAvatar(1) and &getSetting('avatar') ne $startAvatar ){ rmdir $planDir.'/'.$startAvatar if -d $planDir.'/'.$startAvatar }#здесь нельзя удалять через rmtree
+	if ( &getAvatar(1) and ( &getSetting('avatar') ne $startAvatar ) ){ 
+		rmdir $planDir.'/'.$startAvatar if -d $planDir.'/'.$startAvatar 
+	}#здесь нельзя удалять через rmtree
 	else { symlink( $disk.$ROOT_DIR.$planDir.'/formulyar/'.$startAvatar => $disk.$ROOT_DIR.$planDir.'/'.$startAvatar ) }
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
 	-d $auraDir.'/m8' || symlink( $disk.$ROOT_DIR.'m8' => $disk.$ROOT_DIR.$auraDir.'/m8' );
@@ -1259,7 +1257,8 @@ sub getJSON {
 sub getSetting {
 	my ( $key ) = @_;
 	&setWarn("						getSetting  @_" );	
-	&setFile( $configPath.'/'.$key.'.txt', $setting{$key} );
+	if ( -e $configPath.'/'.$key.'.txt' ){ $setting{$key} = &getFile( $configPath.'/'.$key.'.txt' ) }
+	else { &setFile( $configPath.'/'.$key.'.txt', $setting{$key} ) }
 	return $setting{$key}
 }
 sub getDoc {
