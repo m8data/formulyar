@@ -101,8 +101,16 @@ my $XML2JSON = XML::XML2JSON->new(pretty => 'true');
 my $dbg;
 #my $chmod;
 
-warn (' Bin: '.$0);
-my @bin = split '/', $0;
+warn ('$0: '.$0);
+my $bin = $0;
+if ( $ENV{DOCUMENT_ROOT} ){
+	warn (' Bin: '.$bin);
+	$bin = $ENV{DOCUMENT_ROOT};
+	chop $bin;
+	$bin .= $ENV{SCRIPT_NAME}
+}
+
+my @bin = split '/', $bin;
 
 $disk = $bin[0] if $bin[0];
 my @planePath = splice( @bin, 1, -4 );
@@ -122,6 +130,7 @@ warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){
 	warn 'WEB TEMP out!!';
+	&dryProc2( 1 ) if not -e '.htaccess';	
 	my %temp = (
 		'time'		=>	time,
 		'planeRoot'	=>	$planeRoot,
@@ -318,44 +327,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 }
 else {
 	&setWarn (' Ответ на запрос с локалхоста', $log1);
-	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
-	-d $logPath || make_path( $logPath, { chmod => $chmod } );
-	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
-	
-	if ( not -d 'm8' ){
-		warn 'check tempfsFolder';
-		my $tempfsFolder = &getSetting('tempfsFolder');
-		if ( -d $tempfsFolder.'/m8'.$prefix ){
-			warn 'link from '.$disk.$tempfsFolder.'/m8'.$prefix;
-			#make_path( $tempfsFolder.'m8'.$prefix, { chmod => $chmod } );
-			symlink( $disk.$tempfsFolder.'/m8'.$prefix => $planeRoot.'m8' )
-		}
-		else {
-			warn 'add '.$planeRoot.'m8';
-			make_path( $planeRoot.'m8', { chmod => $chmod } )
-		}
-	}
-	
-	if ( &getAvatar(1) and ( &getSetting('avatar') ne $startAvatar ) ){ 
-		rmdir $planeDir.'/'.$startAvatar if -d $planeDir.'/'.$startAvatar 
-	}#здесь нельзя удалять через rmtree
-	else { 
-		warn 'link from '.$planeRoot.$planeDir.'/formulyar/'.$startAvatar;
-		symlink( $planeRoot.$planeDir.'/formulyar/'.$startAvatar => $planeRoot.$planeDir.'/'.$startAvatar ) }
-	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
-	-d $auraDir.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/m8' );
-	
-	my @ava = &getDir( $planeDir, 1 );
-	for my $ava ( @ava ){
-		-d $auraDir.'/'.$ava || make_path( $auraDir.'/'.$ava, { chmod => $chmod } );
-		-d $auraDir.'/'.$ava.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/'.$ava.'/m8' );
-		-e $userDir.'/'.$ava.'/'.$passwordFile || &setFile( $userDir.'/'.$ava.'/'.$passwordFile );
-	}
-	for my $format ( keys %formatDir ){
-		-d $format || symlink( $planeRoot.$auraDir => $planeRoot.$format );
-	}
-	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.$planeDir.'/formulyar/pl/reg.pl' ); #-e '.htaccess' || 
-	&dryProc2( @ARGV ) if @ARGV;	
+	&dryProc2( @ARGV );	
 	if ( 0 and &getSetting('forceDbg') ){
 		my $zip = Archive::Zip->new();
 		$zip->addTree( $planeRoot );
@@ -811,6 +783,47 @@ sub dryProc2 {
 	#mode2 - только удаляется мусор (в штатном режиме имеет смысл только для доудаления гостевых триплов)
 	#@user - Если указаны то только они будут сохранены
 	#chdir "W:";
+	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.$planeDir.'/formulyar/pl/reg.pl' );
+	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
+	-d $logPath || make_path( $logPath, { chmod => $chmod } );
+	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
+	
+	if ( not -d 'm8' ){
+		warn 'check tempfsFolder';
+		my $tempfsFolder = &getSetting('tempfsFolder');
+		if ( -d $tempfsFolder.'/m8'.$prefix ){
+			warn 'link from '.$disk.$tempfsFolder.'/m8'.$prefix;
+			#make_path( $tempfsFolder.'m8'.$prefix, { chmod => $chmod } );
+			symlink( $disk.$tempfsFolder.'/m8'.$prefix => $planeRoot.'m8' )
+		}
+		else {
+			warn 'add '.$planeRoot.'m8';
+			make_path( $planeRoot.'m8', { chmod => $chmod } )
+		}
+	}
+	
+	if ( &getAvatar(1) and ( &getSetting('avatar') ne $startAvatar ) ){ 
+		rmdir $planeDir.'/'.$startAvatar if -d $planeDir.'/'.$startAvatar 
+	}#здесь нельзя удалять через rmtree
+	else { 
+		warn 'link from '.$planeRoot.$planeDir.'/formulyar/'.$startAvatar;
+		symlink( $planeRoot.$planeDir.'/formulyar/'.$startAvatar => $planeRoot.$planeDir.'/'.$startAvatar ) }
+	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
+	-d $auraDir.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/m8' );
+	
+	my @ava = &getDir( $planeDir, 1 );
+	for my $ava ( @ava ){
+		-d $auraDir.'/'.$ava || make_path( $auraDir.'/'.$ava, { chmod => $chmod } );
+		-d $auraDir.'/'.$ava.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/'.$ava.'/m8' );
+		-e $userDir.'/'.$ava.'/'.$passwordFile || &setFile( $userDir.'/'.$ava.'/'.$passwordFile );
+	}
+	for my $format ( keys %formatDir ){
+		-d $format || symlink( $planeRoot.$auraDir => $planeRoot.$format );
+	}
+	 #-e '.htaccess' || 
+
+	$mode || return;
+	
 	my %stat;
 	$dbg = 0;
 	
