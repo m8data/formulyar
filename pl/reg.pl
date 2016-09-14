@@ -103,7 +103,7 @@ my $dbg;
 
 warn ('$0: '.$0);
 my $bin = $0;
-if ( $ENV{DOCUMENT_ROOT} ){
+if ( defined $ENV{DOCUMENT_ROOT} ){
 	warn (' Bin: '.$bin);
 	$bin = $ENV{DOCUMENT_ROOT};
 	chop $bin;
