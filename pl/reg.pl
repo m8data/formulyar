@@ -20,7 +20,6 @@ use CGI qw(:all); # модуль удален из базовой комплек
 use CGI::Carp qw(warningsToBrowser fatalsToBrowser); #идет в составе CGI
 use XML::LibXML;
 use XML::LibXML::PrettyPrint;
-#use XML::LibXSLT; #идет в составе XML::LibXML
 #нет в ubuntu
 use Digest::MurmurHash3 qw( murmur128_x64 );
 use XML::XML2JSON;
@@ -88,44 +87,30 @@ my $logFile = 'data_log.txt';
 my $log = $logPath.'/'.$logFile;
 my $log1 = $logPath.'/control_log.txt';
 my $guest_log = $logPath.'/guest_log.txt';
-
 my $trashPath = $logPath.'/trash';
-#my $universePath = $configPath.'/universe';
-
 
 my $JSON = JSON->new->utf8;
 my $XML2JSON = XML::XML2JSON->new(pretty => 'true');
 
-
-
 my $dbg;
-#my $chmod;
-
-warn ('$0: '.$0);
-my $bin = $0;
-if ( defined $ENV{DOCUMENT_ROOT} ){
-	warn (' Bin: '.$bin);
-	$bin = $ENV{DOCUMENT_ROOT};
-	chop $bin;
-	$bin .= $ENV{SCRIPT_NAME}
+my @bin = split '/', $0;
+if ($bin[0]){
+	if ( $bin[0]=~/:$/ ){ $disk = $bin[0] }
+	else { 
+		warn ' Not absolute path of script!!'; 
+		exit 
+	}
 }
-
-my @bin = split '/', $bin;
-
-$disk = $bin[0] if $bin[0];
+$bin[4] || warn ' Wrong absolute path!!' && exit;
 my @planePath = splice( @bin, 1, -4 );
 my $planePath = join '/', @planePath;
 my $planeRoot = $disk.'/'.$planePath.'/';
 
 chdir $planeRoot;
-
 my $chmod = $setting{'chMod'};
 $chmod = &getSetting('chMod');
-#my @prefix = splice( @planePath, &getSetting('wwwRoot') );
-#my $pref = join '/', @prefix;
 my $prefix = '/';
 for my $dir ( splice( @planePath, &getSetting('wwwRoot') ) ){ $prefix .= $dir.'/' }
-#$prefix .= $pref.'/' if @prefix;
 warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){
@@ -137,15 +122,8 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		'prefix'	=>	$prefix,
 		'record'	=>	0
 	);
-	
-	#$temp{DOCUMENT_ROOT}=$ENV{DOCUMENT_ROOT};
-	#chop $temp{DOCUMENT_ROOT} if $temp{DOCUMENT_ROOT}=~m!/$!;
-	#$framework_folder =~ m!$ENV{DOCUMENT_ROOT}(.*)!;
-	#$temp{'prefix'} = '/'.$1;
-	#my $prefix = $1;
 	chop $prefix;
 	$prefix =~ tr!/!.!;
-
 	$dbg = &getSetting('forceDbg');
 	$dbg = 1 if cookie($prefix.'debug') ne '';
 	$temp{'adminMode'} = "true" if $dbg;
@@ -161,10 +139,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	&setFile( $logPath.'/env.json', $JSON->encode(\%ENV) ) if $dbg;
 	my $q = CGI->new();
 	$q->charset('utf-8');
-
-	#$temp{'time'} = time;
 	( $temp{'seconds'}, $temp{'microseconds'} ) = gettimeofday;
-	#$temp{'record'} = 0;
 	$temp{'version'} = &getFile( $planeDir.'/'.$defaultAvatar.'/version.txt' ) || 'v0';
 	for my $param ( @transaction ){	
 		&setWarn('  ENV '.$param.': '.$ENV{$param});
@@ -820,20 +795,17 @@ sub dryProc2 {
 	for my $format ( keys %formatDir ){
 		-d $format || symlink( $planeRoot.$auraDir => $planeRoot.$format );
 	}
-	 #-e '.htaccess' || 
 
 	$mode || return;
 	
 	my %stat;
 	$dbg = 0;
-	
 	rmtree $logPath if -d $logPath;
 	make_path( $logPath, { chmod => $chmod } );
 	open (REINDEX, '>'.$logPath.'/reindex.txt')|| die "Ошибка при открытии файла reindex.txt: $!\n";
 	warn '		DRY BEGIN ';
 	my $guestDays = &getSetting('guestDays');
 	my $userDays = &getSetting('userDays');
-	#warn '		guestDays: '.$guestDays;	
 	my $guestTime = time - $guestDays * 24 * 60 * 60;
 	my $userTime = time - $userDays * 24 * 60 * 60;
 	if ( $mode == 2 or 0 ){
@@ -918,14 +890,6 @@ sub dryProc2 {
 					$stat{$authorName}{'add'}++;
 				}
 				&spinProc( \@val, $timeProc );
-				#make_path( $authorName.'/tsv/'.$tsvName.'/'.$questName );
-				#&setFile ( $authorName.'/tsv/'.$tsvName.'/'.$questName.'/time.txt', $timeProc ); #ss
-				#copy( $tsvPath.'/'.$tsvName.'/value.tsv', $authorName.'/tsv/'.$tsvName.'/value.tsv' );
-				#for my $m (1..3){
-				#	next if not $val[$m]=~/i/;
-				#	-d $authorName.'/tsv/'.$val[$m] || make_path( $authorName.'/tsv/'.$val[$m] );
-				#	copy( $tsvPath.'/'.$val[$m].'/value.tsv', $authorName.'/tsv/'.$val[$m].'/value.tsv' )
-				#}
 			}
 			}
 		}
