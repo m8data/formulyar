@@ -10,19 +10,19 @@
 		<xsl:param name="level4"/>
 		<xsl:choose>
 			<xsl:when test="$level4">
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3, '/', $level4, '.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3, '/', $level4, '.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:when test="$level3">
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1, '/', $level3, '.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1, '/', $level3, '.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:when test="$level2">
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:when test="$level1">
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/author/', $level1, '/type.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/author/', $level1, '/type.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/n/n/', $author, '/n/port.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/n/n/', $author, '/n/port.xml' ) )/*"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
@@ -36,13 +36,13 @@
 				<xsl:variable name="role" select="m8:path( $level1, 'index' )/role/*"/>
 				<xsl:choose>
 					<xsl:when test="$level1 and $level2 and $level4 and $level3='*' and $role[@superfile=$level4] and m8:path( $level1, $role[@superfile=$level4]/@file )/*[name()=$level2]/*">
-						<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', name(m8:path( $level1, $role[@superfile=$level4]/@file )/*[name()=$level2]/*), '/', $level4, '.xml' ) )/*"/>
+						<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', name(m8:path( $level1, $role[@superfile=$level4]/@file )/*[name()=$level2]/*), '/', $level4, '.xml' ) )/*"/>
 					</xsl:when>
 					<xsl:when test="$level1 and $level2 and $level4 and $role[@superfile=$level4] and m8:path( $level1, $role[@superfile=$level4]/@file )/*[name()=$level2]/*[name()=$level3]">
-						<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3, '/', $level4, '.xml' ) )/*"/>
+						<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3, '/', $level4, '.xml' ) )/*"/>
 					</xsl:when>
 					<xsl:when test="$level1 and $level2 and not($level4) and $role[@superfile=$level3] and m8:path( $level1, $role[@superfile=$level3]/@file )/*[name()=$level2]/*[name()=$level1]">
-						<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1, '/', $level3, '.xml' ) )/*"/>
+						<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1, '/', $level3, '.xml' ) )/*"/>
 					</xsl:when>
 					<xsl:otherwise>
 						<xsl:variable name="nullElement">
@@ -62,7 +62,7 @@
 			<xsl:when test="$level2">
 				<xsl:choose>
 					<xsl:when test="$level1 and ( $level2='index' or $level2='value' or m8:path( $level1, 'index' )/*/*[@file=$level2] )">
-						<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '.xml' ) )/*"/>
+						<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '.xml' ) )/*"/>
 					</xsl:when>
 					<xsl:otherwise>
 						<xsl:variable name="nullElement">
@@ -73,10 +73,10 @@
 				</xsl:choose>
 			</xsl:when>
 			<xsl:when test="$level1">
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/author/', $level1, '/type.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/author/', $level1, '/type.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="document( concat( $start/@DOCUMENT_ROOT, $start/@prefix, 'm8/n/n/', $author, '/n/port.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/n/n/', $author, '/n/port.xml' ) )/*"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
@@ -107,7 +107,7 @@
 	информация по стартовому xml (здесь излишне читать порт, т.к. иногда он нужен)-->
 	<xsl:variable name="authDir" select="'m8/author'"/>
 	<xsl:variable name="start" select="/*"/>
-	<xsl:variable name="m8root" select="$start/@DOCUMENT_ROOT"/>
+	<!--<xsl:variable name="m8root" select="$start/@DOCUMENT_ROOT"/>-->
 	<xsl:variable name="ctrl" select="$start/@ctrl"/>
 	<xsl:variable name="fact" select="$start/@fact"/>
 	<xsl:variable name="author" select="$start/@author"/>

@@ -20,7 +20,7 @@ use CGI qw(:all); # модуль удален из базовой комплек
 use CGI::Carp qw(warningsToBrowser fatalsToBrowser); #идет в составе CGI
 use XML::LibXML;
 use XML::LibXML::PrettyPrint;
-use XML::LibXSLT; #идет в составе XML::LibXML
+#use XML::LibXSLT; #идет в составе XML::LibXML
 #нет в ubuntu
 use Digest::MurmurHash3 qw( murmur128_x64 );
 use XML::XML2JSON;
@@ -32,14 +32,14 @@ use Time::HiRes qw( time gettimeofday );#gettimeofday
 #установление возможности записывать файлы с правами 777
 umask 0;
 
-#my $disk = '';
+my $disk = '';
 BEGIN {
    if ($^O eq 'MSWin32'){
       require Win32::Symlink;
       Win32::Symlink->import();
    }
 }
-#$disk = "C:" if $^O eq 'MSWin32';
+$disk = "C:" if $^O eq 'MSWin32';
 
 my %setting = (
 	'guestDays' 	=> 30,
@@ -48,7 +48,8 @@ my %setting = (
 	'forceDbg'		=> 0,
 	'chMod'			=> '0777',
 	'avatar'		=> '',
-	'wwwRoot'		=> 3
+	'wwwRoot'		=> 3,
+	'tempfsFolder'	=> '/mnt/tmpfs'
 );
 my $passwordFile = 'password.txt';
 my $sessionFile = 'session.json';
@@ -63,20 +64,24 @@ my $tNode = '$t';
 my @level = ( 'system', 'prefix', 'fact', 'author', 'quest' );
 my @role = (	'triple', 	'role1', 	'role2', 		'role3', 	'author', 'quest', 'target' );
 my @number = (	'name',		'subject', 	'predicate',	'object',	'author', 'quest', 'add' );
-my @transaction = ( 'REMOTE_ADDR', 'HTTP_USER_AGENT', 'REQUEST_URI', 'QUERY_STRING', 'HTTP_COOKIE', 'REQUEST_METHOD', 'HTTP_X_REQUESTED_WITH' );#, 'HTTP_USER_AGENT', 'HTTP_ACCEPT_LANGUAGE', 'REMOTE_ADDR' $$transaction{'QUERY_STRING'}
+my @transaction = ( 'DOCUMENT_ROOT', 'REMOTE_ADDR', 'HTTP_USER_AGENT', 'REQUEST_URI', 'QUERY_STRING', 'HTTP_COOKIE', 'REQUEST_METHOD', 'HTTP_X_REQUESTED_WITH' );#, 'HTTP_USER_AGENT', 'HTTP_ACCEPT_LANGUAGE', 'REMOTE_ADDR' $$transaction{'QUERY_STRING'}
 my @mainTriple = ( 'n', 'r', 'i' );
 my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1, '_xml', 1, 'formulyar', 1 );
 my @superrole = ( 'triple', 'role', 'role', 'role', 'author', 'quest', 'subject', 'predicate', 'object' );
 my @superfile = ( undef, 'port', 'dock', 'terminal' ); 
 my $type = 'xml';
 
-my $logPath = 'u/formulyar/log'; #'../log';
-my $authorPath = 'm8/author';
+my $userDir = 'u';
+my $auraDir = 'a';
+my $planeDir = '.plane';
+my $planeDir_link = 'p';
+my $indexDir = 'm8';
+
+my $logPath = $userDir.'/'.$defaultAvatar.'/log'; #'../log';
+my $authorPath = $indexDir.'/author';
 my $configDir = 'config';
-my $configPath = 'u/formulyar/'.$configDir; #'../'.$configDir;
+my $configPath = $userDir.'/'.$defaultAvatar.'/'.$configDir; #'../'.$configDir;
 my $sessionPath = $configPath.'/temp_name';
-#my $defaultNumberPath = 'guest/tsv/d/n';
-my $tempfsFolder = '/mnt/tmpfs/';
 
 my $errorLog = $logPath.'/error_log.txt';
 my $logFile = 'data_log.txt';
@@ -84,19 +89,9 @@ my $log = $logPath.'/'.$logFile;
 my $log1 = $logPath.'/control_log.txt';
 my $guest_log = $logPath.'/guest_log.txt';
 
-#my $rootFolder = '/var/www/';
-#my $rootDir = 'public_html';
-my $userDir = 'u';
-my $auraDir = 'a';
-my $planeDir = '.plane';
-my $planeDir_link = 'p';
-my $indexDir = 'm8';
-
 my $trashPath = $logPath.'/trash';
-my $universePath = $configPath.'/universe';
+#my $universePath = $configPath.'/universe';
 
-#my $ROOT_DIR;
-my %universe;
 
 my $JSON = JSON->new->utf8;
 my $XML2JSON = XML::XML2JSON->new(pretty => 'true');
@@ -109,37 +104,39 @@ my $dbg;
 warn (' Bin: '.$0);
 my @bin = split '/', $0;
 
-my $disk = '';
 $disk = $bin[0] if $bin[0];
-my @rootPath = splice( @bin, 1, -4 );
-my $rootPath = join '/', @rootPath;
-my $ROOT_DIR = '/'.$rootPath.'/';
+my @planePath = splice( @bin, 1, -4 );
+my $planePath = join '/', @planePath;
+my $planeRoot = $disk.'/'.$planePath.'/';
 
-chdir $ROOT_DIR;
+chdir $planeRoot;
 
 my $chmod = $setting{'chMod'};
 $chmod = &getSetting('chMod');
-my @prefix = splice( @rootPath, &getSetting('wwwRoot') );
-my $pref = join '/', @prefix;
+#my @prefix = splice( @planePath, &getSetting('wwwRoot') );
+#my $pref = join '/', @prefix;
 my $prefix = '/';
-$prefix .= $pref.'/' if @prefix;
+for my $dir ( splice( @planePath, &getSetting('wwwRoot') ) ){ $prefix .= $dir.'/' }
+#$prefix .= $pref.'/' if @prefix;
 warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){
-	warn 'WEB out!!';
-	my %temp;
+	warn 'WEB TEMP out!!';
+	my %temp = (
+		'time'		=>	time,
+		'planeRoot'	=>	$planeRoot,
+		'prefix'	=>	$prefix,
+		'record'	=>	0
+	);
 	
-	$temp{DOCUMENT_ROOT}=$ENV{DOCUMENT_ROOT};
-	chop $temp{DOCUMENT_ROOT} if $temp{DOCUMENT_ROOT}=~m!/$!;
+	#$temp{DOCUMENT_ROOT}=$ENV{DOCUMENT_ROOT};
+	#chop $temp{DOCUMENT_ROOT} if $temp{DOCUMENT_ROOT}=~m!/$!;
 	#$framework_folder =~ m!$ENV{DOCUMENT_ROOT}(.*)!;
 	#$temp{'prefix'} = '/'.$1;
 	#my $prefix = $1;
-	$temp{'prefix'} = $prefix;
 	chop $prefix;
 	$prefix =~ tr!/!.!;
-	
-	$temp{'ROOT_DIR'} = $ROOT_DIR;
-	%universe = &getHash( $universePath.'.json' ) if -e $universePath.'.json';	
+
 	$dbg = &getSetting('forceDbg');
 	$dbg = 1 if cookie($prefix.'debug') ne '';
 	$temp{'adminMode'} = "true" if $dbg;
@@ -149,15 +146,16 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		close (FILE);
 	}
 	copy( $log, $log.'.txt' ) or die "Copy failed: $!" if -e $log and $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
-	copy( $logPath.'/env.json', $logPath.'/env.json.json' ) or die "Copy failed: $!" if -e $logPath.'/env.json' and $dbg; #копировать лог не ниже, т.е. не после возможного
 	&setWarn( " Обработка запроса $ENV{REQUEST_URI}", $log);#
+	
+	copy( $logPath.'/env.json', $logPath.'/env.json.json' ) or die "Copy failed: $!" if -e $logPath.'/env.json' and $dbg; #копировать лог не ниже, т.е. не после возможного
 	&setFile( $logPath.'/env.json', $JSON->encode(\%ENV) ) if $dbg;
 	my $q = CGI->new();
 	$q->charset('utf-8');
 
-	$temp{'time'} = time;
+	#$temp{'time'} = time;
 	( $temp{'seconds'}, $temp{'microseconds'} ) = gettimeofday;
-	$temp{'record'} = 0;
+	#$temp{'record'} = 0;
 	$temp{'version'} = &getFile( $planeDir.'/'.$defaultAvatar.'/version.txt' ) || 'v0';
 	for my $param ( @transaction ){	
 		&setWarn('  ENV '.$param.': '.$ENV{$param});
@@ -213,18 +211,18 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			&setWarn( "   Формирование pdf-файла запросом $ENV{HTTP_HOST}/$auraDir/$temp{'avatar'}/$temp{'m8path'}" );#
 			my $req = $ENV{HTTP_HOST}.$temp{'prefix'}.$auraDir.'/'.$temp{'avatar'}.'/'.$temp{'m8path'};
 			$req .= '/?'.$temp{'QUERY_STRING'};
-			system ( 'wkhtmltopdf '.$req.' '.$ROOT_DIR.$temp{'m8path'}.'/report.pdf'.' 2>'.$ROOT_DIR.$logPath.'/wkhtmltopdf.txt' );
+			system ( 'wkhtmltopdf '.$req.' '.$planeRoot.$temp{'m8path'}.'/report.pdf'.' 2>'.$planeRoot.$logPath.'/wkhtmltopdf.txt' );
 		}
 		elsif ( $temp{'format'} eq 'doc' ){
 			&setWarn( "   Формирование doc-файла" );#
 			rmtree $temp{'m8path'}.'/report' if -d $temp{'m8path'}.'/report'; 
 			dircopy $planeDir.'/'.$temp{'avatar'}.'/template/report', $temp{'m8path'}.'/report';
 			-e $temp{'m8path'}.'/report/_rels/.rels' || copy( $planeDir.'/'.$temp{'avatar'}.'/template/report/_rels/.rels', $temp{'m8path'}.'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
-			my $xmlFile = $ROOT_DIR.$temp{'m8path'}.'/temp.xml';
+			my $xmlFile = $planeRoot.$temp{'m8path'}.'/temp.xml';
 			&setFile( $xmlFile, &getDoc( \%temp ) );
-			my $xslFile = $ROOT_DIR.$planeDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
-			my $documentFile = $ROOT_DIR.$temp{'m8path'}.'/report/word/document.xml';
-			my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$ROOT_DIR.$logPath.'/xsltproc_doc.txt' );#
+			my $xslFile = $planeRoot.$planeDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
+			my $documentFile = $planeRoot.$temp{'m8path'}.'/report/word/document.xml';
+			my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$planeRoot.$logPath.'/xsltproc_doc.txt' );#
 			&setWarn( "   documntXML: $status" );#
 			unlink $temp{'m8path'}.'/report.docx' if -e $temp{'m8path'}.'/report.docx';
 			my $zip = Archive::Zip->new();
@@ -298,23 +296,12 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 				if ( $temp{'format'} eq 'html' ){
 					&setWarn("     Вывод temp-а под аватаром: $temp{'ctrl'}");
 					my $xslFile = $planeDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
-					if ( 1 or defined $universe{'serverTranslate'} ){
-						&setWarn('      Преобразование на сервере');
-						if (0){
-							my $xslt = XML::LibXSLT->new();
-							my $style_doc = XML::LibXML->load_xml(location=> $xslFile, no_cdata=>1);
-							my $stylesheet = $xslt->parse_stylesheet($style_doc); 
-							$doc = $stylesheet->transform($doc);
-						}
-						else {				
-							$temp{'time'} =~/(\d\d)$/;
-							my $trashTempFile = $logPath.'/trash/'.$1.'.xml';
-							&setFile( $trashTempFile, $doc );
-							$doc = system ( 'xsltproc '.$ROOT_DIR.$xslFile.' '.$ROOT_DIR.$trashTempFile.' 2>'.$ROOT_DIR.$logPath.'/out.txt' );#
-							$doc =~s/(\d*)$//;
-							print $1 if $dbg and $1
-						}
-					}
+					$temp{'time'} =~/(\d\d)$/;
+					my $trashTempFile = $logPath.'/trash/'.$1.'.xml';
+					&setFile( $trashTempFile, $doc );
+					$doc = system ( 'xsltproc '.$planeRoot.$xslFile.' '.$planeRoot.$trashTempFile.' 2>'.$planeRoot.$logPath.'/out.txt' );#
+					$doc =~s/(\d*)$//;
+					print $1 if $dbg and $1
 				}	
 			}
 			print $doc;
@@ -331,44 +318,47 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 }
 else {
 	&setWarn (' Ответ на запрос с локалхоста', $log1);
-	-d $planeDir_link || symlink( $disk.$ROOT_DIR.$planeDir => $disk.$ROOT_DIR.$planeDir_link );
+	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
 	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
 	
 	if ( not -d 'm8' ){
 		warn 'check tempfsFolder';
-		if ( -d $tempfsFolder.'m8'.$prefix ){
-			warn 'link from '.$tempfsFolder.'m8'.$prefix;
+		my $tempfsFolder = &getSetting('tempfsFolder');
+		if ( -d $tempfsFolder.'/m8'.$prefix ){
+			warn 'link from '.$disk.$tempfsFolder.'/m8'.$prefix;
 			#make_path( $tempfsFolder.'m8'.$prefix, { chmod => $chmod } );
-			symlink( $disk.$tempfsFolder.'m8'.$prefix => $disk.$ROOT_DIR.'m8' )
+			symlink( $disk.$tempfsFolder.'/m8'.$prefix => $planeRoot.'m8' )
 		}
 		else {
-			warn 'add '.$ROOT_DIR.'m8';
-			make_path( $ROOT_DIR.'m8', { chmod => $chmod } )
+			warn 'add '.$planeRoot.'m8';
+			make_path( $planeRoot.'m8', { chmod => $chmod } )
 		}
 	}
 	
 	if ( &getAvatar(1) and ( &getSetting('avatar') ne $startAvatar ) ){ 
 		rmdir $planeDir.'/'.$startAvatar if -d $planeDir.'/'.$startAvatar 
 	}#здесь нельзя удалять через rmtree
-	else { symlink( $disk.$ROOT_DIR.$planeDir.'/formulyar/'.$startAvatar => $disk.$ROOT_DIR.$planeDir.'/'.$startAvatar ) }
+	else { 
+		warn 'link from '.$planeRoot.$planeDir.'/formulyar/'.$startAvatar;
+		symlink( $planeRoot.$planeDir.'/formulyar/'.$startAvatar => $planeRoot.$planeDir.'/'.$startAvatar ) }
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
-	-d $auraDir.'/m8' || symlink( $disk.$ROOT_DIR.'m8' => $disk.$ROOT_DIR.$auraDir.'/m8' );
+	-d $auraDir.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/m8' );
 	
 	my @ava = &getDir( $planeDir, 1 );
 	for my $ava ( @ava ){
 		-d $auraDir.'/'.$ava || make_path( $auraDir.'/'.$ava, { chmod => $chmod } );
-		-d $auraDir.'/'.$ava.'/m8' || symlink( $disk.$ROOT_DIR.'m8' => $disk.$ROOT_DIR.$auraDir.'/'.$ava.'/m8' );
+		-d $auraDir.'/'.$ava.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/'.$ava.'/m8' );
 		-e $userDir.'/'.$ava.'/'.$passwordFile || &setFile( $userDir.'/'.$ava.'/'.$passwordFile );
 	}
 	for my $format ( keys %formatDir ){
-		-d $format || symlink( $disk.$ROOT_DIR.$auraDir => $disk.$ROOT_DIR.$format );
+		-d $format || symlink( $planeRoot.$auraDir => $planeRoot.$format );
 	}
-	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'p/formulyar/pl/reg.pl' ); #-e '.htaccess' || 
+	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.$planeDir.'/formulyar/pl/reg.pl' ); #-e '.htaccess' || 
 	&dryProc2( @ARGV ) if @ARGV;	
 	if ( 0 and &getSetting('forceDbg') ){
 		my $zip = Archive::Zip->new();
-		$zip->addTree( $ROOT_DIR );
+		$zip->addTree( $planeRoot );
 		unless ( $zip->writeToFileNamed( '../formulyar.zip') == AZ_OK ) {
 			die 'write error';
 		}
@@ -512,28 +502,6 @@ sub washProc{
 			elsif ( $$temp{'control'} eq 'start'){
 				&getAvatar(1);
 			}
-			else {
-				&setWarn ('		wP    Работа с глобальными параметрами');
-				if ( defined $$temp{'serverTranslate'} ){
-					&setWarn ('	  wP   Работа с параметром serverTranslate');
-					if ( $$temp{'serverTranslate'} eq '' ){ delete $universe{'serverTranslate'} }
-					else { $universe{'serverTranslate'} = 1 }
-				}
-				if ( defined $$temp{'emulationControl'} ){
-					&setWarn ('	  wP   Работа с параметром emulationControl');
-					if ( $$temp{'emulationControl'} eq '' ){ delete $universe{'emulationControl'} }
-					else { $universe{'emulationControl'} = 1 }
-				}
-				if ( keys %universe ){
-					&setWarn ('		wP   Работа с хэшем universe');
-					&setFile( $universePath.'.json', $JSON->encode(\%universe) );
-				}			
-				elsif (-e $universePath.'.json') {
-					unlink $universePath.'.json';
-					&getDir ($configPath) || rmdir $configPath
-				}
-			}
-			for (keys %universe){ $$temp{$_} = 1 }
 		}
 		elsif ( $$temp{'record'} ) {	
 			&setWarn( "		wP   Поиск и проверка номеров в строке запроса $$temp{'QUERY_STRING'}" );# стирка 
