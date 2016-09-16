@@ -47,7 +47,7 @@ my %setting = (
 	'forceDbg'		=> 0,
 	'chMod'			=> '0777',
 	'avatar'		=> '',
-	'wwwRoot'		=> 3,
+	'baseLevel'		=> 3,
 	'tempfsFolder'	=> '/mnt/tmpfs'
 );
 my $passwordFile = 'password.txt';
@@ -110,7 +110,13 @@ chdir $planeRoot;
 my $chmod = $setting{'chMod'};
 $chmod = &getSetting('chMod');
 my $prefix = '/';
-for my $dir ( splice( @planePath, &getSetting('wwwRoot') ) ){ $prefix .= $dir.'/' }
+my $baseLevel = &getSetting('baseLevel');
+if ( defined $ENV{DOCUMENT_ROOT} ){
+	my @dr = split '/', $ENV{DOCUMENT_ROOT};
+	$dr[$#dr] || pop @dr;
+	$baseLevel = $#dr;
+}
+for my $dir ( splice( @planePath, $baseLevel ) ){ $prefix .= $dir.'/' }
 warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){
