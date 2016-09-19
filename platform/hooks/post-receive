@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 script='/pl/reg.pl';
 repo=$(pwd | cut -f 5 -d "/" | cut -f 1 -d ".");
 while read oldrev newrev refname
