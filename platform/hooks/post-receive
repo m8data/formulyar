@@ -15,7 +15,7 @@ do
 	git pull origin $branch;
 	if [ "$repo" = "formulyar" ]; then
 		chmod +x $LIVE$script;
-		#chmod +x "/home/git/_$branch/formulyar/platform/hooks/post-receive";
+		chmod +x "/home/git/_$branch/formulyar/platform/hooks/post-receive";
 	fi
     echo "===== DONE =====";
 done
