@@ -1,0 +1,20 @@
+#!/bin/bash
+
+script='/pl/reg.pl';
+repo=$(pwd | cut -f 5 -d "/" | cut -f 1 -d ".");
+while read oldrev newrev refname
+do
+	branch=$(git rev-parse --symbolic --abbrev-ref $refname );
+    echo "===== DEPLOYING TO $branch BRANCHE LIVE SITE $repo =====";
+	LIVE="/home/git/_$branch/$repo/";
+    cd $LIVE || exit;
+	GIT_DIR='.git';
+	umask 000;
+	git reset --hard;
+	git pull origin $branch;
+	if [ "$repo"=="formulyar" ]; then
+		chmod +x $LIVE$script;
+		chmod +x "/home/git/_$branch/formulyar/platform/hooks/post-receive";
+	fi
+    echo "===== DONE =====";
+done
