@@ -107,6 +107,9 @@ my $planePath = join '/', @planePath;
 my $planeRoot = $disk.'/'.$planePath.'/';
 
 chdir $planeRoot;
+my @head = split '/', &getFile ( '.plane/formulyar/.git/HEAD' );
+my $branche = $head[$#head];
+
 my $chmod = $setting{'chMod'};
 $chmod = &getSetting('chMod');
 my $prefix = '/';
@@ -121,11 +124,20 @@ warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){
 	warn 'WEB TEMP out!!';
-	&dryProc2( 1 ) if not -e '.htaccess';	
+	my $dry;
+	if ( -e '.htaccess' ){
+		for my $authorName ( grep{ not /^_/ and -d $planeDir.'/'.$_.'/.git' and not $dry } &getDir( $planeDir, 1 ) ){ 
+			warn '		authorName  '.$authorName;
+			$dry = 1 if &getFile( -d $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche ) ne &getFile( $userDir.'/'.$authorName.'/'.$branche );
+		}
+	}
+	else { $dry = 1 }
+	&dryProc2( 1 ) if $dry;
 	my %temp = (
 		'time'		=>	time,
 		'planeRoot'	=>	$planeRoot,
 		'prefix'	=>	$prefix,
+		'branche'	=>	$branche,
 		'record'	=>	0
 	);
 	chop $prefix;
@@ -854,9 +866,16 @@ sub dryProc2 {
 	}
 	my $time1 = time;
 	my $time2;		
-	for my $authorName ( grep{ not /^_/ and $_ ne $defaultAvatar } &getDir( $planeDir, 1 ) ){ 
+	for my $authorName ( grep{ not /^_/ } &getDir( $planeDir, 1 ) ){ 
 		print REINDEX "authorName	$authorName \n";
 		warn '		authorName  '.$authorName;
+		
+		if ( -d $planeDir.'/'.$authorName.'/.git' ){
+			print REINDEX "    Копирование указателя состояния ветки $branche";
+			warn '	Копирование указателя состояния  ';
+			copy $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche, $userDir.'/'.$authorName.'/'.$branche;
+		}
+		next if $authorName eq $defaultAvatar;
 		
 		my $tsvPath = $planeDir.'/'.$authorName.'/tsv';
 		&setFile( $tsvPath.'/d/n/time.txt', '0.1' );
@@ -936,6 +955,7 @@ sub dryProc2 {
 				}
 			}
 		}
+
 	#}
 	}
 	my $time3 = time+1;
