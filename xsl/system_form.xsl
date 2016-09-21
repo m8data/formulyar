@@ -690,6 +690,10 @@
 			</div>
 			<div style="position: fixed; bottom: 5px; right: 5px; color: gray; z-index: 1">
 				<xsl:value-of select="$start/@version"/>
+				<xsl:if test="$start/@branche">
+					<xsl:value-of select="concat( ' / ', $start/@branche, ' ', substring( $start/@head, 1, 4 ) )"/>
+					<xsl:if test="$start/@dry"><sup style="color: red">new</sup></xsl:if>
+				</xsl:if>
 				<xsl:text> | </xsl:text>
 				<!--<xsl:text> &lt;- </xsl:text>-->
 				<xsl:choose>

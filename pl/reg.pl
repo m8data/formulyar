@@ -136,13 +136,15 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	copy( $logPath.'/env.json', $logPath.'/env.json.json' ) or die "Copy failed: $!" if -e $logPath.'/env.json' and $dbg; #копировать лог не ниже, т.е. не после возможного
 	&setFile( $logPath.'/env.json', $JSON->encode(\%ENV) ) if $dbg;
 	my $dry;
+	my $head;
 	if ( -e '.htaccess' ){
 		&setWarn( "  Проверка необходимости сушки индекса после коммита");#	
 		if ( $^O ne 'MSWin32' and -d '/home/git' ){
 			&setWarn( "   Обнаружена работа на сервере");#	
 			for my $authorName ( grep{ not $dry and not /^_/ and -d $planeDir.'/'.$_.'/.git' and -e $planeDir.'/'.$_.'/.git/refs/heads/'.$branche } &getDir( $planeDir, 1 ) ){ 
 				&setWarn( "    Проверка коммитов в репозитории $authorName");#	
-				$dry = 1 if not -e $userDir.'/'.$authorName.'/'.$branche or &getFile( $userDir.'/'.$authorName.'/'.$branche ) ne &getFile( $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche );
+				$head = &getFile( $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche );
+				$dry = 1 if not -e $userDir.'/'.$authorName.'/'.$branche or &getFile( $userDir.'/'.$authorName.'/'.$branche ) ne $head;
 			}
 		}
 	}
@@ -152,10 +154,11 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		'time'		=>	time,
 		'planeRoot'	=>	$planeRoot,
 		'prefix'	=>	$prefix,
-		'branche'	=>	$branche,
 		'record'	=>	0,
+		'adminMode'	=> 	$dbg,
+		'branche'	=>	$branche,
 		'dry'		=>	$dry,
-		'adminMode'	=> 	$dbg
+		'head'		=>	$head,
 	);
 	#$temp{'adminMode'} = "true" if $dbg;
 	for my $param ( @transaction ){	
