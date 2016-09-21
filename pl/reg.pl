@@ -92,7 +92,7 @@ my $trashPath = $logPath.'/trash';
 my $JSON = JSON->new->utf8;
 my $XML2JSON = XML::XML2JSON->new(pretty => 'true');
 
-my $dbg;
+
 my @bin = split '/', $0;
 if ($bin[0]){
 	if ( $bin[0]=~/:$/ ){ $disk = $bin[0] }
@@ -112,7 +112,9 @@ my $branche = $head[$#head];
 
 my $chmod = $setting{'chMod'};
 $chmod = &getSetting('chMod');
+my $dbg = &getSetting('forceDbg');
 my $prefix = '/';
+
 my $platformLevel = &getSetting('platformLevel');
 if ( defined $ENV{DOCUMENT_ROOT} ){
 	my @dr = split '/', $ENV{DOCUMENT_ROOT};
@@ -122,14 +124,23 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 for my $dir ( splice( @planePath, $platformLevel ) ){ $prefix .= $dir.'/' }
 warn 'prefix: '.$prefix;
 
-if ( defined $ENV{DOCUMENT_ROOT} ){
+if ( defined $ENV{DOCUMENT_ROOT} ){	
 	warn 'WEB TEMP out!!';
+	chop $prefix;
+	$prefix =~ tr!/!.!;
+	$dbg = 1 if cookie($prefix.'debug') ne '';
+	copy( $log, $log.'.txt' ) or die "Copy failed: $!" if -e $log and $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
+	&setWarn( " Обработка запроса в сайте $ENV{DOCUMENT_ROOT}", $log);#	
+	copy( $logPath.'/env.json', $logPath.'/env.json.json' ) or die "Copy failed: $!" if -e $logPath.'/env.json' and $dbg; #копировать лог не ниже, т.е. не после возможного
+	&setFile( $logPath.'/env.json', $JSON->encode(\%ENV) ) if $dbg;
 	my $dry;
 	if ( -e '.htaccess' ){
-		if ($^O ne 'MSWin32'){
-			for my $authorName ( grep{ not /^_/ and -d $planeDir.'/'.$_.'/.git' and not $dry } &getDir( $planeDir, 1 ) ){ 
-				warn '		authorName  '.$authorName;
-				$dry = 1 if &getFile( -d $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche ) ne &getFile( $userDir.'/'.$authorName.'/'.$branche );
+		&setWarn( "  Проверка необходимости сушки индекса после коммита");#	
+		if ( $^O ne 'MSWin32' and -d '/home/git' ){
+			&setWarn( "   Обнаружена работа на сервере");#	
+			for my $authorName ( grep{ not $dry and not /^_/ and -d $planeDir.'/'.$_.'/.git' and -e $planeDir.'/'.$_.'/.git/refs/heads/'.$branche } &getDir( $planeDir, 1 ) ){ 
+				&setWarn( "    Проверка коммитов в репозитории $authorName");#	
+				$dry = 1 if not -e $userDir.'/'.$authorName.'/'.$branche or &getFile( $userDir.'/'.$authorName.'/'.$branche ) ne &getFile( $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche );
 			}
 		}
 	}
@@ -142,21 +153,12 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		'branche'	=>	$branche,
 		'record'	=>	0
 	);
-	chop $prefix;
-	$prefix =~ tr!/!.!;
-	$dbg = &getSetting('forceDbg');
-	$dbg = 1 if cookie($prefix.'debug') ne '';
 	$temp{'adminMode'} = "true" if $dbg;
 	if (not $dbg and $ENV{'QUERY_STRING'} ){
 		open (FILE, '>>'.$guest_log)|| die "Ошибка при открытии файла $guest_log: $!\n";
 			print FILE localtime(time).'	'.$ENV{'REMOTE_ADDR'}.'	'.$ENV{'HTTP_FORWARDED'}.'	'.$ENV{'REQUEST_URI'},  "\n";
 		close (FILE);
 	}
-	copy( $log, $log.'.txt' ) or die "Copy failed: $!" if -e $log and $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
-	&setWarn( " Обработка запроса $ENV{REQUEST_URI}", $log);#
-	
-	copy( $logPath.'/env.json', $logPath.'/env.json.json' ) or die "Copy failed: $!" if -e $logPath.'/env.json' and $dbg; #копировать лог не ниже, т.е. не после возможного
-	&setFile( $logPath.'/env.json', $JSON->encode(\%ENV) ) if $dbg;
 	my $q = CGI->new();
 	$q->charset('utf-8');
 	( $temp{'seconds'}, $temp{'microseconds'} ) = gettimeofday;
