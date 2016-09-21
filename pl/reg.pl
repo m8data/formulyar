@@ -88,6 +88,7 @@ my $log = $logPath.'/'.$logFile;
 my $log1 = $logPath.'/control_log.txt';
 my $guest_log = $logPath.'/guest_log.txt';
 my $trashPath = $logPath.'/trash';
+my $platformGit = '/home/git/_master/gitolite-admin/.git/refs/heads/master'
 
 my $JSON = JSON->new->utf8;
 my $XML2JSON = XML::XML2JSON->new(pretty => 'true');
@@ -779,11 +780,22 @@ sub spinProc {
 sub dryProc2 {
 	my ( $mode )=@_; #$param
 	#&setWarn("		dP 2 @_" );
-	
+	$dbg = 0;
+	#rmtree $logPath if -d $logPath;
+	make_path( $logPath, { chmod => $chmod } );
+	open (REINDEX, '>'.$logPath.'/reindex.txt')|| die "Ошибка при открытии файла $logPath/reindex.txt: $!\n";
+	warn '		DRY BEGIN ';	
 	#mode1 - удаляется и переиндексируется все
 	#mode2 - только удаляется мусор (в штатном режиме имеет смысл только для доудаления гостевых триплов)
 	#@user - Если указаны то только они будут сохранены
 	#chdir "W:";
+	$platformGit
+	if ( -e $platformGit and  ){
+		print REINDEX "  Check platform \n";
+		copy $platformGit, '/var/www/m8data.com/master';
+	}
+	
+	
 	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.$planeDir.'/formulyar/pl/reg.pl' );
 	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
@@ -808,7 +820,8 @@ sub dryProc2 {
 	}#здесь нельзя удалять через rmtree
 	else { 
 		warn 'link from '.$planeRoot.$planeDir.'/formulyar/'.$startAvatar;
-		symlink( $planeRoot.$planeDir.'/formulyar/'.$startAvatar => $planeRoot.$planeDir.'/'.$startAvatar ) }
+		symlink( $planeRoot.$planeDir.'/formulyar/'.$startAvatar => $planeRoot.$planeDir.'/'.$startAvatar ) 
+	}
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
 	-d $auraDir.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/m8' );
 	
@@ -825,11 +838,7 @@ sub dryProc2 {
 	$mode || return;
 	
 	my %stat;
-	$dbg = 0;
-	#rmtree $logPath if -d $logPath;
-	make_path( $logPath, { chmod => $chmod } );
-	open (REINDEX, '>'.$logPath.'/reindex.txt')|| die "Ошибка при открытии файла $logPath/reindex.txt: $!\n";
-	warn '		DRY BEGIN ';
+
 	my $guestDays = &getSetting('guestDays');
 	my $userDays = &getSetting('userDays');
 	my $guestTime = time - $guestDays * 24 * 60 * 60;
@@ -878,7 +887,7 @@ sub dryProc2 {
 		print REINDEX "authorName	$authorName \n";
 		warn '		authorName  '.$authorName;
 		
-		if ( -d $planeDir.'/'.$authorName.'/.git' ){
+		if ( 0 and -e $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche ){
 			print REINDEX "    Копирование указателя состояния ветки $branche";
 			warn '	Копирование указателя состояния  ';
 			copy $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche, $userDir.'/'.$authorName.'/'.$branche;
