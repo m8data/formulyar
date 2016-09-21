@@ -139,14 +139,14 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	my $head;
 	if ( -e '.htaccess' ){
 		&setWarn( "  Проверка необходимости сушки индекса после коммита");#	
-		if ( $^O ne 'MSWin32' and -d '/home/git' ){
-			&setWarn( "   Обнаружена работа на сервере");#	
+		#if ( $^O ne 'MSWin32' ){ #and -d '/home/git'
+		#	&setWarn( "   Обнаружена работа на сервере");#	
 			for my $authorName ( grep{ not $dry and not /^_/ and -d $planeDir.'/'.$_.'/.git' and -e $planeDir.'/'.$_.'/.git/refs/heads/'.$branche } &getDir( $planeDir, 1 ) ){ 
 				&setWarn( "    Проверка коммитов в репозитории $authorName");#	
 				$head = &getFile( $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche );
 				$dry = 1 if not -e $userDir.'/'.$authorName.'/'.$branche or &getFile( $userDir.'/'.$authorName.'/'.$branche ) ne $head;
 			}
-		}
+		#}
 	}
 	else { $dry = 1 }
 	&dryProc2( 1 ) if $dry;
@@ -826,9 +826,9 @@ sub dryProc2 {
 	
 	my %stat;
 	$dbg = 0;
-	rmtree $logPath if -d $logPath;
+	#rmtree $logPath if -d $logPath;
 	make_path( $logPath, { chmod => $chmod } );
-	open (REINDEX, '>'.$logPath.'/reindex.txt')|| die "Ошибка при открытии файла reindex.txt: $!\n";
+	open (REINDEX, '>'.$logPath.'/reindex.txt')|| die "Ошибка при открытии файла $logPath/reindex.txt: $!\n";
 	warn '		DRY BEGIN ';
 	my $guestDays = &getSetting('guestDays');
 	my $userDays = &getSetting('userDays');
