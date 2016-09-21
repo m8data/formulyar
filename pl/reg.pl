@@ -126,9 +126,11 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	warn 'WEB TEMP out!!';
 	my $dry;
 	if ( -e '.htaccess' ){
-		for my $authorName ( grep{ not /^_/ and -d $planeDir.'/'.$_.'/.git' and not $dry } &getDir( $planeDir, 1 ) ){ 
-			warn '		authorName  '.$authorName;
-			$dry = 1 if &getFile( -d $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche ) ne &getFile( $userDir.'/'.$authorName.'/'.$branche );
+		if ($^O ne 'MSWin32'){
+			for my $authorName ( grep{ not /^_/ and -d $planeDir.'/'.$_.'/.git' and not $dry } &getDir( $planeDir, 1 ) ){ 
+				warn '		authorName  '.$authorName;
+				$dry = 1 if &getFile( -d $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche ) ne &getFile( $userDir.'/'.$authorName.'/'.$branche );
+			}
 		}
 	}
 	else { $dry = 1 }
