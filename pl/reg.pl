@@ -126,9 +126,9 @@ warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){	
 	warn 'WEB TEMP out!!';
-	my $cookiePrefix = $prefix;
-	chop $cookiePrefix;
+	my $cookiePrefix = &utfText( $prefix );
 	$cookiePrefix =~ s!^/!!;
+	$cookiePrefix =~ s!^u/!!;
 	$cookiePrefix =~ tr!/!.!;
 	$dbg = 1 if cookie($cookiePrefix.'debug') ne '';
 	copy( $log, $log.'.txt' ) or die "Copy failed: $!" if -e $log and $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
@@ -257,8 +257,8 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		$temp{'ctrl'} = $defaultAvatar if $temp{'mission'} eq $defaultAvatar;	
 		my @cookie;
 		for (keys %cookie){	
-			&setWarn( "   Добавление куки $_: $cookie{$_}");#		
-			push @cookie, $q->cookie( -name => $prefix.$_, -expires => '+1y', -value => $cookie{$_} ) 
+			&setWarn( "   Добавление куки $cookiePrefix.$_: $cookie{$_}");#		
+			push @cookie, $q->cookie( -name => $cookiePrefix.$_, -expires => '+1y', -value => $cookie{$_} ) 
 		}
 	
 		if ( 0 and ( $temp{'mission'} eq $defaultAvatar and $temp{'user'} eq 'guest' ) ){
