@@ -2,20 +2,29 @@
 
 
 script='/pl/reg.pl';
+hook='/platform/hooks/post-receive';
+pw=pwd;
 repo=$(pwd | cut -f 5 -d "/" | cut -f 1 -d ".");
 while read oldrev newrev refname
 do
 	branch=$(git rev-parse --symbolic --abbrev-ref $refname );
     echo "===== DEPLOYING TO $branch BRANCHE LIVE SITE $repo =====";
-	LIVE="/home/git/_$branch/$repo";
-    cd $LIVE || exit;
-	GIT_DIR='.git';
-	umask 000;
-	git reset --hard;
-	git pull origin $branch;
+	B_PATH="/home/git/_$branch"
+	LIVE="$B_PATH/$repo";
+	if [ -d $LIVE ]; then
+		cd $LIVE || exit;
+		GIT_DIR='.git';
+		umask 000;
+		git reset --hard;
+		git pull origin $branch;
+	else
+		mkdir -p $B_PATH 2> /dev/null;
+		cd $B_PATH;
+		git clone -b $branch $pw;
+	fi
 	if [ "$repo" = "formulyar" ]; then
 		chmod +x $LIVE$script;
-		chmod +x "/home/git/_$branch/formulyar/platform/hooks/post-receive";
+		chmod +x $LIVE$hook;
 	fi
     echo "===== DONE =====";
 done

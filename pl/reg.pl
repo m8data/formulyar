@@ -158,7 +158,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		'adminMode'	=> 	$dbg,
 		'branche'	=>	$branche,
 		'dry'		=>	$dry,
-		'head'		=>	$head,
+		'head'		=>	$head
 	);
 	#$temp{'adminMode'} = "true" if $dbg;
 	for my $param ( @transaction ){	
