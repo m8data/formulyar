@@ -126,9 +126,11 @@ warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){	
 	warn 'WEB TEMP out!!';
-	chop $prefix;
-	$prefix =~ tr!/!.!;
-	$dbg = 1 if cookie($prefix.'debug') ne '';
+	my $cookiePrefix = $prefix;
+	chop $cookiePrefix;
+	$cookiePrefix =~ s!^/!!;
+	$cookiePrefix =~ tr!/!.!;
+	$dbg = 1 if cookie($cookiePrefix.'debug') ne '';
 	copy( $log, $log.'.txt' ) or die "Copy failed: $!" if -e $log and $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
 	&setWarn( " Обработка запроса в сайте $ENV{DOCUMENT_ROOT}", $log);#	
 	copy( $logPath.'/env.json', $logPath.'/env.json.json' ) or die "Copy failed: $!" if -e $logPath.'/env.json' and $dbg; #копировать лог не ниже, т.е. не после возможного
@@ -151,32 +153,27 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		'planeRoot'	=>	$planeRoot,
 		'prefix'	=>	$prefix,
 		'branche'	=>	$branche,
-		'record'	=>	0
+		'record'	=>	0,
+		'dry'		=>	$dry,
+		'adminMode'	=> 	$dbg
 	);
-	$temp{'adminMode'} = "true" if $dbg;
-	if (not $dbg and $ENV{'QUERY_STRING'} ){
-		open (FILE, '>>'.$guest_log)|| die "Ошибка при открытии файла $guest_log: $!\n";
-			print FILE localtime(time).'	'.$ENV{'REMOTE_ADDR'}.'	'.$ENV{'HTTP_FORWARDED'}.'	'.$ENV{'REQUEST_URI'},  "\n";
-		close (FILE);
-	}
-	my $q = CGI->new();
-	$q->charset('utf-8');
-	( $temp{'seconds'}, $temp{'microseconds'} ) = gettimeofday;
-	$temp{'version'} = &getFile( $planeDir.'/'.$defaultAvatar.'/version.txt' ) || 'v0';
+	#$temp{'adminMode'} = "true" if $dbg;
 	for my $param ( @transaction ){	
 		&setWarn('  ENV '.$param.': '.$ENV{$param});
 		$temp{$param} = $ENV{$param} 
 	}
+	( $temp{'seconds'}, $temp{'microseconds'} ) = gettimeofday;
+	$temp{'version'} = &getFile( $planeDir.'/'.$defaultAvatar.'/version.txt' ) || 'v0';
 	foreach my $itm ( split '; ', $temp{'HTTP_COOKIE'} ){
 		&setWarn('  Прием куки '.$itm);
 		my ( $name, $value ) = split( '=', $itm );
-		if ( $name eq $prefix.'user' ){
+		if ( $name eq $cookiePrefix.'user' ){
 			$temp{'tempkey'} = $value;
 			if ( $value eq 'guest' ){ $temp{'user'} = 'guest' }
 			else { $temp{'user'} = &getFile( $sessionPath.'/'.$value.'/value.txt' ) if -e $sessionPath.'/'.$value.'/value.txt' }
 		}
-		elsif ( $name eq $prefix.'avatar' ){ 	$temp{'avatar'} = $value if $value	}
-		elsif ( $name eq $prefix.'debug' ){		$temp{'debug'} = $value if $value	}
+		elsif ( $name eq $cookiePrefix.'avatar' ){ 	$temp{'avatar'} = $value if $value	}
+		elsif ( $name eq $cookiePrefix.'debug' ){		$temp{'debug'} = $value if $value	}
 	}
 	if ( $temp{'user'} ){ $temp{'author'} = $temp{'user'} }
 	else { $temp{'user'} = $temp{'author'} = $defaultAuthor } #$$cookie{'user'} = 
@@ -185,8 +182,12 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	$temp{'mission'} = $temp{'format'} = 'html';
 	$temp{'ajax'} = $temp{'HTTP_X_REQUESTED_WITH'} if $temp{'HTTP_X_REQUESTED_WITH'}; 
 	$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/ or $temp{'HTTP_USER_AGENT'}=~m!Qt/4.6.1!;
+	&setWarn( " Завершение инициализации процесса");#	
+	
 	my @request_uri = split /\?/, $temp{'REQUEST_URI'};
-	$request_uri[0]=~s!^$temp{'prefix'}!!;
+	$request_uri[0]=~s!^$temp{'prefix'}!!;	
+	my $q = CGI->new();
+	$q->charset('utf-8');
 	if ( $request_uri[0] ne '' && -d $request_uri[0]) { 
 		&setWarn( "  В пожелании $temp{'REQUEST_URI'} директория $request_uri[0] действительна. Идет детектирование автора/аватара/квеста" );# стирка 	
 		$temp{'workpath'} = $request_uri[0];
