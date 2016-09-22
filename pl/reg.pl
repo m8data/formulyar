@@ -88,7 +88,7 @@ my $log = $logPath.'/'.$logFile;
 my $log1 = $logPath.'/control_log.txt';
 my $guest_log = $logPath.'/guest_log.txt';
 my $trashPath = $logPath.'/trash';
-my $platformGit = '/home/git/_master/gitolite-admin/.git/refs/heads/master'
+my $platformGit = '/home/git/_master/gitolite-admin/.git/refs/heads/master';
 
 my $JSON = JSON->new->utf8;
 my $XML2JSON = XML::XML2JSON->new(pretty => 'true');
@@ -778,7 +778,7 @@ sub spinProc {
 }
 
 sub dryProc2 {
-	my ( $mode )=@_; #$param
+	my ( $reindex )=@_; #$param
 	#&setWarn("		dP 2 @_" );
 	$dbg = 0;
 	#rmtree $logPath if -d $logPath;
@@ -789,8 +789,7 @@ sub dryProc2 {
 	#mode2 - только удаляется мусор (в штатном режиме имеет смысл только для доудаления гостевых триплов)
 	#@user - Если указаны то только они будут сохранены
 	#chdir "W:";
-	$platformGit
-	if ( -e $platformGit and  ){
+	if ( -e $platformGit and 0 ){
 		print REINDEX "  Check platform \n";
 		copy $platformGit, '/var/www/m8data.com/master';
 	}
@@ -835,7 +834,7 @@ sub dryProc2 {
 		-d $format || symlink( $planeRoot.$auraDir => $planeRoot.$format );
 	}
 
-	$mode || return;
+	$reindex || return;
 	
 	my %stat;
 
@@ -843,7 +842,7 @@ sub dryProc2 {
 	my $userDays = &getSetting('userDays');
 	my $guestTime = time - $guestDays * 24 * 60 * 60;
 	my $userTime = time - $userDays * 24 * 60 * 60;
-	if ( $mode == 2 or 0 ){
+	if ( $reindex == 2 or 0 ){
 		warn '		delete all index';
 		for my $d ( &getDir( 'm8' ) ){
 			if ( -d 'm8/'.$d ){ rmtree 'm8/'.$d }
@@ -887,7 +886,7 @@ sub dryProc2 {
 		print REINDEX "authorName	$authorName \n";
 		warn '		authorName  '.$authorName;
 		
-		if ( 0 and -e $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche ){
+		if ( -e $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche ){
 			print REINDEX "    Копирование указателя состояния ветки $branche";
 			warn '	Копирование указателя состояния  ';
 			copy $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche, $userDir.'/'.$authorName.'/'.$branche;
