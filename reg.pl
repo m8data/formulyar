@@ -103,12 +103,13 @@ if ($bin[0]){
 	}
 }
 $bin[4] || warn ' Wrong absolute path!!' && exit;
+my $univer = $bin[$#bin-2];
 my @planePath = splice( @bin, 1, -4 );
 my $planePath = join '/', @planePath;
 my $planeRoot = $disk.'/'.$planePath.'/';
 
 chdir $planeRoot;
-my @head = split '/', &getFile ( '.plane/formulyar/.git/HEAD' );
+my @head = split '/', &getFile ( '.plane/'.$univer.'/formulyar/.git/HEAD' );
 my $branche = $head[$#head];
 
 my $chmod = $setting{'chMod'};
@@ -153,6 +154,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	&dryProc2( 1 ) if $dry;
 	my %temp = (
 		'time'		=>	time,
+		'univer'	=>	$univer,
 		'planeRoot'	=>	$planeRoot,
 		'prefix'	=>	$prefix,
 		'record'	=>	0,
@@ -176,13 +178,14 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			if ( $value eq 'guest' ){ $temp{'user'} = 'guest' }
 			else { $temp{'user'} = &getFile( $sessionPath.'/'.$value.'/value.txt' ) if -e $sessionPath.'/'.$value.'/value.txt' }
 		}
-		elsif ( $name eq $cookiePrefix.'avatar' ){ 	$temp{'avatar'} = $value if $value	}
+		#elsif ( $name eq $cookiePrefix.'avatar' ){ 	$temp{'avatar'} = $value if $value	}
 		elsif ( $name eq $cookiePrefix.'debug' ){		$temp{'debug'} = $value if $value	}
 	}
 	if ( $temp{'user'} ){ $temp{'author'} = $temp{'user'} }
 	else { $temp{'user'} = $temp{'author'} = $defaultAuthor } #$$cookie{'user'} = 
-	if ( $temp{'avatar'} ){ $temp{'ctrl'} = $temp{'avatar'} }
-	else { $temp{'avatar'} = $temp{'ctrl'} = &getSetting('avatar') || &getAvatar || $startAvatar } #$$cookie{'avatar'} = 
+	$temp{'avatar'} = $temp{'ctrl'} = $univer;
+	#if ( $temp{'avatar'} ){ $temp{'ctrl'} = $temp{'avatar'} }
+	#else { $temp{'avatar'} = $temp{'ctrl'} = &getSetting('avatar') || &getAvatar || $startAvatar } #$$cookie{'avatar'} = 
 	$temp{'mission'} = $temp{'format'} = 'html';
 	$temp{'ajax'} = $temp{'HTTP_X_REQUESTED_WITH'} if $temp{'HTTP_X_REQUESTED_WITH'}; 
 	$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/ or $temp{'HTTP_USER_AGENT'}=~m!Qt/4.6.1!;
@@ -795,7 +798,7 @@ sub dryProc2 {
 	}
 	
 	
-	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.$planeDir.'/formulyar/pl/reg.pl' );
+	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'/formulyar/reg.pl' );
 	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
 	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
@@ -814,13 +817,13 @@ sub dryProc2 {
 		}
 	}
 	
-	if ( &getAvatar(1) and ( &getSetting('avatar') ne $startAvatar ) ){ 
-		rmdir $planeDir.'/'.$startAvatar if -d $planeDir.'/'.$startAvatar 
-	}#здесь нельзя удалять через rmtree
-	else { 
-		warn 'link from '.$planeRoot.$planeDir.'/formulyar/'.$startAvatar;
-		symlink( $planeRoot.$planeDir.'/formulyar/'.$startAvatar => $planeRoot.$planeDir.'/'.$startAvatar ) 
-	}
+	#if ( &getAvatar(1) and ( &getSetting('avatar') ne $startAvatar ) ){ 
+	#	rmdir $planeDir.'/'.$startAvatar if -d $planeDir.'/'.$startAvatar 
+	#}#здесь нельзя удалять через rmtree
+	#else { 
+	#	warn 'link from '.$planeRoot.$planeDir.'/'.$univer.'/formulyar/'.$startAvatar;
+	#	symlink( $planeRoot.$planeDir.'/formulyar/'.$startAvatar => $planeRoot.$planeDir.'/'.$startAvatar ) 
+	#}
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
 	-d $auraDir.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/m8' );
 	

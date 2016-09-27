@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-script='/pl/reg.pl';
+script='/reg.pl';
 hook='/platform/hooks/post-receive';
 pw=pwd;
 repo=$(pwd | cut -f 5 -d "/" | cut -f 1 -d ".");
@@ -9,7 +9,7 @@ while read oldrev newrev refname
 do
 	branch=$(git rev-parse --symbolic --abbrev-ref $refname );
     echo "===== DEPLOYING TO $branch BRANCHE LIVE SITE $repo =====";
-	B_PATH="/home/git/_$branch"
+	B_PATH="/home/git/branches/$branch"
 	LIVE="$B_PATH/$repo";
 	if [ -d $LIVE ]; then
 		cd $LIVE || exit;
