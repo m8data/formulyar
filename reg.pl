@@ -46,7 +46,6 @@ my %setting = (
 	'userPassword'	=> 'example',
 	'forceDbg'		=> 0,
 	'chMod'			=> '0777',
-	'avatar'		=> '',
 	'platformLevel'	=> 3,
 	'tempfsFolder'	=> '/mnt/tmpfs'
 );
@@ -65,7 +64,7 @@ my @role = (	'triple', 	'role1', 	'role2', 		'role3', 	'author', 'quest', 'targe
 my @number = (	'name',		'subject', 	'predicate',	'object',	'author', 'quest', 'add' );
 my @transaction = ( 'DOCUMENT_ROOT', 'REMOTE_ADDR', 'HTTP_USER_AGENT', 'REQUEST_URI', 'QUERY_STRING', 'HTTP_COOKIE', 'REQUEST_METHOD', 'HTTP_X_REQUESTED_WITH' );#, 'HTTP_USER_AGENT', 'HTTP_ACCEPT_LANGUAGE', 'REMOTE_ADDR' $$transaction{'QUERY_STRING'}
 my @mainTriple = ( 'n', 'r', 'i' );
-my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1, '_xml', 1, 'formulyar', 1 );
+my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1, '_xml', 1 );
 my @superrole = ( 'triple', 'role', 'role', 'role', 'author', 'quest', 'subject', 'predicate', 'object' );
 my @superfile = ( undef, 'port', 'dock', 'terminal' ); 
 my $type = 'xml';
@@ -103,14 +102,15 @@ if ($bin[0]){
 	}
 }
 $bin[4] || warn ' Wrong absolute path!!' && exit;
-my $univer = $bin[$#bin-2];
-my @planePath = splice( @bin, 1, -4 );
+
+my @planePath = splice( @bin, 1, -2 );
 my $planePath = join '/', @planePath;
 my $planeRoot = $disk.'/'.$planePath.'/';
 
 chdir $planeRoot;
-my @head = split '/', &getFile ( '.plane/'.$univer.'/formulyar/.git/HEAD' );
-my $branche = $head[$#head];
+#my @head = split '/', &getFile ( '.plane/'.$univer.'/formulyar/.git/HEAD' );
+my $univer = $planePath[$#planePath];
+my $branche = $planePath[$#planePath-1];
 
 my $chmod = $setting{'chMod'};
 $chmod = &getSetting('chMod');
@@ -128,9 +128,8 @@ warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){	
 	warn 'WEB TEMP out!!';
-	my $cookiePrefix = &utfText( $prefix );
+	my $cookiePrefix = $prefix; #&utfText(  );
 	$cookiePrefix =~ s!^/!!;
-	$cookiePrefix =~ s!^u/!!;
 	$cookiePrefix =~ tr!/!.!;
 	$dbg = 1 if cookie($cookiePrefix.'debug') ne '';
 	copy( $log, $log.'.txt' ) or die "Copy failed: $!" if -e $log and $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
@@ -798,7 +797,7 @@ sub dryProc2 {
 	}
 	
 	
-	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'/formulyar/reg.pl' );
+	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
 	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
 	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
@@ -894,7 +893,7 @@ sub dryProc2 {
 			warn '	Копирование указателя состояния  ';
 			copy $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche, $userDir.'/'.$authorName.'/'.$branche;
 		}
-		next if $authorName eq $defaultAvatar;
+		#next if $authorName eq $defaultAvatar;
 		
 		my $tsvPath = $planeDir.'/'.$authorName.'/tsv';
 		&setFile( $tsvPath.'/d/n/time.txt', '0.1' );

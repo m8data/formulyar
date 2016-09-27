@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:m8="http://m8data.com" xmlns:func="http://exslt.org/functions" extension-element-prefixes="func">
-	<xsl:include href="../../formulyar/xsl/system_form.xsl"/>
+	<xsl:include href="system_form.xsl"/>
+	<xsl:include href="admin.xsl"/>
+	<xsl:include href="system_head.xsl"/>
 	<!--
 
-	-->
+	-->	
+<!--
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -13,13 +16,17 @@
 			<body>
 				<div style="width: 800px; margin: 1em auto">
 				<h1>Домашняя страница сайта</h1>
-				<xsl:apply-templates select="document(  concat( $start/@DOCUMENT_ROOT, $start/@prefix, $authDir, '/start/author.xml' ) )/*" mode="baseReport"/>
+				<xsl:apply-templates select="document(  concat( $start/@planeRoot, $authPath, '/', $start/@univer, '/author.xml' ) )/*" mode="baseReport"/>
 				<xsl:call-template name="footer"/>
 				</div>
 			</body>
 		</html>
 	</xsl:template>
+
+
+	-->	
 	<xsl:template match="author" mode="baseReport">
+		<xsl:copy-of select="."/>
 		<xsl:variable name="typeNode">
 			<xsl:for-each select="*">
 				<xsl:sort select="@time"/>
@@ -37,6 +44,7 @@
 				</xsl:copy>
 			</xsl:for-each>
 		</xsl:variable>
+		<xsl:copy-of select="$typeNode"/>
 		<xsl:for-each select="exsl:node-set($typeNode)/*[ @span2='r' and @span3='n' ]">
 			<xsl:variable name="typeName" select="@span3"/>
 			<h3>

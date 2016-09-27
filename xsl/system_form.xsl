@@ -105,7 +105,7 @@
 	<!--<xsl:variable name="da" select="ss"/>-->
 	<!--
 	информация по стартовому xml (здесь излишне читать порт, т.к. иногда он нужен)-->
-	<xsl:variable name="authDir" select="'m8/author'"/>
+	<xsl:variable name="authPath" select="'m8/author'"/>
 	<xsl:variable name="start" select="/*"/>
 	<!--<xsl:variable name="m8root" select="$start/@DOCUMENT_ROOT"/>-->
 	<xsl:variable name="ctrl" select="$start/@ctrl"/>

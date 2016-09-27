@@ -23,30 +23,49 @@
 	<xsl:variable name="startIndex" select="m8:path( $fact, 'index' )"/>
 	<xsl:variable name="startPort" select="m8:path( $fact, $author, $quest, 'port' )"/>
 	<xsl:param name="startTypeName" select="name( $startPort/r/* )"/>
-
 	<!--<xsl:param name="layer2" select="'gen'"/>
 	i7118132368377864911 - да
 
 	 -->
 	<xsl:template match="/">
 		<xsl:message terminate="no">interface match="/"</xsl:message>
-		<xsl:variable name="factIndex" select="m8:path( $fact, 'index')"/>
 		<xsl:choose>
-			<xsl:when test="$start/@user='guest' and $start/@mission='formulyar'"><!-- or $start/@ipath='a' -->
-			<!--<xsl:when test="$start/@path = '/m8' or $start/@path=concat( '/', $ctrl, '/m8' ) or $start/@path = '/formulyar' or $start/@path = '/a/formulyar' ">-->
-				<xsl:call-template name="authorDef"/>
+			<xsl:when test="$start/@mission='formulyar'">
+				<xsl:variable name="factIndex" select="m8:path( $fact, 'index')"/>
+				<xsl:choose>
+					<xsl:when test="$start/@user='guest' and $start/@mission='formulyar'">
+						<!-- or $start/@ipath='a' -->
+						<!--<xsl:when test="$start/@path = '/m8' or $start/@path=concat( '/', $ctrl, '/m8' ) or $start/@path = '/formulyar' or $start/@path = '/a/formulyar' ">-->
+						<xsl:call-template name="authorDef"/>
+					</xsl:when>
+					<xsl:when test="$factIndex/role/role1">
+						<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'port' )"/>
+					</xsl:when>
+					<xsl:when test="$factIndex/role/role2">
+						<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'dock' )"/>
+					</xsl:when>
+					<xsl:when test="$factIndex/role/role3">
+						<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'terminal' )"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:apply-templates select="m8:path( 'n', 'admin', 'port' )"/>
+					</xsl:otherwise>
+				</xsl:choose>
 			</xsl:when>
-			<xsl:when test="$factIndex/role/role1">
-				<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'port' )"/>
-			</xsl:when>
-			<xsl:when test="$factIndex/role/role2">
-				<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'dock' )"/>
-			</xsl:when>		
-			<xsl:when test="$factIndex/role/role3">
-				<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'terminal' )"/>
-			</xsl:when>		
 			<xsl:otherwise>
-				<xsl:apply-templates select="m8:path( 'n', 'admin', 'port' )"/>
+				<html>
+					<head>
+						<title>Старт</title>
+						<link rel="icon" type="image/ico" href="{$start/@prefix}p/{$avatar}/img/favicon.ico"/>
+					</head>
+					<body>
+						<div style="width: 800px; margin: 1em auto">
+							<h1>Домашняя страница сайта</h1>
+							<xsl:apply-templates select="document(  concat( $start/@planeRoot, $authPath, '/', $start/@univer, '/author.xml' ) )/*" mode="baseReport"/>
+							<xsl:call-template name="footer"/>
+						</div>
+					</body>
+				</html>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
