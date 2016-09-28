@@ -103,7 +103,7 @@ if ($bin[0]){
 }
 $bin[4] || warn ' Wrong absolute path!!' && exit;
 
-my @planePath = splice( @bin, 1, -2 );
+my @planePath = splice( @bin, 1, -3 );
 my $planePath = join '/', @planePath;
 my $planeRoot = $disk.'/'.$planePath.'/';
 
@@ -113,7 +113,7 @@ my $univer = $planePath[$#planePath];
 my $branche = $planePath[$#planePath-1];
 
 my $chmod = $setting{'chMod'};
-$chmod = &getSetting('chMod');
+$chmod = &getSetting('chMod');	
 my $dbg = &getSetting('forceDbg');
 my $prefix = '/';
 
@@ -797,7 +797,7 @@ sub dryProc2 {
 	}
 	
 	
-	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
+	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'.plane/formulyar/reg.pl' );
 	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
 	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
@@ -825,6 +825,7 @@ sub dryProc2 {
 	#}
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
 	-d $auraDir.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/m8' );
+	-d 'formulyar' || symlink( $planeRoot.$planeDir.'/formulyar' => $planeRoot.'formulyar' );
 	
 	my @ava = &getDir( $planeDir, 1 );
 	for my $ava ( @ava ){
