@@ -103,14 +103,14 @@ if ($bin[0]){
 }
 $bin[4] || warn ' Wrong absolute path!!' && exit;
 
-my @planePath = splice( @bin, 1, -3 );
+my @planePath = splice( @bin, 1, -2 );
 my $planePath = join '/', @planePath;
 my $planeRoot = $disk.'/'.$planePath.'/';
 
 chdir $planeRoot;
 #my @head = split '/', &getFile ( '.plane/'.$univer.'/formulyar/.git/HEAD' );
-my $univer = $planePath[$#planePath];
-my $branche = $planePath[$#planePath-1];
+my $univer = $planePath[$#planePath-1];
+my $branche = $planePath[$#planePath-2];
 
 my $chmod = $setting{'chMod'};
 $chmod = &getSetting('chMod');
@@ -124,6 +124,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	$platformLevel = $#dr;
 }
 for my $dir ( splice( @planePath, $platformLevel ) ){ $prefix .= $dir.'/' }
+my $univerRoot = splice( @planePath, 0, $platformLevel );
 warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){	
@@ -160,7 +161,8 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		'adminMode'	=> 	$dbg,
 		'branche'	=>	$branche,
 		'dry'		=>	$dry,
-		'head'		=>	$head
+		'head'		=>	$head,
+		'univerRoot'=>	$univerRoot
 	);
 	#$temp{'adminMode'} = "true" if $dbg;
 	for my $param ( @transaction ){	
@@ -797,10 +799,11 @@ sub dryProc2 {
 	}
 	
 	
-	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'.plane/formulyar/reg.pl' );
+	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
 	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
 	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
+	-d $planeDir.'/'.$univer || symlink( $disk.$univerRoot => $planeRoot.$planeDir.'/'.$univer );
 	
 	if ( not -d 'm8' ){
 		warn 'check tempfsFolder';
@@ -825,7 +828,7 @@ sub dryProc2 {
 	#}
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
 	-d $auraDir.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/m8' );
-	-d 'formulyar' || symlink( $planeRoot.$planeDir.'/formulyar' => $planeRoot.'formulyar' );
+	#-d 'formulyar' || symlink( $planeRoot.$planeDir.'/formulyar' => $planeRoot.'formulyar' );
 	
 	my @ava = &getDir( $planeDir, 1 );
 	for my $ava ( @ava ){
