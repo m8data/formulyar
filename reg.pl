@@ -798,7 +798,6 @@ sub dryProc2 {
 		copy $platformGit, '/var/www/m8data.com/master';
 	}
 	
-	
 	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
 	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
