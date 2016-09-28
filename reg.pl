@@ -113,7 +113,7 @@ my $univer = $planePath[$#planePath];
 my $branche = $planePath[$#planePath-1];
 
 my $chmod = $setting{'chMod'};
-$chmod = &getSetting('chMod');	
+$chmod = &getSetting('chMod');
 my $dbg = &getSetting('forceDbg');
 my $prefix = '/';
 
