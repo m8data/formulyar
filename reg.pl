@@ -123,14 +123,15 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	$dr[$#dr] || pop @dr;
 	$platformLevel = $#dr;
 }
-for my $dir ( splice( @planePath, $platformLevel ) ){ $prefix .= $dir.'/' }
-my $univerRoot = splice( @planePath, 0, $platformLevel );
+for my $n ( $platformLevel..$#planePath ){ $prefix .= $planePath[$n].'/' }
+my $multiRoot = join '/', splice( @planePath, 0, -3 );
+$multiRoot = $disk.'/'.$multiRoot.'/';
 warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){	
 	warn 'WEB TEMP out!!';
 	my $cookiePrefix = $prefix; #&utfText(  );
-	$cookiePrefix =~ s!^/!!;
+	$cookiePrefix =~ s!^/(.*)zoom/$!$1!;
 	$cookiePrefix =~ tr!/!.!;
 	$dbg = 1 if cookie($cookiePrefix.'debug') ne '';
 	copy( $log, $log.'.txt' ) or die "Copy failed: $!" if -e $log and $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
@@ -162,7 +163,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		'branche'	=>	$branche,
 		'dry'		=>	$dry,
 		'head'		=>	$head,
-		'univerRoot'=>	$univerRoot
+		'multiRoot' =>	$multiRoot
 	);
 	#$temp{'adminMode'} = "true" if $dbg;
 	for my $param ( @transaction ){	
@@ -802,7 +803,8 @@ sub dryProc2 {
 	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
 	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
-	-d $planeDir.'/'.$univer || symlink( $disk.$univerRoot => $planeRoot.$planeDir.'/'.$univer );
+	-d $planeDir.'/'.$univer || symlink( $multiRoot.$branche.'/'.$univer => $planeRoot.$planeDir.'/'.$univer );
+	-d $planeDir.'/formulyar' || symlink( $planeRoot.'formulyar' => $planeRoot.$planeDir.'/formulyar' );
 	
 	if ( not -d 'm8' ){
 		warn 'check tempfsFolder';
