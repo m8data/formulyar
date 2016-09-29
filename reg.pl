@@ -112,6 +112,12 @@ chdir $planeRoot;
 my $univer = $planePath[$#planePath-1];
 my $branche = $planePath[$#planePath-2];
 
+if ( $branche eq 'www' ){
+	$univer=~/^(\w)-*(.*)$/;
+	$univer = $1;
+	$branche = $2 || 'master'
+}
+
 my $chmod = $setting{'chMod'};
 $chmod = &getSetting('chMod');
 my $dbg = &getSetting('forceDbg');
