@@ -112,7 +112,7 @@ chdir $planeRoot;
 my $univer = $planePath[$#planePath-1];
 my $branche = $planePath[$#planePath-2];
 
-if ( $branche eq 'www' ){
+if ( $branche eq 'zoom' ){
 	$univer=~/^(\w+)-*(.*)$/;
 	$univer = $1;
 	$branche = $2 || 'master'
@@ -806,11 +806,17 @@ sub dryProc2 {
 	}
 	
 	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
-	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
+	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
 	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
-	-d $planeDir.'/'.$univer || symlink( $multiRoot.$branche.'/'.$univer => $planeRoot.$planeDir.'/'.$univer );
 	-d $planeDir.'/formulyar' || symlink( $planeRoot.'formulyar' => $planeRoot.$planeDir.'/formulyar' );
+	-d $planeDir.'/'.$univer || symlink( $multiRoot.$branche.'/'.$univer => $planeRoot.$planeDir.'/'.$univer );
+	if ( -e '../formulyar.conf' ){
+		warn ('  Reed formulyar.conf');
+		for my $univer ( &getFile( '../formulyar.conf' ) ){
+			-d $planeDir.'/'.$univer || symlink( $multiRoot.$branche.'/'.$univer => $planeRoot.$planeDir.'/'.$univer );
+		}
+	}
 	
 	if ( not -d 'm8' ){
 		warn 'check tempfsFolder';
