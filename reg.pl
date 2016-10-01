@@ -112,11 +112,11 @@ chdir $planeRoot;
 my $univer = $planePath[$#planePath-1];
 my $branche = $planePath[$#planePath-2];
 
-if ( $branche eq 'zoom' ){
+#if ( $branche eq '.public' ){
 	$univer=~/^(\w+)-*(.*)$/;
 	$univer = $1;
-	$branche = $2 || 'master'
-}
+	$branche = $2 || 'master';
+#}
 
 my $chmod = $setting{'chMod'};
 $chmod = &getSetting('chMod');
@@ -136,9 +136,9 @@ warn 'prefix: '.$prefix;
 
 if ( defined $ENV{DOCUMENT_ROOT} ){	
 	warn 'WEB TEMP out!!';
-	my $cookiePrefix = $prefix; #&utfText(  );
-	$cookiePrefix =~ s!^/(.*)zoom/$!$1!;
-	$cookiePrefix =~ tr!/!.!;
+	my $cookiePrefix = '';#$prefix; #&utfText(  );
+	#$cookiePrefix =~ s!^/(.*).public/$!$1!;
+	#$cookiePrefix =~ tr!/!.!;
 	$dbg = 1 if cookie($cookiePrefix.'debug') ne '';
 	copy( $log, $log.'.txt' ) or die "Copy failed: $!" if -e $log and $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
 	&setWarn( " Обработка запроса в сайте $ENV{DOCUMENT_ROOT}", $log);#	
@@ -146,7 +146,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	&setFile( $logPath.'/env.json', $JSON->encode(\%ENV) ) if $dbg;
 	my $dry;
 	my $head;
-	if ( -e '.htaccess' ){
+	if ( -d '.plane/'.$univer ){
 		&setWarn( "  Проверка необходимости сушки индекса после коммита");#	
 		#if ( $^O ne 'MSWin32' ){ #and -d '/home/git'
 		#	&setWarn( "   Обнаружена работа на сервере");#	
@@ -805,7 +805,7 @@ sub dryProc2 {
 		copy $platformGit, '/var/www/m8data.com/master';
 	}
 	
-	&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
+	#&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
 	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
 	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
