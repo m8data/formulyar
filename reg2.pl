@@ -109,8 +109,8 @@ my $planeRoot = $disk.'/'.$planePath.'/';
 
 chdir $planeRoot;
 #my @head = split '/', &getFile ( '.plane/'.$univer.'/formulyar/.git/HEAD' );
-my $univer = $planePath[$#planePath];
-my $branche = $planePath[$#planePath-1];
+my $univer = $planePath[$#planePath-1];
+my $branche = $planePath[$#planePath-2];
 
 #if ( $branche eq '.public' ){
 	$univer=~/^(\w+)-*(.*)$/;
@@ -130,7 +130,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	$platformLevel = $#dr;
 }
 for my $n ( $platformLevel..$#planePath ){ $prefix .= $planePath[$n].'/' }
-my $multiRoot = join '/', splice( @planePath, 0, -2 );
+my $multiRoot = join '/', splice( @planePath, 0, -3 );
 $multiRoot = $disk.'/'.$multiRoot.'/';
 warn 'prefix: '.$prefix;
 
