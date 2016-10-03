@@ -109,13 +109,13 @@ my $planeRoot = $disk.'/'.$planePath.'/';
 
 chdir $planeRoot;
 #my @head = split '/', &getFile ( '.plane/'.$univer.'/formulyar/.git/HEAD' );
-my $univer = $planePath[$#planePath];
-my $branche = $planePath[$#planePath-1];
+#my $univer = $planePath[$#planePath];
+#my $branche = $planePath[$#planePath-1];
 
 #if ( $branche eq '.public' ){
-	$univer=~/^(\w+)-*(.*)$/;
-	$univer = $1;
-	$branche = $2 || 'master';
+$planePath[$#planePath]=~/^(\w+)-*(.*)$/;
+my $univer = $1;
+my $branche = $2 || 'master';
 #}
 
 my $chmod = $setting{'chMod'};
@@ -811,10 +811,13 @@ sub dryProc2 {
 	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
 	-d $planeDir.'/formulyar' || symlink( $planeRoot.'formulyar' => $planeRoot.$planeDir.'/formulyar' );
 	-d $planeDir.'/'.$univer || symlink( $multiRoot.$branche.'/'.$univer => $planeRoot.$planeDir.'/'.$univer );
-	if ( -e '../formulyar.conf' ){
+	if ( -e $planeDir.'/'.$univer.'/formulyar.conf' ){
 		warn ('  Reed formulyar.conf');
-		for my $univer ( &getFile( '../formulyar.conf' ) ){
-			-d $planeDir.'/'.$univer || symlink( $multiRoot.$branche.'/'.$univer => $planeRoot.$planeDir.'/'.$univer );
+		for my $site ( &getFile( $planeDir.'/'.$univer.'/formulyar.conf' ) ){
+			$site=~/^(\w+)-*(.*)$/;
+			my $univer_depend = $1;
+			my $branch_depend = $2 || 'master';
+			-d $planeDir.'/'.$univer_depend || symlink( $multiRoot.$branch_depend.'/'.$univer_depend => $planeRoot.$planeDir.'/'.$univer_depend );
 		}
 	}
 	
