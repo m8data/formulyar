@@ -974,23 +974,23 @@ sub dryProc2 {
 				$val[4] = $authorName;
 				for my $questName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
 					$val[5] = $questName;
-					if(0){
-						if ( $val[2]=~/^r/ ){
-							next if $val[1] eq $val[5];
-							$parent = $val[5];
-						}
-						my %indexParent = &getJSON( &m8dir( $parent ), 'index' );
-						my %indexQuest = &getJSON( &m8dir( $questName ), 'index' );
-						next if defined $indexParent{'subject'} and defined $indexQuest{'subject'};
-					}
-					else{
+					#if(0){
+					#	if ( $val[2]=~/^r/ ){
+					#		next if $val[1] eq $val[5];
+					#		$parent = $val[5];
+					#	}
+					#	my %indexParent = &getJSON( &m8dir( $parent ), 'index' );
+					#	my %indexQuest = &getJSON( &m8dir( $questName ), 'index' );
+					#	next if defined $indexParent{'subject'} and defined $indexQuest{'subject'};
+					#}
+					#else{
 						my $good = 1;
 						for my $n ( grep { $_!=4 and $val[$_]=~/^n/ and $good } 1..5 ){
 							my %index = &getJSON( &m8dir( $val[$n] ), 'index' );
 							$good = 0 if not defined $index{'subject'}
 						}
 						next if $good
-					}
+					#}
 					my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$val[5].'/time.txt' );
 					if ( $val[3] =~/^i\d+$/ ){
 						my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$val[3].'/value.tsv' );
