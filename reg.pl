@@ -904,7 +904,7 @@ sub dryProc2 {
 	}
 	my $time1 = time;
 	my $time2;		
-	for my $authorName ( grep{ not /^_/ } &getDir( $planeDir, 1 ) ){ 
+	for my $authorName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){ 
 		print REINDEX "authorName	$authorName \n";
 		warn '		authorName  '.$authorName;
 		
