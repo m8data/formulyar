@@ -989,7 +989,7 @@ sub dryProc2 {
 							my %index = &getJSON( &m8dir( $val[$n] ), 'index' );
 							$good = 0 if not defined $index{'subject'}
 						}
-						next if $good
+						next if $good;
 					#}
 					my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$val[5].'/time.txt' );
 					if ( $val[3] =~/^i\d+$/ ){
