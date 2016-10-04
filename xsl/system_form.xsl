@@ -711,7 +711,7 @@
 						<xsl:value-of select="$calcName"/>
 						<xsl:text> | </xsl:text>
 					</xsl:if>-->
-				<a href="{$start/@prefix}formulyar/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}/port.xml" style="color:gray">
+				<a href="{$start/@prefix}{m8:dir( $fact, $author, $quest )}/port.xml" style="color:gray">
 					<xsl:value-of select="$localtime"/>
 				</a>
 				<xsl:text> |  </xsl:text>
