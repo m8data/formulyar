@@ -150,11 +150,13 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		&setWarn( "  Проверка необходимости сушки индекса после коммита");#	
 		#if ( $^O ne 'MSWin32' ){ #and -d '/home/git'
 		#	&setWarn( "   Обнаружена работа на сервере");#	
+		if(0){
 			for my $authorName ( grep{ not $dry and not /^_/ and -d $planeDir.'/'.$_.'/.git' and -e $planeDir.'/'.$_.'/.git/refs/heads/'.$branche } &getDir( $planeDir, 1 ) ){ 
 				&setWarn( "    Проверка коммитов в репозитории $authorName");#	
 				$head = &getFile( $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche );
 				$dry = 1 if not -e $userDir.'/'.$authorName.'/'.$branche or &getFile( $userDir.'/'.$authorName.'/'.$branche ) ne $head;
 			}
+		}
 		#}
 	}
 	else { $dry = 1 }
