@@ -823,12 +823,11 @@ sub dryProc2 {
 		}
 	}
 	
-	if ( not -d 'm8' ){
+	if ( not -d 'm8' and 0 ){ #опция отключена 2016-10-05
 		warn 'check tempfsFolder';
 		my $tempfsFolder = &getSetting('tempfsFolder');
 		if ( -d $tempfsFolder.'/m8'.$prefix ){
 			warn 'link from '.$disk.$tempfsFolder.'/m8'.$prefix;
-			#make_path( $tempfsFolder.'m8'.$prefix, { chmod => $chmod } );
 			symlink( $disk.$tempfsFolder.'/m8'.$prefix => $planeRoot.'m8' )
 		}
 		else {
