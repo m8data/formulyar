@@ -18,10 +18,14 @@
 		<xsl:apply-templates select="." mode="number"/>
 	</xsl:template>
 	<xsl:template match="*[starts-with( name(), 'n' )]" mode="simpleName">
+		<xsl:param name="quest"/>
 		<xsl:choose>
 			<xsl:when test="name() = 'n'">начало</xsl:when>
 			<xsl:when test="m8:path( name(), $avatar, 'port' )/i">
 				<xsl:apply-templates select="m8:path( name(), $avatar, 'port' )/i/*" mode="simpleName"/>
+			</xsl:when>
+			<xsl:when test="m8:path( name(), $avatar, $quest, 'port' )/i">
+				<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/><xsl:text> :: </xsl:text><xsl:apply-templates select="m8:path( name(), $avatar, $quest, 'port' )/i/*" mode="simpleName"/>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/>::<xsl:value-of select="substring-after( name(), '-' )"/>

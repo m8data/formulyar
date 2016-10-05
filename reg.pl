@@ -809,17 +809,17 @@ sub dryProc2 {
 	
 	#&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
-	-d $planeDir_link || symlink( $planeRoot.$planeDir => $planeRoot.$planeDir_link );
+	-d $planeDir_link || &setLink( $planeRoot.$planeDir, $planeRoot.$planeDir_link );
 	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
-	-d $planeDir.'/formulyar' || symlink( $planeRoot.'formulyar' => $planeRoot.$planeDir.'/formulyar' );
-	-d $planeDir.'/'.$univer || symlink( $multiRoot.$branche.'/'.$univer => $planeRoot.$planeDir.'/'.$univer );
+	-d $planeDir.'/formulyar' || &setLink( $planeRoot.'formulyar', $planeRoot.$planeDir.'/formulyar' );
+	-d $planeDir.'/'.$univer || &setLink( $multiRoot.$branche.'/'.$univer, $planeRoot.$planeDir.'/'.$univer );
 	if ( -e $planeDir.'/'.$univer.'/formulyar.conf' ){
 		warn ('  Reed formulyar.conf');
 		for my $site ( &getFile( $planeDir.'/'.$univer.'/formulyar.conf' ) ){
 			$site=~/^(\w+)-*(.*)$/;
 			my $univer_depend = $1;
 			my $branch_depend = $2 || 'master';
-			-d $planeDir.'/'.$univer_depend || symlink( $multiRoot.$branch_depend.'/'.$univer_depend => $planeRoot.$planeDir.'/'.$univer_depend );
+			-d $planeDir.'/'.$univer_depend || &setLink( $multiRoot.$branch_depend.'/'.$univer_depend, $planeRoot.$planeDir.'/'.$univer_depend );
 		}
 	}
 	
@@ -828,7 +828,7 @@ sub dryProc2 {
 		my $tempfsFolder = &getSetting('tempfsFolder');
 		if ( -d $tempfsFolder.'/m8'.$prefix ){
 			warn 'link from '.$disk.$tempfsFolder.'/m8'.$prefix;
-			symlink( $disk.$tempfsFolder.'/m8'.$prefix => $planeRoot.'m8' )
+			&setLink( $disk.$tempfsFolder.'/m8'.$prefix, $planeRoot.'m8' )
 		}
 		else {
 			warn 'add '.$planeRoot.'m8';
@@ -844,17 +844,17 @@ sub dryProc2 {
 	#	symlink( $planeRoot.$planeDir.'/formulyar/'.$startAvatar => $planeRoot.$planeDir.'/'.$startAvatar ) 
 	#}
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
-	-d $auraDir.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/m8' );
+	-d $auraDir.'/m8' || &setLink( $planeRoot.'m8', $planeRoot.$auraDir.'/m8' );
 	#-d 'formulyar' || symlink( $planeRoot.$planeDir.'/formulyar' => $planeRoot.'formulyar' );
 	
 	my @ava = &getDir( $planeDir, 1 );
 	for my $ava ( @ava ){
 		-d $auraDir.'/'.$ava || make_path( $auraDir.'/'.$ava, { chmod => $chmod } );
-		-d $auraDir.'/'.$ava.'/m8' || symlink( $planeRoot.'m8' => $planeRoot.$auraDir.'/'.$ava.'/m8' );
+		-d $auraDir.'/'.$ava.'/m8' || &setLink( $planeRoot.'m8', $planeRoot.$auraDir.'/'.$ava.'/m8' );
 		-e $userDir.'/'.$ava.'/'.$passwordFile || &setFile( $userDir.'/'.$ava.'/'.$passwordFile );
 	}
 	for my $format ( keys %formatDir ){
-		-d $format || symlink( $planeRoot.$auraDir => $planeRoot.$format );
+		-d $format || &setLink( $planeRoot.$auraDir, $planeRoot.$format );
 	}
 
 	$reindex || return;
@@ -1223,14 +1223,24 @@ sub setMessage {
 		print REINDEX $_[0]."\n";#  $c[3], ' ' - секунда
 	close (REINDEX);
 }
+sub setLink {
+	my ( $fromPhysic, $toLink )=@_;
+	if ( -d $toLink ){
+		if ( readlink( $toLink ) ne $fromPhysic ){
+			rmdir $toLink;
+			symlink( $fromPhysic => $toLink )
+		}
+	}
+	else{ symlink( $fromPhysic => $toLink ) }
+}
 
 
 sub getID {
 	my ( $name )=@_;
 #	&setWarn("						gI  @_" );
-	if ($name=~m!^/m8/[dirn]/[dirn][\d_\-]*$! or $name=~m!^/m8/author/[a-z]{2}[\w\d]*$!){ $name=~s!^/!!; return $name }
-	elsif ($name=~m!^([dirn])[\d_\-]*$!){ return 'm8/'.$1.'/'.$name }
-	else { return $authorPath.'/'.$name }
+	if ( $name=~m!^/m8/[dirn]/[dirn][\d_\-]*$! or $name=~m!^/m8/author/[a-z]{2}[\w\d]*$! ){ $name=~s!^/!!; return $name }
+	elsif( $name=~m!^([dirn])[\d_\-]*$! ){ return 'm8/'.$1.'/'.$name }
+	else{ return $authorPath.'/'.$name }
 }
 sub getFile {
 	&setWarn( "						gF @_" );

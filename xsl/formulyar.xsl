@@ -184,9 +184,14 @@
 											<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( name(), $actionAuthor, $fact )}">
 												<xsl:value-of select="position()"/>.
 													<xsl:text> </xsl:text>
-												<xsl:apply-templates select="m8:path( name(), $actionAuthor, $fact, 'port' )/r/*" mode="simpleName"/>
+												<!--<xsl:apply-templates select="m8:path( name(), $actionAuthor, $fact, 'port' )/r/*" mode="simpleName"/>
 												<xsl:text> </xsl:text>
-												<xsl:value-of select="name()"/>
+												
+												<xsl:value-of select="name()"/>-->
+												<!--<xsl:apply-templates select="m8:path( name(), $avatar, $fact, 'port' )/i/*" mode="simpleName"/>-->
+												<xsl:apply-templates select="." mode="simpleName">
+													<xsl:with-param name="quest" select="$fact"/>
+												</xsl:apply-templates>
 											</a>
 										</div>
 									</xsl:for-each>
@@ -321,7 +326,7 @@
 		<xsl:message> 
 									@@@@@ - Зона генерации нового - @@@@@
 				</xsl:message>
-		<div style="position: fixed; bottom: 50px; left: 50px; font-size: 2em; background-color: green; opacity: 0.5; padding: 1em; padding-bottom: 0; border-radius: 2em; ">
+		<!--<div style="position: fixed; bottom: 50px; left: 50px; font-size: 2em; background-color: green; opacity: 0.5; padding: 1em; padding-bottom: 0; border-radius: 2em; ">
 			<form action="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact )}/">
 				<span style="font-size: 11pt; color: white">Добавить: </span>
 				<input type="hidden" name="quest" value="{$fact}"/>
@@ -334,14 +339,32 @@
 					</xsl:for-each>
 				</select>
 			</form>
-		</div>
-		<div style="position: fixed; bottom: 50px; right: 50px; font-size: 2em; background-color: green; width: 2em; height: 2em; border-radius: 2em; padding-top: .2em; padding-right: .2em; opacity: 0.5">
+		</div>-->
+		<style version="text/css">
+			#circle {
+			position: fixed; 
+	width: 60px;
+	height: 60px;
+	background: red;
+	-moz-border-radius: 30px;
+	-webkit-border-radius: 30px;
+	border-radius: 30px;
+	opacity: 0.5;
+	font-size: 4.5em;
+	line-height: 75%;
+}
+#circle a {color: yellow; }
+		</style>
+		<div style="background: purple; bottom: 70px; right: 165px; " id="circle">
+			<a href="{$start/@prefix}a/{$ctrl}/m8/?a={$fact}&amp;quest={$fact}" title="реплицировать внутрь">&#9632;</a>
+		</div>		
+		<div style="background: red; bottom: 70px; right: 70px; font-size: 4.7em;" id="circle">
 			<xsl:choose>
 				<xsl:when test="$fact!=$quest">
-					<a style="color: white; margin-top: auto" href="{$startID}/?a={$fact}">+</a>
+					<a href="{$startID}/?a={$fact}" title="реплицировать наружу">&#9679;</a>
 				</xsl:when>
 				<xsl:otherwise>
-					<a style="color: white; margin-top: auto" href="{$start/@prefix}a/{$ctrl}/m8/?a={$fact}">+</a>
+					<a href="{$start/@prefix}a/{$ctrl}/m8/?a={$fact}"  title="реплицировать наружу">&#9679;</a>
 				</xsl:otherwise>
 			</xsl:choose>
 		</div>
@@ -402,7 +425,7 @@
 												</a>
 											</th>
 											<td valign="top" align="left">
-												<xsl:for-each select="*">
+												<!--<xsl:for-each select="*">-->
 													<table>
 														<tr>
 															<td>
@@ -453,7 +476,7 @@
 															</td>
 														</tr>
 													</table>
-												</xsl:for-each>
+												<!--</xsl:for-each>-->
 											</td>
 										</tr>
 									</xsl:for-each>
