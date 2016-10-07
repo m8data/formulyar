@@ -21,14 +21,21 @@
 		<xsl:param name="quest"/>
 		<xsl:choose>
 			<xsl:when test="name() = 'n'">начало</xsl:when>
-			<xsl:when test="m8:path( name(), $avatar, 'port' )/i">
-				<xsl:apply-templates select="m8:path( name(), $avatar, 'port' )/i/*" mode="simpleName"/>
-			</xsl:when>
-			<xsl:when test="m8:path( name(), $avatar, $quest, 'port' )/i">
-				<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/><xsl:text> :: </xsl:text><xsl:apply-templates select="m8:path( name(), $avatar, $quest, 'port' )/i/*" mode="simpleName"/>
-			</xsl:when>
 			<xsl:otherwise>
-				<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/>::<xsl:value-of select="substring-after( name(), '-' )"/>
+				<xsl:variable name="questName" select="name( m8:path( name(), 'subject_r' )/*[name()=$avatar]/* )"/>
+				<xsl:choose>
+					<xsl:when test="m8:path( name(), $avatar, $questName, 'port' )/i">
+						<xsl:apply-templates select="m8:path( name(), $avatar, $questName, 'port' )/i/*" mode="simpleName"/>
+					</xsl:when>
+					<!--<xsl:when test="m8:path( name(), $avatar, $questName, 'port' )/i">
+						<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/>
+						<xsl:text> :: </xsl:text>
+						<xsl:apply-templates select="m8:path( name(), $avatar, $questName, 'port' )/i/*" mode="simpleName"/>
+					</xsl:when>-->
+					<xsl:otherwise>
+						<!--<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/>-->объект <xsl:value-of select="substring-after( name(), '-' )"/> (<xsl:value-of select="$questName"/>)
+					</xsl:otherwise>
+				</xsl:choose>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
@@ -196,8 +203,12 @@
 		<xsl:param name="currentResult"/>
 		<xsl:variable name="parentFactName">
 			<xsl:choose>
-				<xsl:when test="$currentQuestName"><xsl:value-of select="$currentQuestName"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="name( m8:path( $currentFactName, 'subject_r' )/*/*[1] )"/></xsl:otherwise>
+				<xsl:when test="$currentQuestName">
+					<xsl:value-of select="$currentQuestName"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="name( m8:path( $currentFactName, 'subject_r' )/*/*[1] )"/>
+				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
 		<xsl:variable name="parentAuthorName" select="name( m8:path( $currentFactName, 'subject_r' )/* )"/>
@@ -213,13 +224,16 @@
 					</xsl:when>
 					<xsl:otherwise>
 						<xsl:element name="{$parentFactName}">
-							<xsl:value-of select="name( m8:path( $parentFactName, 'subject_r' )/*/*[1] )"/><!--name( m8:path( $parentFactName, 'subject_r' )/*/*[1] )-->
+							<xsl:value-of select="name( m8:path( $parentFactName, 'subject_r' )/*/*[1] )"/>
+							<!--name( m8:path( $parentFactName, 'subject_r' )/*/*[1] )-->
 						</xsl:element>
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:if>
 			<xsl:choose>
-				<xsl:when test="$currentResult"><xsl:copy-of select="$currentResult/*"/></xsl:when>
+				<xsl:when test="$currentResult">
+					<xsl:copy-of select="$currentResult/*"/>
+				</xsl:when>
 				<xsl:otherwise>
 					<xsl:element name="{$currentFactName}">
 						<xsl:value-of select="$parentFactName"/>

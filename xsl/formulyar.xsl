@@ -169,17 +169,21 @@
 		<div style="padding: 3em">
 			<table width="100%" style="font-size: .9em;">
 				<tr>
-					<td align="center" valign="top">
+					<td align="center" valign="top" style="display: none">
 						<xsl:for-each select="m8:path( 'r', 'role2' )/*/*[name()=$fact]">
 							<xsl:variable name="actionAuthor" select="name(..)"/>
-							<xsl:if test="m8:path( 'r', $actionAuthor, $fact, 'dock' )/*[name() != $fact]">
+							<xsl:if test="m8:path( 'r', $actionAuthor, $fact, 'dock' )/*[name() != $fact][name(*) != $fact]">
 								<xsl:variable name="firstTypeName" select="name( m8:path( 'r', $actionAuthor, $fact, 'dock' )/*[name() != $fact][1]/*)"/>
 								<xsl:variable name="protoTypeName" select="name( m8:path( $firstTypeName, $avatar, $firstTypeName, 'port' )/r/*)"/>
-								<b>Внутренние сущности
+								<xsl:attribute name="style">display: normal</xsl:attribute>
+								<b>Состав
 									</b>
+								
 								<div style="padding: 1em">
 									<xsl:for-each select="m8:path( 'r', $actionAuthor, $fact, 'dock' )/*[name() != $fact]">
 										<xsl:sort select="*/*/@time"/>
+										<xsl:variable name="currentType" select="m8:path( name(), $actionAuthor, $fact, 'port' )/r/*"/>
+										<!--<xsl:if test="name($currentType) != $fact">-->
 										<div>
 											<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( name(), $actionAuthor, $fact )}">
 												<xsl:value-of select="position()"/>.
@@ -189,11 +193,12 @@
 												
 												<xsl:value-of select="name()"/>-->
 												<!--<xsl:apply-templates select="m8:path( name(), $avatar, $fact, 'port' )/i/*" mode="simpleName"/>-->
-												<xsl:apply-templates select="." mode="simpleName">
-													<xsl:with-param name="quest" select="$fact"/>
-												</xsl:apply-templates>
+												<xsl:apply-templates select="$currentType" mode="simpleName"/>
+												<xsl:text> :: </xsl:text>
+												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
 										</div>
+										<!--</xsl:if>-->
 									</xsl:for-each>
 									<div>
 										<xsl:text>+</xsl:text>
@@ -218,14 +223,14 @@
 					</td>
 					<td align="center" valign="top">
 						<xsl:if test="m8:path( $fact,  'index' )/object/*">
-							<b>Экземпляры "<xsl:apply-templates select="$start" mode="titleWord"/>"</b>
+							<b>Ассоциации <!--"<xsl:apply-templates select="$start" mode="titleWord"/>"--></b>
 							<div style="padding: 1em">
 								<xsl:for-each select="m8:path( $fact, 'index' )/object/*">
 									<xsl:sort select="@time"/>
 									<xsl:variable name="subject" select="."/>
 									<xsl:variable name="subjectName" select="name()"/>
 									<xsl:variable name="position" select="position()"/>
-									<xsl:for-each select="m8:path( $fact, concat( '/object_', $subjectName ) )/*[name()=$user]/*">
+									<xsl:for-each select="m8:path( $fact, concat( '/object_', $subjectName ) )/*[name()=$user]/*[name()=$subjectName]">
 										<xsl:sort select="name(..)"/>
 										<xsl:variable name="currentAuthorName" select="name(..)"/>
 										<xsl:variable name="currentQuestName" select="name()"/>
@@ -233,15 +238,63 @@
 											<a href="{$start/@prefix}a/{$ctrl}/m8/{substring($subjectName,1,1)}/{$subjectName}/{$currentAuthorName}/{$currentQuestName}">
 												<xsl:value-of select="$position"/>
 												<xsl:text>. </xsl:text>
-												<xsl:if test="$subjectName != $currentQuestName">
-													<xsl:apply-templates select="." mode="simpleName"/>
+												<!--<xsl:if test="$subjectName != $currentQuestName">
+													<xsl:apply-templates select="." mode="simpleName">
+														<xsl:with-param name="quest" select="$currentQuestName"/>
+													</xsl:apply-templates>
 													<xsl:text> :: </xsl:text>
-												</xsl:if>
+												</xsl:if>-->
 												<xsl:if test="$author != $currentAuthorName">
 													<xsl:apply-templates select=".." mode="simpleName"/>
 													<xsl:text> :: </xsl:text>
 												</xsl:if>
-												<xsl:apply-templates select="$subject" mode="simpleName"/>
+												<xsl:apply-templates select="$subject" mode="simpleName">
+													<xsl:with-param name="quest" select="$currentQuestName"/>
+												</xsl:apply-templates>
+											</a>
+											<xsl:if test="$currentAuthorName='guest'">
+												<xsl:if test="1200 > $time - @time">&#160;<sup style="color: red">new</sup>
+												</xsl:if>
+												<xsl:if test="120 > $time - m8:path( $currentQuestName, 'role1' )/*[name()=$currentAuthorName]/*/@time">
+													<xsl:text> </xsl:text>
+													<sup style="color: magenta">change</sup>
+													<embed src="{$start/@prefix}xalio/mp3/message.mp3" autostart="true" hidden="true" loop="true" width="0" height="0" align="bottom"> </embed>
+												</xsl:if>
+											</xsl:if>
+										</div>
+									</xsl:for-each>
+								</xsl:for-each>
+							</div>						
+							<br/>
+							<br/>
+							<b>Экземпляры <!--"<xsl:apply-templates select="$start" mode="titleWord"/>"--></b>
+							<div style="padding: 1em">
+								<xsl:for-each select="m8:path( $fact, 'index' )/object/*">
+									<xsl:sort select="@time"/>
+									<xsl:variable name="subject" select="."/>
+									<xsl:variable name="subjectName" select="name()"/>
+									<xsl:variable name="position" select="position()"/>
+									<xsl:for-each select="m8:path( $fact, concat( '/object_', $subjectName ) )/*[name()=$user]/*[name()!=$subjectName]">
+										<xsl:sort select="name(..)"/>
+										<xsl:variable name="currentAuthorName" select="name(..)"/>
+										<xsl:variable name="currentQuestName" select="name()"/>
+										<div style="font-size: 1.2em; padding: .1em">
+											<a href="{$start/@prefix}a/{$ctrl}/m8/{substring($subjectName,1,1)}/{$subjectName}/{$currentAuthorName}/{$currentQuestName}">
+												<xsl:value-of select="$position"/>
+												<xsl:text>. </xsl:text>
+												<!--<xsl:if test="$subjectName != $currentQuestName">
+													<xsl:apply-templates select="." mode="simpleName">
+														<xsl:with-param name="quest" select="$currentQuestName"/>
+													</xsl:apply-templates>
+													<xsl:text> :: </xsl:text>
+												</xsl:if>-->
+												<xsl:if test="$author != $currentAuthorName">
+													<xsl:apply-templates select=".." mode="simpleName"/>
+													<xsl:text> :: </xsl:text>
+												</xsl:if>
+												<xsl:apply-templates select="$subject" mode="simpleName">
+													<xsl:with-param name="quest" select="$currentQuestName"/>
+												</xsl:apply-templates>
 											</a>
 											<xsl:if test="$currentAuthorName='guest'">
 												<xsl:if test="1200 > $time - @time">&#160;<sup style="color: red">new</sup>
@@ -256,8 +309,17 @@
 									</xsl:for-each>
 								</xsl:for-each>
 							</div>
+							
+							<br/>
+							<br/>
+
 						</xsl:if>
 					</td>
+					<!--<td align="center" valign="top">
+						<xsl:if test="m8:path( $fact,  'index' )/object/*">
+							
+						</xsl:if>
+					</td>-->
 				</tr>
 			</table>
 			<xsl:message>= = = = = = = - Зона упоминаний - = = = = = =</xsl:message>
@@ -343,30 +405,24 @@
 		<style version="text/css">
 			#circle {
 			position: fixed; 
-	width: 60px;
-	height: 60px;
-	background: red;
-	-moz-border-radius: 30px;
-	-webkit-border-radius: 30px;
-	border-radius: 30px;
+	width: 50px;
+	height: 50px;
+	-moz-border-radius: 25px;
+	-webkit-border-radius: 25px;
+	border-radius: 25px;
+	border: 4px solid gray;
 	opacity: 0.5;
 	font-size: 4.5em;
-	line-height: 75%;
+	line-height: 56%;
+	background: #fff;
 }
 #circle a {color: yellow; }
 		</style>
-		<div style="background: purple; bottom: 70px; right: 165px; " id="circle">
-			<a href="{$start/@prefix}a/{$ctrl}/m8/?a={$fact}&amp;quest={$fact}" title="реплицировать внутрь">&#9632;</a>
+		<div style="bottom: 70px; right: 165px; " id="circle"><!--background: purple; -->
+			<a href="{$start/@prefix}a/{$ctrl}/m8/?a={$fact}&amp;quest={$fact}" title="реплицировать внутрь" style="color: purple">&#9632;</a>
 		</div>		
-		<div style="background: red; bottom: 70px; right: 70px; font-size: 4.7em;" id="circle">
-			<xsl:choose>
-				<xsl:when test="$fact!=$quest">
-					<a href="{$startID}/?a={$fact}" title="реплицировать наружу">&#9679;</a>
-				</xsl:when>
-				<xsl:otherwise>
-					<a href="{$start/@prefix}a/{$ctrl}/m8/?a={$fact}"  title="реплицировать наружу">&#9679;</a>
-				</xsl:otherwise>
-			</xsl:choose>
+		<div style="bottom: 70px; right: 70px; font-size: 4.7em; line-height: 64%;" id="circle"><!--background: red; -->
+			<a href="{$start/@prefix}a/{$ctrl}/m8/?a={$fact}&amp;quest=n"  title="реплицировать на свободу" style="color: red">&#9679;</a>
 		</div>
 		<xsl:message> 
 			@@@@@ - Зона генерации нового (END) - @@@@@

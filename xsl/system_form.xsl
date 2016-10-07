@@ -221,9 +221,11 @@
 		<xsl:param name="option"/>
 		<xsl:param name="ajaxMethod"/>
 		<xsl:variable name="parentPredicateName" select="name( m8:path( $predicateName, 'subject_r' )/*/*[1] )"/>
+		<xsl:message>
+		Запрос параметра <xsl:value-of select="$predicateName"/></xsl:message>
 		<xsl:choose>
 			<xsl:when test="$sourceValue">
-				<xsl:message>			Вывод параметра <xsl:value-of select="$predicateName"/> напрямую из входящего списка sourceValue</xsl:message>
+				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> напрямую из входящего списка sourceValue</xsl:message>
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
@@ -237,7 +239,7 @@
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:when test="m8:path( $predicateName, $avatar, $parentPredicateName, 'port' )/n" xml:lang="вывод списка из tsv-файла">
-				<xsl:message>			Вывод параметра <xsl:value-of select="$predicateName"/> списка из tsv-файла</xsl:message>
+				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> списка из tsv-файла</xsl:message>
 				<xsl:variable name="currentListName" select="name( m8:path( $predicateName, $avatar, $parentPredicateName, 'port' )/n/*)"/>
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>
@@ -253,7 +255,7 @@
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:when test="$predicateName='r' and m8:path( $factTypeName, 'index' )/object" xml:lang="вывод экземпляров типа 2016-07-23">
-				<xsl:message>			Вывод параметра 'r' списком экземпляров типа <xsl:value-of select="$factTypeName"/>
+				<xsl:message>				Вывод параметра 'r' списком экземпляров типа <xsl:value-of select="$factTypeName"/>
 				</xsl:message>
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>
@@ -262,6 +264,7 @@
 					<xsl:with-param name="predicateName" select="$predicateName"/>
 					<xsl:with-param name="selectedValue" select="$selectedValue"/>
 					<xsl:with-param name="sourceValue" select="m8:path( $factTypeName, 'index' )/object"/>
+					<!--<xsl:with-param name="sourceValue" select="m8:path( 'r', $actionAuthor, $fact, 'dock' )/*[name() != $fact]"/>-->
 					<xsl:with-param name="sortSelect" select="$sortSelect"/>
 					<xsl:with-param name="titleSelect" select="$titleSelect"/>
 					<xsl:with-param name="ajaxMethod" select="$ajaxMethod"/>
@@ -271,14 +274,44 @@
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:when test="m8:path( 'r', 'index' )/predicate/*[name()=$predicateName and name() != 'i' ]" xml:lang="вывод экземпляров типа">
-				<xsl:message>			Вывод параметра <xsl:value-of select="$predicateName"/> списком экземпляров типа</xsl:message>
+				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> списком экземпляров типа</xsl:message>
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="questName" select="$questName"/>
 					<xsl:with-param name="predicateName" select="$predicateName"/>
 					<xsl:with-param name="selectedValue" select="$selectedValue"/>
-					<xsl:with-param name="sourceValue" select="m8:path( 'r', concat( 'predicate_', $predicateName ) )/*"/>
+					<xsl:with-param name="sourceValue" select="m8:path( $predicateName, 'index' )/object"/>
+				<!--	<xsl:with-param name="sourceValue" select="m8:path( 'r', 'role2' )/*/*[name()=$predicateName]"/>-->
+					<!--<xsl:with-param name="sourceValue" select="m8:path( 'r', concat( 'predicate_', $predicateName ) )/*"/>-->
+					<!--<xsl:with-param name="sourceValue">
+						<xsl:for-each select="m8:path( $predicateName, 'index' )/object/*">
+							<xsl:sort select="@time"/>
+							<xsl:variable name="subject" select="."/>
+							<xsl:variable name="subjectName" select="name()"/>
+							<xsl:variable name="position" select="position()"/>
+							<xsl:for-each select="m8:path( $predicateName, concat( '/object_', $subjectName ) )/*[name()=$user]/*">
+							<ss>ss</ss>
+							</xsl:for-each>
+						</xsl:for-each>
+					</xsl:with-param>-->
+							
+					<!--<xsl:with-param name="sourceValue">
+						<xsl:value-of select="m8:path( 'r', concat( 'predicate_', $predicateName ) )/*"/>
+						<xsl:value-of select="m8:path( 'r', 'role2' )/*/*[name()=$predicateName]"/>-->
+					<!--	<xsl:for-each select="m8:path( 'r', 'role2' )/*/*[name()=$predicateName]">
+							<xsl:variable name="actionAuthor" select="name(..)"/>
+							<xsl:value-of select="m8:path( 'r', $actionAuthor, $predicateName, 'dock' )/*[name() != $predicateName]"/>
+							<xsl:for-each select="m8:path( 'r', $actionAuthor, $predicateName, 'dock' )/*[name() != $predicateName]">
+								<ss><xsl:apply-templates select="." mode="simpleName">
+													<xsl:with-param name="quest" select="$predicateName"/>
+												</xsl:apply-templates></ss>
+							</xsl:for-each>
+							
+						</xsl:for-each>-->
+					<!--</xsl:with-param>-->
+					
+					
 					<xsl:with-param name="sortSelect" select="$sortSelect"/>
 					<xsl:with-param name="titleSelect" select="$titleSelect"/>
 					<xsl:with-param name="ajaxMethod" select="$ajaxMethod"/>
@@ -288,7 +321,7 @@
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:message>			Вывод параметра <xsl:value-of select="$predicateName"/> без селекта</xsl:message>
+				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> без селекта</xsl:message>
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
@@ -301,6 +334,8 @@
 				</xsl:call-template>
 			</xsl:otherwise>
 		</xsl:choose>
+		<xsl:message>		Запрос параметра <xsl:value-of select="$predicateName"/> (END)
+		</xsl:message>		
 	</xsl:template>
 	<!--
 
@@ -320,7 +355,7 @@
 		<xsl:param name="option"/>
 		<xsl:param name="method"/>
 		<xsl:variable name="params_of_quest" select="m8:path( $fact, $author, $quest, 'port' )/*"/>
-		<xsl:message>	inputParamOfPort :: sourceValue: <xsl:copy-of select="count(exsl:node-set($sourceValue)/*)"/>
+		<xsl:message>		inputParamOfPort :: sourceValue: <xsl:copy-of select="count(exsl:node-set($sourceValue)/*)"/>
 		</xsl:message>
 		<xsl:choose>
 			<!--
@@ -449,7 +484,7 @@
 -->
 			<xsl:when test="exsl:node-set($sourceValue)/*">
 				<!--[2] выводить селект нужно вероятно всегда когда есть список-->
-				<xsl:message>			Формирование селекта из списка нод</xsl:message>
+				<xsl:message>				Формирование селекта из пришедшего списка нод</xsl:message>
 				<xsl:choose>
 					<xsl:when test="$inputType">
 						<xsl:for-each select="exsl:node-set($sourceValue)/*">
@@ -478,6 +513,7 @@
 						</xsl:for-each>
 					</xsl:when>
 					<xsl:otherwise>
+						<xsl:message>					select-элемент</xsl:message>					
 						<select name="{$predicateName}">
 							<xsl:if test="not($ajaxMethod)">
 								<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
@@ -518,7 +554,7 @@
 							ВЫВОД ТЕКСТОВОГО ПОЛЯ
 -->
 			<xsl:otherwise>
-				<xsl:message>			Вывод текстового поля</xsl:message>
+				<xsl:message>				inputParamOfPort :: Вывод текстового поля</xsl:message>
 				<xsl:variable name="title">
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
 				</xsl:variable>

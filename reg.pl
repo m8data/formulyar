@@ -944,6 +944,13 @@ sub dryProc2 {
 				print REINDEX "    Исследование квеста $questName \n";
 				$val[5] = $questName;
 				my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$val[5].'/time.txt' );
+				if ( $val[0] ne 'd' and $val[2] eq 'r' and $val[1] eq $val[5] ){
+					#корректировка формата данных 2016-10-07
+					warn "	!!! refresh: @val";
+					rmtree $tsvPath.'/'.$tsvName.'/'.$questName;
+					$val[5] = $val[3];
+					&setFile( $tsvPath.'/'.$tsvName.'/'.$val[5].'/time.txt', $timeProc )
+				}
 				if ( $authorName eq 'guest' and $tsvName ne 'd' and $timeProc and $timeProc < $guestTime ){ 
 					print REINDEX "     Удаление старого гостевого трипла '.$div[0].' \n";
 					$n_delG++
