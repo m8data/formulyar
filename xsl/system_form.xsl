@@ -257,7 +257,7 @@
 					<xsl:with-param name="option" select="$option"/>
 				</xsl:call-template>
 			</xsl:when>
-			<xsl:when test="$predicateName='r' and m8:path( $typeName, 'index' )/object" xml:lang="вывод экземпляров типа 2016-07-23">
+			<xsl:when test="( $predicateName='r' or $predicateName='modifier' ) and m8:path( $typeName, 'index' )/object" xml:lang="вывод экземпляров типа 2016-07-23">
 				<xsl:message>				Вывод параметра 'r' списком экземпляров типа <xsl:value-of select="$typeName"/>
 				</xsl:message>
 				<xsl:call-template name="inputParamOfPort">

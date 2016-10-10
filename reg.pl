@@ -639,6 +639,24 @@ sub washProc{
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает повтор трипла в запросе';
 			next;
 		}
+		if ( $num[$s][0] ne 'd' and $num[$s][1] eq $num[$s][4] ) { 
+			&setWarn("		wP   Номер запрашивает нарушение правила иерархии");
+			$$temp{'povtor'}[$s] = 3;
+			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает нарушение правила иерархии';
+			next;
+		}		
+		if ( $num[$s][2]=~/^r/ and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0] ){
+			&setWarn("		wP   Удаление старой связи состава $num[$s][0].");		
+			my ( $currentQuest ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0], 1 );
+			my @triple = ( $num[$s][0], $num[$s][1], $num[$s][2], $num[$s][3], $currentQuest );
+			#push @num, \@triple;
+			&spinProc( \@triple, $$temp{'user'}, $$temp{'time'} );
+			if ( defined $$temp{'object'} ){
+				&setWarn("		wP    Добавление к новой связи состава указания такого же типа.");
+				$num[$s][3] = $num[$s][4];
+				$num[$s][0] = &setName( 'd', $$temp{'user'}, $num[$s][1], $num[$s][2], $num[$s][3] );
+			}
+		}
 		if ( &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'} ) ){
 			&setWarn("		wP   Номер запрашивает повтор трипла в базе.");
 			$$temp{'povtor'}[$s] = 2;
@@ -743,13 +761,13 @@ sub spinProc {
 		
 		if ( $mN == 1 or $mN == 2 or $mN == 3  ){
 			&setWarn("		sP   Формирование порта/дока/терминала $role ($file, $first, $second).  User: $user"  );
-			my ( $master, $slave, $file2 );
+			my ( $master, $slave );
 			if ( $mN == 1 )		{ ( $master, $slave ) = ( $predicate, 	$object 	) }
 			elsif ( $mN == 2 )	{ ( $master, $slave ) = ( $subject, 	$object 	) }
 			elsif ( $mN == 3 ) 	{ ( $master, $slave ) = ( $subject, 	$predicate 	) }
 			my %role = &getJSON( $metter.'/'.$user.'/'.$modifier, $superfile[$mN] );
 			if ( $addC ){
-				&setWarn("		sP    Операции при добавлении значения в индекс $metter/$user/$modifier  ($master, $slave, $file2)"  );
+				&setWarn("		sP    Операции при добавлении значения в индекс $metter/$user/$modifier  ($master, $slave)"  );
 				$role{$master}[0]{$slave}[0]{$name}[0]{'time'} = $time;
 			}
 			else { 
