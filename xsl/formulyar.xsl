@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:m8="http://m8data.com">
 	<xsl:output method="html" version="1.0" encoding="UTF-8"/>
-	
-		<xsl:include href="system_form.xsl"/>
-		<xsl:include href="system_head.xsl"/>
-		<!--
+	<xsl:include href="system_form.xsl"/>
+	<xsl:include href="system_head.xsl"/>
+	<!--
 
 
 	-->
@@ -16,7 +15,8 @@
 		<script>var source2 = "";</script>
 	</xsl:template>
 	<xsl:template name="TitleAndMisk">
-		<title><xsl:value-of select="$start/@avatar"/>: административный раздел</title>
+		<title>
+			<xsl:value-of select="$start/@avatar"/>: административный раздел</title>
 	</xsl:template>
 	<!--	
 
@@ -84,33 +84,27 @@
 				<br/>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:message> ^ ^ ^ ^ ^ - Зона ссылок наверх - ^ ^ ^ ^ ^ </xsl:message>
 				<div>
 					<xsl:choose>
 						<xsl:when test="m8:path( $fact, 'index' )/role">
 							<xsl:message terminate="no">Зеленая карта</xsl:message>
 							<div style="background: #EFD; padding: 1em">
+								<xsl:message> ^ ^ ^ ^ ^ - Зона ссылок наверх - ^ ^ ^ ^ ^ </xsl:message>
 								<table style="font-size: 1em;" width="100%">
 									<tr>
 										<td width="30%">
-											<xsl:for-each select="exsl:node-set($parent)/*[position()!=last()]">
+											<xsl:for-each select="exsl:node-set($parent)/*">
 												<xsl:if test="position()!=1">
 													<xsl:text> / </xsl:text>
 												</xsl:if>
-												<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( name(), $avatar, . )}" xml:lang="здесь сознательно указываем автором аватар, т.к. в хлебных крошках переход по типам, а они задаются главным юзером">
-													<xsl:if test="name()!=.">
-														<xsl:attribute name="style">background: #FDD; padding: .1em; margin: .1em</xsl:attribute>
-													</xsl:if>
+												<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( name(), $avatar )}">
 													<xsl:apply-templates select="." mode="simpleName"/>
 												</a>
 											</xsl:for-each>
 										</td>
-										<td width="40%" align="center">
+										<td width="40%" align="center" style="color: #444">
 											<b>
-												<xsl:if test="$fact != $quest">
-													<xsl:attribute name="style">background: #FDD; padding: .1em; margin: .1em</xsl:attribute>
-												</xsl:if>
-												<xsl:apply-templates select="$startPort/r/*" mode="simpleName"/>&#160;<xsl:value-of select="$fact"/>
+												<xsl:apply-templates select="exsl:node-set($parent)/*[last()]/*" mode="simpleName"/>&#160;<xsl:value-of select="$fact"/>
 											</b>
 										</td>
 										<td width="30%" align="right" valign="top">
@@ -147,6 +141,7 @@
 										</td>
 									</tr>
 								</table>
+								<xsl:message> ^ ^ ^ ^ ^ - Зона ссылок наверх (END) - ^ ^ ^ ^ ^ </xsl:message>
 								<br/>
 								<xsl:call-template name="quest_port"/>
 								<br style="clear: both"/>
@@ -165,27 +160,26 @@
 				</div>
 			</xsl:otherwise>
 		</xsl:choose>
-		<xsl:message> v v v v v - Зона ссылок вниз - v v v v v </xsl:message>
-		<div style="padding: 3em">
+		<div style="padding: 3em" id="linkDownZone">
+			<xsl:message> v v v v v - Зона ссылок вниз - v v v v v </xsl:message>
 			<table width="100%" style="font-size: .9em;">
 				<tr>
-					<td align="center" valign="top" style="display: none">
+					<td align="center" valign="top" width="25%">
 						<xsl:for-each select="m8:path( 'r', 'role2' )/*/*[name()=$fact]">
 							<xsl:variable name="actionAuthor" select="name(..)"/>
-							<xsl:if test="m8:path( 'r', $actionAuthor, $fact, 'dock' )/*[name() != $fact][name(*) != $fact]">
+							<xsl:if test="m8:path( 'r', $actionAuthor, $fact, 'dock' )/*[name() != $fact]"><!--[name(*) != $fact]-->
 								<xsl:variable name="firstTypeName" select="name( m8:path( 'r', $actionAuthor, $fact, 'dock' )/*[name() != $fact][1]/*)"/>
 								<xsl:variable name="protoTypeName" select="name( m8:path( $firstTypeName, $avatar, $firstTypeName, 'port' )/r/*)"/>
-								<xsl:attribute name="style">display: normal</xsl:attribute>
+								<!--<xsl:attribute name="style">display: normal</xsl:attribute>-->
 								<b>Состав
 									</b>
-								
 								<div style="padding: 1em">
 									<xsl:for-each select="m8:path( 'r', $actionAuthor, $fact, 'dock' )/*[name() != $fact]">
 										<xsl:sort select="*/*/@time"/>
 										<xsl:variable name="currentType" select="m8:path( name(), $actionAuthor, $fact, 'port' )/r/*"/>
-										<!--<xsl:if test="name($currentType) != $fact">-->
+										<xsl:if test="name($currentType) != $fact">
 										<div>
-											<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( name(), $actionAuthor, $fact )}">
+											<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( name(), $actionAuthor )}">
 												<xsl:value-of select="position()"/>.
 													<xsl:text> </xsl:text>
 												<!--<xsl:apply-templates select="m8:path( name(), $actionAuthor, $fact, 'port' )/r/*" mode="simpleName"/>
@@ -198,7 +192,7 @@
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
 										</div>
-										<!--</xsl:if>-->
+										</xsl:if>
 									</xsl:for-each>
 									<div>
 										<xsl:text>+</xsl:text>
@@ -221,36 +215,37 @@
 							</xsl:if>
 						</xsl:for-each>
 					</td>
-					<td align="center" valign="top">
-						<xsl:if test="m8:path( $fact,  'index' )/object/*">
-							<b>Ассоциации <!--"<xsl:apply-templates select="$start" mode="titleWord"/>"--></b>
+					<xsl:if test="m8:path( $fact,  'index' )/object/*">
+						<td align="center" valign="top" width="50%">
+							<b>Экземпляры <!--"<xsl:apply-templates select="$start" mode="titleWord"/>"-->
+							</b>
 							<div style="padding: 1em">
 								<xsl:for-each select="m8:path( $fact, 'index' )/object/*">
 									<xsl:sort select="@time"/>
 									<xsl:variable name="subject" select="."/>
 									<xsl:variable name="subjectName" select="name()"/>
 									<xsl:variable name="position" select="position()"/>
-									<xsl:for-each select="m8:path( $fact, concat( '/object_', $subjectName ) )/*[name()=$user]/*[name()=$subjectName]">
+									<xsl:variable name="currentQuest" select="name(m8:path( name(), 'subject_r' )/*/*)"/>
+									<xsl:if test="$currentQuest = $fact">
+										<div style="font-size: 1.4em; padding: .1em">
+											<a href="{$start/@prefix}a/{$ctrl}/{ m8:dir( $subjectName )}"><!--, $avatar, 'n'-->
+												<xsl:apply-templates select="$subject" mode="simpleName"/>
+											</a>
+										</div>
+									</xsl:if>
+									<!--<xsl:for-each select="m8:path( $fact, concat( '/object_', $subjectName ) )/*[name()=$user]/*[name()=$subjectName]">
 										<xsl:sort select="name(..)"/>
 										<xsl:variable name="currentAuthorName" select="name(..)"/>
 										<xsl:variable name="currentQuestName" select="name()"/>
 										<div style="font-size: 1.4em; padding: .1em">
-											<a href="{$start/@prefix}a/{$ctrl}/m8/{substring($subjectName,1,1)}/{$subjectName}/{$currentAuthorName}/{$currentQuestName}">
+											<a href="{$start/@prefix}a/{$ctrl}/{ m8:dir( $subjectName, $currentAuthorName )}">
 												<xsl:value-of select="$position"/>
 												<xsl:text>. </xsl:text>
-												<!--<xsl:if test="$subjectName != $currentQuestName">
-													<xsl:apply-templates select="." mode="simpleName">
-														<xsl:with-param name="quest" select="$currentQuestName"/>
-													</xsl:apply-templates>
-													<xsl:text> :: </xsl:text>
-												</xsl:if>-->
 												<xsl:if test="$author != $currentAuthorName">
 													<xsl:apply-templates select=".." mode="simpleName"/>
 													<xsl:text> :: </xsl:text>
 												</xsl:if>
-												<xsl:apply-templates select="$subject" mode="simpleName">
-													<xsl:with-param name="quest" select="$currentQuestName"/>
-												</xsl:apply-templates>
+												<xsl:apply-templates select="$subject" mode="simpleName"/>
 											</a>
 											<xsl:if test="$currentAuthorName='guest'">
 												<xsl:if test="1200 > $time - @time">&#160;<sup style="color: red">new</sup>
@@ -262,19 +257,34 @@
 												</xsl:if>
 											</xsl:if>
 										</div>
-									</xsl:for-each>
+									</xsl:for-each>-->
 								</xsl:for-each>
-							</div>						
-							<br/>
-							<br/>
-							<b>Экземпляры <!--"<xsl:apply-templates select="$start" mode="titleWord"/>"--></b>
-							<div style="padding: 1em">
+							</div>
+						</td>
+						<td align="center" valign="top" width="25%">
+							<div style="display: normal">
+								<b>Ассоциации <!--"<xsl:apply-templates select="$start" mode="titleWord"/>"-->
+								</b>
 								<xsl:for-each select="m8:path( $fact, 'index' )/object/*">
 									<xsl:sort select="@time"/>
 									<xsl:variable name="subject" select="."/>
 									<xsl:variable name="subjectName" select="name()"/>
 									<xsl:variable name="position" select="position()"/>
-									<xsl:for-each select="m8:path( $fact, concat( '/object_', $subjectName ) )/*[name()=$user]/*[name()!=$subjectName]">
+									<xsl:variable name="currentQuest" select="name(m8:path( name(), 'subject_r' )/*/*)"/>
+									<xsl:if test="$currentQuest != $fact">
+										<div style="font-size: 1.2em; padding: .1em">
+											<a href="{$start/@prefix}a/{$ctrl}/{ m8:dir( $subjectName )}">
+												<xsl:value-of select="$position"/>
+												<xsl:text>. </xsl:text>
+												<!--<xsl:if test="$author != $currentAuthorName">
+												<xsl:apply-templates select=".." mode="simpleName"/>
+												<xsl:text> :: </xsl:text>
+											</xsl:if>-->
+												<xsl:apply-templates select="$subject" mode="simpleName"/>
+											</a>
+										</div>
+									</xsl:if>
+									<!--<xsl:for-each select="m8:path( $fact, concat( '/object_', $subjectName ) )/*[name()=$user]/*[name()!=$subjectName]">
 										<xsl:sort select="name(..)"/>
 										<xsl:variable name="currentAuthorName" select="name(..)"/>
 										<xsl:variable name="currentQuestName" select="name()"/>
@@ -282,12 +292,6 @@
 											<a href="{$start/@prefix}a/{$ctrl}/m8/{substring($subjectName,1,1)}/{$subjectName}/{$currentAuthorName}/{$currentQuestName}">
 												<xsl:value-of select="$position"/>
 												<xsl:text>. </xsl:text>
-												<!--<xsl:if test="$subjectName != $currentQuestName">
-													<xsl:apply-templates select="." mode="simpleName">
-														<xsl:with-param name="quest" select="$currentQuestName"/>
-													</xsl:apply-templates>
-													<xsl:text> :: </xsl:text>
-												</xsl:if>-->
 												<xsl:if test="$author != $currentAuthorName">
 													<xsl:apply-templates select=".." mode="simpleName"/>
 													<xsl:text> :: </xsl:text>
@@ -296,25 +300,16 @@
 													<xsl:with-param name="quest" select="$currentQuestName"/>
 												</xsl:apply-templates>
 											</a>
-											<xsl:if test="$currentAuthorName='guest'">
-												<xsl:if test="1200 > $time - @time">&#160;<sup style="color: red">new</sup>
-												</xsl:if>
-												<xsl:if test="120 > $time - m8:path( $currentQuestName, 'role1' )/*[name()=$currentAuthorName]/*/@time">
-													<xsl:text> </xsl:text>
-													<sup style="color: magenta">change</sup>
-													<embed src="{$start/@prefix}xalio/mp3/message.mp3" autostart="true" hidden="true" loop="true" width="0" height="0" align="bottom"> </embed>
-												</xsl:if>
-											</xsl:if>
 										</div>
-									</xsl:for-each>
+									</xsl:for-each>-->
 								</xsl:for-each>
 							</div>
-							
 							<br/>
 							<br/>
-
-						</xsl:if>
-					</td>
+							<br/>
+							<br/>
+						</td>
+					</xsl:if>
 					<!--<td align="center" valign="top">
 						<xsl:if test="m8:path( $fact,  'index' )/object/*">
 							
@@ -322,9 +317,10 @@
 					</td>-->
 				</tr>
 			</table>
-			<xsl:message>= = = = = = = - Зона упоминаний - = = = = = =</xsl:message>
+			<xsl:message> v v v v v - Зона ссылок вниз (END) - v v v v v </xsl:message>
 		</div>
 		<div style="color: #777">
+			<xsl:message>= = = = = = = - Зона упоминаний - = = = = = =</xsl:message>
 			<xsl:if test="m8:path( $fact, 'index' )/role/role1">
 				<div>
 					<b>Упоминания в роли значения</b>
@@ -375,15 +371,16 @@
 				<div>
 					<b>Упоминания в роли квеста</b>
 					<xsl:for-each select="m8:path( $fact, 'quest' )/*[name()=$user]/*[name()!=$fact]">
-								<xsl:sort select="@time"/>
-								<div>
-									<a href="{$start/@prefix}a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}/{name(..)}/{$fact}" style="color: gray">
-										<xsl:apply-templates select="." mode="simpleName"/>
-									</a>
-								</div>
+						<xsl:sort select="@time"/>
+						<div>
+							<a href="{$start/@prefix}a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}/{name(..)}/{$fact}" style="color: gray">
+								<xsl:apply-templates select="." mode="simpleName"/>
+							</a>
+						</div>
 					</xsl:for-each>
 				</div>
 			</xsl:if>
+			<xsl:message>= = = = = = = - Зона упоминаний (END) - = = = = = =</xsl:message>
 		</div>
 		<xsl:message> 
 									@@@@@ - Зона генерации нового - @@@@@
@@ -418,11 +415,14 @@
 }
 #circle a {color: yellow; }
 		</style>
-		<div style="bottom: 70px; right: 165px; " id="circle"><!--background: purple; -->
-			<a href="{$start/@prefix}a/{$ctrl}/m8/?a={$fact}&amp;quest={$fact}" title="реплицировать внутрь" style="color: purple">&#9632;</a>
-		</div>		
-		<div style="bottom: 70px; right: 70px; font-size: 4.7em; line-height: 64%;" id="circle"><!--background: red; -->
-			<a href="{$start/@prefix}a/{$ctrl}/m8/?a={$fact}&amp;quest=n"  title="реплицировать на свободу" style="color: red">&#9679;</a>
+		<div style="bottom: 70px; right: 165px; " id="circle">
+			<!--background: purple; -->
+			<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact )}/?a=" title="реплицировать внутрь" style="color: purple">&#9632;</a>
+		</div>
+		<div style="bottom: 70px; right: 70px; font-size: 4.7em; line-height: 64%;" id="circle">
+			<!--background: red; -->
+			<a href="{$start/@prefix}a/{$ctrl}/?a=" title="реплицировать на свободу" style="color: red">&#9679;</a>
+			<!--{$fact}&amp;quest=n-->
 		</div>
 		<xsl:message> 
 			@@@@@ - Зона генерации нового (END) - @@@@@
@@ -460,7 +460,7 @@
 						<xsl:choose>
 							<xsl:when test="$startIndex/*[name()!='subject']">
 								<table>
-									<xsl:for-each select="$startPort/*">
+									<xsl:for-each select="$startPort/*[name()!='r']">
 										<xsl:sort select="name()"/>
 										<xsl:variable name="pName" select="name()"/>
 										<tr>
@@ -471,7 +471,6 @@
 															<xsl:when test="$pName = 'i' ">имя</xsl:when>
 															<xsl:when test="$pName = 'n' ">файл</xsl:when>
 															<xsl:when test="$pName = 'd' ">описание</xsl:when>
-															<xsl:when test="$pName = 'r' ">перемещение</xsl:when>
 															<xsl:when test="$pName=$fact">по умолчанию</xsl:when>
 															<xsl:otherwise>
 																<xsl:apply-templates select="." mode="simpleName"/>
@@ -482,61 +481,83 @@
 											</th>
 											<td valign="top" align="left">
 												<!--<xsl:for-each select="*">-->
-													<table>
-														<tr>
-															<td>
-																<xsl:call-template name="editParamOfPort">
-																	<xsl:with-param name="predicateName" select="$pName"/>
-																	<xsl:with-param name="objectElement" select="$startPort"/>
-																</xsl:call-template>
-															</td>
-															<td valign="top">
-																<a href="{$start/@prefix}a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}">q</a>
-															</td>
-															<td valign="top">
-																<xsl:choose>
-																	<xsl:when test="$pName = 'r' ">
-																		<xsl:variable name="typeParent">
-																			<xsl:message>	 typeParent  </xsl:message>
-																			<xsl:call-template name="getParent">
-																				<xsl:with-param name="currentFactName" select="$factTypeName"/>
-																			</xsl:call-template>
-																		</xsl:variable>
-																		<xsl:variable name="typeParentName" select="name(exsl:node-set($typeParent)/*[last()-1])"/>
-																		<xsl:if test="count(exsl:node-set($typeParent)/*) > 1">
-																			<!--<xsl:variable name="newTypeName" select="name(exsl:node-set($parent)/*[last()-1])"/>-->
-																			<xsl:variable name="newTypeTitle">
-																				<xsl:apply-templates select="exsl:node-set($typeParent)/*[last()-1]" mode="simpleName"/>
-																			</xsl:variable>
-																			<!-- select="name(exsl:node-set($parent)/*[last()-1])"/>-->
-																			<a href="{$startID}/?r={$typeParentName}" title="{$newTypeTitle}">^</a>
-																		</xsl:if>
-																		<xsl:text> </xsl:text>
-																		<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $factTypeName )}/?a0={name($startPort/r/*/*)}&amp;a5={$quest}">
-																			<b>x</b>
-																		</a>
-																	</xsl:when>
-																	<xsl:otherwise>
-																		<a href="{$startID}/?a0={name(*)}">x</a>
-																	</xsl:otherwise>
-																</xsl:choose>
-															</td>
-															<td valign="top">
-																<xsl:if test="$adminMode">
-																	<sup>
-																		<a href="{$start/@prefix}m8/{substring(name(),1,1)}/{name()}/value.xml" style="color:gray; font-size:.6em">
-																			<xsl:value-of select="name()"/>
-																		</a>
-																	</sup>
-																</xsl:if>
-															</td>
-														</tr>
-													</table>
+												<table>
+													<tr>
+														<td>
+															<xsl:call-template name="editParamOfPort">
+																<xsl:with-param name="predicateName" select="$pName"/>
+																<xsl:with-param name="objectElement" select="$startPort"/>
+															</xsl:call-template>
+														</td>
+														<td valign="top">
+															<a href="{$start/@prefix}a/{$ctrl}/m8/{substring(name(),1,1)}/{name()}">q</a>
+														</td>
+														<!--<xsl:if test="name()!='n'">-->
+														<td valign="top">
+															<a href="{$startID}/?a0={name(*/*)}">x</a>
+														</td>
+														<!--</xsl:if>-->
+														<td valign="top">
+															<xsl:if test="$adminMode">
+																<sup>
+																	<a href="{$start/@prefix}m8/{substring(name(),1,1)}/{name()}/value.xml" style="color:gray; font-size:.6em">
+																		<xsl:value-of select="name()"/>
+																	</a>
+																</sup>
+															</xsl:if>
+														</td>
+													</tr>
+												</table>
 												<!--</xsl:for-each>-->
 											</td>
 										</tr>
 									</xsl:for-each>
 								</table>
+								<div>
+									<xsl:message>				-- Вывод пульта навигации --</xsl:message>
+									<xsl:variable name="parentPort" select="m8:path( $fact, $author, $parentName, 'port' )"/>
+									<table>
+										<tr>
+											<th valign="top">
+												<span style="font-size: .8em; color: black" title="подчинение">объединение: </span>
+											</th>
+											<td valign="top">
+												<xsl:call-template name="editParamOfPort">
+													<xsl:with-param name="predicateName" select="'r'"/>
+													<xsl:with-param name="objectElement" select="m8:path( $typeName, $user, 'port' )"/>
+													<xsl:with-param name="action" select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact, $user ) )"/>
+													<xsl:with-param name="hidden">
+														<modifier><xsl:value-of select="$parentName"/></modifier>
+													</xsl:with-param>
+												</xsl:call-template>
+											</td>
+											<td valign="top">
+												<!--<xsl:variable name="typeParent">
+													<xsl:message>	 typeParent  </xsl:message>
+													<xsl:call-template name="getParent">
+														<xsl:with-param name="currentFactName" select="$factTypeName"/>
+													</xsl:call-template>
+												</xsl:variable>
+												<xsl:variable name="typeParentName" select="name(exsl:node-set($typeParent)/*[last()-1])"/>-->
+												<xsl:if test="1">
+													<!--<xsl:if test="count(exsl:node-set($typeParent)/*) > 1">-->
+													<!--<xsl:variable name="newTypeTitle">
+														<xsl:apply-templates select="exsl:node-set($typeParent)/*[last()-1]" mode="simpleName"/>
+													</xsl:variable>
+													<a href="{$startID}/?r={$typeParentName}" title="{$newTypeTitle}">^</a>-->
+												</xsl:if>
+												<xsl:variable name="typePosition" select="count( exsl:node-set($parent)/*[name(*)=$typeName][position()=1]/preceding-sibling::* )"/>
+												<!--<xsl:for-each select="exsl:node-set($parent)/*[name(*)=$typeName]/preceding-sibling::*">
+													<div><xsl:value-of select="name()"/></div>
+												</xsl:for-each>-->
+												<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact, $user )}/?r={name(exsl:node-set($parent)/*[$typePosition]/*)}&amp;modifier={$parentName}" title="to { name(exsl:node-set($parent)/*[$typePosition]/* ) } {$typePosition}  --- $typeName: {$typeName}">^</a>
+											</td>
+										</tr>
+									</table>
+									<xsl:message>				-- Вывод пульта навигации (END) --
+									</xsl:message>												
+									<a href="{$start/@prefix}a/{$ctrl}/{m8:dir($parentName)}/?a0={name($parentPort/r/*/*)}&amp;a4={$parentName}">удаление</a>
+								</div>
 							</xsl:when>
 							<xsl:otherwise>
 								<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $factTypeName )}/?a0={name($startPort/r/*/*)}&amp;a5={$quest}">удалить объект</a>
@@ -562,7 +583,10 @@
 							</xsl:for-each>
 						</table>
 						<br/>Добавление свойства:
-					<form action="{$startID}/">
+					<form action="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact, $user )}">
+						<!--<input type="hidden" name="a1" value="{$fact}"/>-->
+						<!--<input type="hidden" name="a4" value="n"/>-->
+							<input type="hidden" name="a3" value="r"/>
 							<select name="a2" onchange="this.form.submit()">
 								<option/>
 								<xsl:if test="not($startPort[name()='i'])">

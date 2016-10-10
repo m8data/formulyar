@@ -1,6 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
 	<xsl:include href="get_name.xsl"/>
+	<!--
+
+	информация по стартовому xml (здесь излишне читать порт, т.к. иногда он нужен)-->
+	<xsl:variable name="authPath" select="'m8/author'"/>
+	<xsl:variable name="start" select="/*"/>
+	<!--<xsl:variable name="m8root" select="$start/@DOCUMENT_ROOT"/>-->
+	<xsl:variable name="ctrl" select="$start/@ctrl"/>
+	<xsl:variable name="fact" select="$start/@fact"/>
+	<xsl:variable name="author" select="$start/@author"/>
+	<xsl:variable name="avatar" select="$start/@avatar"/>
+	<xsl:variable name="quest" select="$start/@quest"/>
+	<xsl:variable name="xsStartID" select="m8:dir( $fact )"/>
+	<xsl:variable name="sStartID" select="m8:dir( $fact, $author, $quest )"/>
+	<xsl:variable name="startID" select="concat( $start/@prefix, 'a/', $ctrl, '/', $sStartID )"/>
+	<xsl:variable name="startGroup" select="$start/@group"/>
+	<xsl:variable name="user" select="$start/@user"/>
+	<xsl:variable name="time" select="$start/@time"/>
+	<xsl:variable name="adminMode" select="$start/@adminMode or $start/@debug"/>
+	<xsl:variable name="localtime" select="$start/@localtime"/>
+	<xsl:variable name="avatarTypeRoot" select="m8:path( $avatar )"/>
+	<xsl:variable name="parent">
+		<xsl:message>	--- parent --- </xsl:message>
+		<xsl:call-template name="getParent">
+			<xsl:with-param name="currentFactName" select="$fact"/>
+			<!--<xsl:with-param name="currentQuestName" select="$quest"/>-->
+		</xsl:call-template>
+	</xsl:variable>
+	<xsl:variable name="rootName" select="name( exsl:node-set($parent)/*[3] )"/>
+	<xsl:variable name="parentName" select="name( exsl:node-set($parent)/*[last()] )"/>
+	<xsl:variable name="grandName" select="name( exsl:node-set($parent)/*[last()-1] )"/>
+	<xsl:variable name="typeName" select="name( exsl:node-set($parent)/*[last()]/* )"/>
+	<xsl:variable name="factType" select="m8:path( $fact, $avatar, $parentName, 'port' )/r/*"/>
+	<xsl:variable name="factTypeName">
+		<xsl:choose>
+			<xsl:when test="$fact = 'n' ">i</xsl:when>
+			<xsl:when test="starts-with($fact, 'n' )">
+				<xsl:value-of select="name( m8:path( $fact, $author, $quest, 'port' )/r/* )"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="substring( $fact, 1, 1 )"/>
+			</xsl:otherwise>
+		</xsl:choose>
+		<xsl:message>	--- end variable set --- </xsl:message>
+	</xsl:variable>
 	<!-- 
 
 -->
@@ -14,7 +58,7 @@
 				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3, '/', $level4, '.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:when test="$level3">
-				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1, '/', $level3, '.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/n/', $level3, '.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:when test="$level2">
 				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '.xml' ) )/*"/>
@@ -90,7 +134,7 @@
 				<func:result select="concat( 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3 )"/>
 			</xsl:when>
 			<xsl:when test="$level2">
-				<func:result select="concat( 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level1 )"/>
+				<func:result select="concat( 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2)" xml:lang="не добавляем значение квеста по умолчанию т.к. это может мешать, например, при создании первой записи в порте значений"/><!--, '/', 'n' -->
 			</xsl:when>
 			<xsl:when test="$level1">
 				<func:result select="concat( 'm8/', substring( $level1, 1, 1 ), '/', $level1 )"/>
@@ -103,60 +147,19 @@
 	<!--
 
 //-->
-	<!--<xsl:variable name="da" select="ss"/>-->
-	<!--
-	информация по стартовому xml (здесь излишне читать порт, т.к. иногда он нужен)-->
-	<xsl:variable name="authPath" select="'m8/author'"/>
-	<xsl:variable name="start" select="/*"/>
-	<!--<xsl:variable name="m8root" select="$start/@DOCUMENT_ROOT"/>-->
-	<xsl:variable name="ctrl" select="$start/@ctrl"/>
-	<xsl:variable name="fact" select="$start/@fact"/>
-	<xsl:variable name="author" select="$start/@author"/>
-	<xsl:variable name="avatar" select="$start/@avatar"/>
-	<xsl:variable name="quest" select="$start/@quest"/>
-	<xsl:variable name="xsStartID" select="m8:dir( $fact )"/>
-	<xsl:variable name="sStartID" select="m8:dir( $fact, $author, $quest )"/>
-	<xsl:variable name="startID" select="concat( $start/@prefix, 'a/', $ctrl, '/', $sStartID )"/>
-	<xsl:variable name="startGroup" select="$start/@group"/>
-	<xsl:variable name="user" select="$start/@user"/>
-	<xsl:variable name="time" select="$start/@time"/>
-	<xsl:variable name="adminMode" select="$start/@adminMode or $start/@debug"/>
-	<xsl:variable name="localtime" select="$start/@localtime"/>
-	<xsl:variable name="avatarTypeRoot" select="m8:path( $avatar )"/>
-	<xsl:variable name="parent">
-		<xsl:message>	--- parent --- </xsl:message>
-		<xsl:call-template name="getParent">
-			<xsl:with-param name="currentFactName" select="$fact"/>
-			<xsl:with-param name="currentQuestName" select="$quest"/>
-		</xsl:call-template>
-	</xsl:variable>
-	<xsl:variable name="rootName" select="name(exsl:node-set($parent)/*[3])"/>
-	<xsl:variable name="parentName" select="name(exsl:node-set($parent)/*[last()])"/>
-	<xsl:variable name="grandName" select="name(exsl:node-set($parent)/*[last()-1])"/>
-	<xsl:variable name="factTypeName">
-		<xsl:choose>
-			<xsl:when test="$fact = 'n' ">i</xsl:when>
-			<xsl:when test="starts-with($fact, 'n' )">
-				<xsl:value-of select="name( m8:path( $fact, $author, $quest, 'port' )/r/* )"/>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:value-of select="substring( $fact, 1, 1 )"/>
-			</xsl:otherwise>
-		</xsl:choose>
-		<xsl:message>	--- end variable set --- </xsl:message>
-	</xsl:variable>
+
 	<!--
 
 
 	-->
 	<xsl:template name="editParamOfPort">
+		<xsl:param name="predicateName"/>
+		<xsl:param name="objectElement"/>
 		<xsl:param name="action"/>
 		<xsl:param name="size"/>
 		<xsl:param name="hidden"/>
-		<xsl:param name="objectElement"/>
 		<xsl:param name="inputType"/>
 		<xsl:param name="questName"/>
-		<xsl:param name="predicateName"/>
 		<xsl:param name="sourceValue"/>
 		<xsl:param name="sortSelect"/>
 		<xsl:param name="titleSelect"/>
@@ -254,8 +257,8 @@
 					<xsl:with-param name="option" select="$option"/>
 				</xsl:call-template>
 			</xsl:when>
-			<xsl:when test="$predicateName='r' and m8:path( $factTypeName, 'index' )/object" xml:lang="вывод экземпляров типа 2016-07-23">
-				<xsl:message>				Вывод параметра 'r' списком экземпляров типа <xsl:value-of select="$factTypeName"/>
+			<xsl:when test="$predicateName='r' and m8:path( $typeName, 'index' )/object" xml:lang="вывод экземпляров типа 2016-07-23">
+				<xsl:message>				Вывод параметра 'r' списком экземпляров типа <xsl:value-of select="$typeName"/>
 				</xsl:message>
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>
@@ -263,7 +266,7 @@
 					<xsl:with-param name="questName" select="$questName"/>
 					<xsl:with-param name="predicateName" select="$predicateName"/>
 					<xsl:with-param name="selectedValue" select="$selectedValue"/>
-					<xsl:with-param name="sourceValue" select="m8:path( $factTypeName, 'index' )/object"/>
+					<xsl:with-param name="sourceValue" select="m8:path( $typeName, 'index' )/object"/>
 					<!--<xsl:with-param name="sourceValue" select="m8:path( 'r', $actionAuthor, $fact, 'dock' )/*[name() != $fact]"/>-->
 					<xsl:with-param name="sortSelect" select="$sortSelect"/>
 					<xsl:with-param name="titleSelect" select="$titleSelect"/>
@@ -727,11 +730,17 @@
 				<xsl:value-of select="$avatar"/>
 			</div>
 			<div style="position: fixed; bottom: 5px; right: 5px; color: gray; z-index: 1">
-				<xsl:value-of select="$start/@version"/>
+				<a href="{$start/@prefix}a/{$ctrl}/?reindex=1" style="color: gray"><xsl:value-of select="$start/@version"/></a>
+				<xsl:text> / </xsl:text>
 				<xsl:if test="$start/@branche">
-					<xsl:value-of select="concat( ' / ', $start/@branche, ' ', substring( $start/@head, 1, 4 ) )"/>
+					<a href="{$start/@prefix}a/{$ctrl}/?reindex=2" style="color: gray">
+					<xsl:value-of select="$start/@branche"/>
+					</a>
+					<xsl:text> </xsl:text>
+					<xsl:value-of select="substring( $start/@head, 1, 4 )"/>
 					<xsl:if test="$start/@dry"><sup style="color: red">&#160;new</sup></xsl:if>
 				</xsl:if>
+				
 				<xsl:text> | </xsl:text>
 				<!--<xsl:text> &lt;- </xsl:text>-->
 				<xsl:choose>
@@ -747,8 +756,12 @@
 						<xsl:value-of select="$calcName"/>
 						<xsl:text> | </xsl:text>
 					</xsl:if>-->
-				<a href="{$start/@prefix}{m8:dir( $fact, $author, $quest )}/port.xml" style="color:gray">
+				<a href="{$start/@prefix}{m8:dir( $fact, $avatar, 'n' )}/port.xml" style="color:gray">
 					<xsl:value-of select="$localtime"/>
+				</a>
+				<xsl:text> </xsl:text>
+				<a href="{$start/@prefix}{m8:dir( $fact, $author, $parentName )}/port.xml" style="color:gray">
+					t
 				</a>
 				<xsl:text> |  </xsl:text>
 				<xsl:value-of select="$user"/>

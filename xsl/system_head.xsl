@@ -29,7 +29,7 @@
 	 -->
 	<xsl:template match="/">
 		<xsl:message terminate="no">interface match="/"</xsl:message>
-			<xsl:variable name="factIndex" select="m8:path( $fact, 'index')"/>
+			<xsl:variable name="factIndex" select="m8:path( $fact, 'index' )"/>
 				<xsl:choose>
 					<xsl:when test="$start/@user='guest' and $start/@mission='formulyar'">
 						<!-- or $start/@ipath='a' -->
@@ -37,7 +37,11 @@
 						<xsl:call-template name="authorDef"/>
 					</xsl:when>
 					<xsl:when test="$factIndex/role/role1">
-						<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'port' )"/>
+						<xsl:choose>
+							<xsl:when test="m8:path( $fact, 'role1' )/*/*[2]"><xsl:apply-templates select="m8:path( $fact, $user, $quest, 'port' )"/></xsl:when>
+							<xsl:otherwise><xsl:apply-templates select="m8:path( 'n', $user, 'n', 'port' )"/></xsl:otherwise>
+						</xsl:choose>
+						
 					</xsl:when>
 					<xsl:when test="$factIndex/role/role2">
 						<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'dock' )"/>
