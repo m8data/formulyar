@@ -543,7 +543,7 @@
 										</tr>	
 										<tr>
 											<td valign="top">
-												<span style="font-size: .8em; color: black">перемещение</span>
+												<span style="font-size: .9em; color: black">перемещение</span>
 											</td>
 											<td valign="top">
 												<xsl:call-template name="editParamOfPort">
