@@ -241,9 +241,9 @@
 					<xsl:with-param name="ajaxMethod" select="$ajaxMethod"/>
 				</xsl:call-template>
 			</xsl:when>
-			<xsl:when test="m8:path( $predicateName, $avatar, $parentPredicateName, 'port' )/n" xml:lang="вывод списка из tsv-файла">
+			<xsl:when test="m8:path( $predicateName, $avatar,  'port' )/n" xml:lang="вывод списка из tsv-файла"><!--$parentPredicateName,-->
 				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> списка из tsv-файла</xsl:message>
-				<xsl:variable name="currentListName" select="name( m8:path( $predicateName, $avatar, $parentPredicateName, 'port' )/n/*)"/>
+				<xsl:variable name="currentListName" select="name( m8:path( $predicateName, $avatar, 'port' )/n/*)"/><!--$parentPredicateName, -->
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
@@ -258,7 +258,7 @@
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:when test="( $predicateName='r' or $predicateName='modifier' ) and m8:path( $typeName, 'index' )/object" xml:lang="вывод экземпляров типа 2016-07-23">
-				<xsl:message>				Вывод параметра 'r' списком экземпляров типа <xsl:value-of select="$typeName"/>
+				<xsl:message>				Вывод параметров 'r' или 'modifier' списком экземпляров типа <xsl:value-of select="$typeName"/>
 				</xsl:message>
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>

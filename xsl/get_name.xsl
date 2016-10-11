@@ -33,7 +33,7 @@
 						<xsl:apply-templates select="m8:path( name(), $avatar, $questName, 'port' )/i/*" mode="simpleName"/>
 					</xsl:when>-->
 					<xsl:otherwise>
-						<!--<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/>-->объект <xsl:value-of select="substring-after( name(), '-' )"/> (<xsl:value-of select="$questName"/>)
+						<!--<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/>-->объект <xsl:value-of select="substring-after( name(), '-' )"/><!-- (<xsl:value-of select="$questName"/>)-->
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:otherwise>
@@ -287,8 +287,8 @@
 		<!-- этот параметр правильнее назвать typeCode -->
 		<xsl:variable name="typeMapName" select="name( $avatarTypeRoot/*[@name=$typeTitle] )"/>
 		<xsl:choose>
-			<xsl:when test="m8:path( $typeMapName, 'role3' )/*[name()=$avatar]/*">
-				<xsl:value-of select="name( m8:path( $typeMapName, 'role3' )/*[name()=$avatar]/* )"/>
+			<xsl:when test="m8:path( $typeMapName, $avatar, 'terminal' )/*">
+				<xsl:value-of select="name( m8:path( $typeMapName, $avatar, 'terminal' )/* )"/>
 			</xsl:when>
 			<xsl:otherwise>BAD_NAME</xsl:otherwise>
 		</xsl:choose>

@@ -699,7 +699,7 @@ sub rinseProc2 {
 	my $x = 0;
 	for my $mapName ( grep { $type{$_} =~/ARRAY/ } keys %type){
 		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'name'} = $type{$mapName}[0]{'name'};
-		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'select'} = "name( m8:path( '$mapName', 'role3' )/$author/* )";
+		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'select'} = "name( m8:path( '$mapName', '$author', 'terminal' )/* )";
 		$x++
 	}
 	my $XML = $XML2JSON->json2xml( $JSON->encode(\%xsl_stylesheet) );
