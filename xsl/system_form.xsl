@@ -193,7 +193,7 @@
 			</xsl:if>
 			<xsl:if test="$predicateName != 'n' ">
 				<xsl:if test="$questName">
-					<input type="hidden" name="quest" value="{$questName}"/>
+					<input type="hidden" name="modifier" value="{$questName}"/><!--<input type="hidden" name="quest" value="{$questName}"/>-->
 				</xsl:if>
 			</xsl:if>
 			<xsl:call-template name="inputParamOfPortPre">

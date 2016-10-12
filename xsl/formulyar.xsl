@@ -92,7 +92,7 @@
 								<xsl:message> ^ ^ ^ ^ ^ - Зона ссылок наверх - ^ ^ ^ ^ ^ </xsl:message>
 								<table style="font-size: 1em;" width="100%">
 									<tr>
-										<td width="30%">
+										<td width="30%" valign="top">
 											<xsl:for-each select="exsl:node-set($parent)/*">
 												<xsl:if test="position()!=1">
 													<xsl:text> / </xsl:text>
@@ -102,10 +102,10 @@
 												</a>
 											</xsl:for-each>
 										</td>
-										<td width="40%" align="center" style="color: #444">
-											<b>
-												<xsl:apply-templates select="exsl:node-set($parent)/*[last()]/*" mode="simpleName"/>&#160;<xsl:value-of select="$fact"/>
-											</b>
+										<td width="40%" align="center" style="color: #444" valign="top">
+											<div style="padding-bottom: .4em; font-weight: bold">
+												<xsl:apply-templates select="exsl:node-set($parent)/*[last()]/*" mode="simpleName"/>&#160;<xsl:value-of select="$fact"/></div><xsl:if test="$quest!=$typeName and $quest!='n'"> в квесте <a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $quest )}"><xsl:value-of select="$quest"/></a></xsl:if>
+											
 										</td>
 										<td width="30%" align="right" valign="top">
 											<xsl:choose>
