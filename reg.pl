@@ -577,7 +577,7 @@ sub washProc{
 					}
 					else{
 						&setWarn("			wP      $pair: создание новой сущности" );
-						$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s.'-'.$$temp{'user'}; 
+						$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s.'-'.$$temp{'avatar'}; 
 						$num[$s][2] = $value;
 						#$num[$s][3] = $param{'quest'}
 						if ( $name eq 'a' ){
@@ -1353,6 +1353,7 @@ sub getSetting {
 sub getDoc {
 	my ( $temp, $adminMode, $xslFile )=@_;
 	my $doc = XML::LibXML::Document->new( "1.0", "UTF-8" );
+	$$temp{'quest'} = $$temp{'modifier'} if defined $$temp{'modifier'};
 	my $rootElement = $doc->createElement($$temp{'fact'});
 	$doc->addChild($rootElement);
 	if ( defined $$temp{'number'} ){
