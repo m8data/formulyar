@@ -710,10 +710,10 @@
 								<xsl:text> | </xsl:text>
 							</xsl:if>
 						</xsl:for-each>-->
-						<a href="{$start/@prefix}a/{$avatar}/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:orange">публичный раздел</a>
+						<a href="{$start/@prefix}a/{$avatar}/{ m8:dir( $fact, $author ) }" style="color:orange">публичный раздел</a>
 					</xsl:when>
 					<xsl:otherwise>
-						<a href="{$start/@prefix}a/formulyar/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:brown">aдминистративный раздел</a>
+						<a href="{$start/@prefix}a/formulyar/{ m8:dir( $fact, $author ) }" style="color:brown">aдминистративный раздел</a>
 					</xsl:otherwise>
 				</xsl:choose>
 				<!--<xsl:text> | </xsl:text>
