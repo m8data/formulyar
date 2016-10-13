@@ -237,9 +237,9 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 					if ( $path[4]){ 
 						$temp{'quest'} = $path[4] 
 					} 
-					( $matrix[1], $matrix[4] ) = ( $temp{'fact'}, $temp{'quest'} );
+					#( $matrix[1], $matrix[4] ) = ( $temp{'fact'}, $temp{'quest'} );
 				}
-				else { $matrix[3] = $matrix[4] = $temp{'fact'} }
+				#else { $matrix[3] = $matrix[4] = $temp{'fact'} }
 			}
 		}
 	}
@@ -398,7 +398,7 @@ sub washProc{
 		$$temp{'quest'} = $defaultQuest if not defined $$temp{'quest'};
 		my $iName = &setName( 'i', $$temp{'user'}, @text );
 		my $trName =  &setName( 'd', $$temp{'user'}, $$temp{'fact'}, 'n', $iName );
-		my @val = ( $trName, $$temp{'fact'}, 'n', $iName, $$temp{'user'}, $$temp{'quest'}, 1 );
+		my @val = ( $trName, $$temp{'fact'}, 'n', $iName, $$temp{'quest'}, 1 );
 		push @num, \@val;
 	}
 	else {
@@ -428,9 +428,15 @@ sub washProc{
 				$$temp{$name} = $param{$name} 
 			}
 		}
+		#весь блок работы с матрицей нужно уводить в работу с пустотой, т.к. может быть и не 'а', а 'b' и 'с' и 'd'.
+		if ( defined $param{'a'} ){
+			$matrix[3] = $matrix[4] = $$temp{'fact'}
+		}
+		else{
+			( $matrix[1], $matrix[4] ) = ( $$temp{'fact'}, 'n' );
+		}
 		for my $ps ( 1..4 ){
 			$matrix[$ps] = $$temp{$sentence[$ps]} if defined $$temp{$sentence[$ps]} 
-		
 		}
 		#keys %param || return;
 		if ( not $$temp{'user'} ){
@@ -604,7 +610,15 @@ sub washProc{
 					if ( $num[$s][0] ){			
 						&setWarn("		wP      на удаление");
 						my @span = &getTriple( $$temp{'user'}, $num[$s][0] );
-						$span[4] = $num[$s][4] if $num[$s][4];
+						if ($num[$s][4]){ $span[4] = $num[$s][4] }
+						else{
+							if ( $span[2]=~/^r/ ){
+								( $span[4] ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0], 1 );
+							}
+							else {	$span[4] = $$temp{'quest'} }
+						}
+						
+						
 						#$span[5] = $num[$s][5] if $num[$s][5];
 						$num[$s] = \@span
 					}
@@ -646,16 +660,21 @@ sub washProc{
 			next;
 		}		
 		if ( $num[$s][2]=~/^r/ and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0] ){
-			&setWarn("		wP   Удаление старой связи состава $num[$s][0].");		
+			&setWarn("		wP   Проверка трипла $num[$s][0].");		
 			my ( $currentQuest ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0], 1 );
-			my @triple = ( $num[$s][0], $num[$s][1], $num[$s][2], $num[$s][3], $currentQuest );
-			#push @num, \@triple;
-			&spinProc( \@triple, $$temp{'user'}, $$temp{'time'} );
-			if ( defined $$temp{'object'} ){
-				&setWarn("		wP    Добавление к новой связи состава указания такого же типа.");
-				$num[$s][3] = $num[$s][4];
-				$num[$s][0] = &setName( 'd', $$temp{'user'}, $num[$s][1], $num[$s][2], $num[$s][3] );
+			if ( $currentQuest ){
+				&setWarn("		wP    Удаление старой связи состава $num[$s][0].");	
+				my @triple = ( $num[$s][0], $num[$s][1], $num[$s][2], $num[$s][3], $currentQuest );
+				#push @num, \@triple;
+				&spinProc( \@triple, $$temp{'user'}, $$temp{'time'} );
+				if ( defined $$temp{'object'} ){
+					&setWarn("		wP    Добавление к новой связи состава указания такого же типа.");
+					$num[$s][3] = $num[$s][4];#$$temp{'object'};
+					$num[$s][0] = &setName( 'd', $$temp{'user'}, $num[$s][1], $num[$s][2], $num[$s][3] );
+				}			
+			
 			}
+
 		}
 		if ( &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'} ) ){
 			&setWarn("		wP   Номер запрашивает повтор трипла в базе.");
@@ -810,11 +829,11 @@ sub spinProc {
 	}
 	my $questDir = $planeDir.'/'.$user.'/tsv/'.$name.'/'.$modifier;
 	if ( $add ){
-		&setWarn("		wP   Добавление директории $questDir в базу");
+		&setWarn("		sP   Добавление директории $questDir в базу");
 		&setFile ( $planeDir.'/'.$user.'/tsv/'.$name.'/'.$modifier.'/time.txt', $time ); #ss
 	}
 	else{
-		&setWarn("		wP   Удаление директории $questDir из базы");
+		&setWarn("		sP   Удаление директории $questDir из базы");
 		rmtree $questDir;
 		if ( not &getDir ( $planeDir.'/'.$user.'/tsv/'.$name, 1 ) ){
 			rmtree $planeDir.'/'.$user.'/tsv/'.$name;
@@ -823,7 +842,7 @@ sub spinProc {
 				rmtree $planeDir.'/'.$user.'/tsv';
 			}
 			if ( $value[3]=~/^i\d+$/ ){
-				&setWarn("		dN    Проверка на идентификатор");
+				&setWarn("		sP    Проверка на идентификатор");
 				my $userTypeDir = $authorPath.'/'.$value[5];
 				if ( -e $userTypeDir.'/type.json' ){
 					my %type = &getJSON( $userTypeDir, 'type' );
@@ -978,6 +997,12 @@ sub dryProc2 {
 		for my $tsvName ( &getDir( $tsvPath, 1 ) ){
 			print REINDEX "   Исследование tsv-шки $tsvName \n";
 			warn '	tsv  '.$tsvName;
+			if ( not -e $tsvPath.'/'.$tsvName.'/value.tsv' ){
+				warn 'Error: no value.tsv file';
+				print REINDEX "   Error: no $tsvPath/$tsvName/value.tsv file \n";
+				rmtree $tsvPath.'/'.$tsvName;
+				next;
+			}
 			$all++;
 			my @div = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$tsvName.'/value.tsv' );
 			&rinseProc( $tsvName, @div );
