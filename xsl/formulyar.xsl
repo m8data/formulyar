@@ -532,7 +532,7 @@
 												<xsl:call-template name="editParamOfPort">
 													<xsl:with-param name="predicateName" select="'modifier'"/>
 													<xsl:with-param name="objectElement" select="m8:path( $typeName, $user, 'port' )"/>
-													<xsl:with-param name="action" select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact, $user ) )"/>
+													<xsl:with-param name="action" select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ) )"/>
 													<xsl:with-param name="hidden">
 														<r><xsl:value-of select="$typeName"/></r>
 													</xsl:with-param>
@@ -551,7 +551,7 @@
 												<xsl:call-template name="editParamOfPort">
 													<xsl:with-param name="predicateName" select="'modifier'"/>
 													<xsl:with-param name="objectElement" select="m8:path( $typeName, $user, 'port' )"/>
-													<xsl:with-param name="action" select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact, $user ) )"/>
+													<xsl:with-param name="action" select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ) )"/>
 													<xsl:with-param name="hidden">
 														<r><xsl:value-of select="$typeName"/></r>
 														<object><xsl:value-of select="$newQuestName"/></object>
@@ -559,7 +559,7 @@
 												</xsl:call-template>
 											</td>
 											<td valign="top">
-												<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact, $user )}/?r={$typeName}&amp;modifier={$newQuestName}&amp;object={$newQuestName}" title="to new Quest - { $newQuestName } COMMON">^</a>
+												<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact )}/?r={$typeName}&amp;modifier={$newQuestName}&amp;object={$newQuestName}" title="to new Quest - { $newQuestName } COMMON">^</a>
 											</td>
 										</tr>										
 										<tr>
@@ -570,7 +570,7 @@
 												<xsl:call-template name="editParamOfPort">
 													<xsl:with-param name="predicateName" select="'r'"/>
 													<xsl:with-param name="objectElement" select="m8:path( $typeName, $user, 'port' )"/>
-													<xsl:with-param name="action" select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact, $user ) )"/>
+													<xsl:with-param name="action" select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ) )"/>
 													<xsl:with-param name="hidden">
 														<modifier><xsl:value-of select="$parentName"/></modifier>
 													</xsl:with-param>
@@ -584,7 +584,7 @@
 														<xsl:otherwise>n</xsl:otherwise>
 													</xsl:choose>
 												</xsl:variable>
-												<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact, $user )}/?r={$newTypeName}&amp;modifier={$parentName}" title="to new typePosition - {$typePosition} / newTypeName - { $newTypeName }">^</a>
+												<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact )}/?r={$newTypeName}&amp;modifier={$parentName}" title="to new typePosition - {$typePosition} / newTypeName - { $newTypeName }">^</a>
 											</td>
 										</tr>
 									
@@ -595,7 +595,7 @@
 								</div>
 							</xsl:when>
 							<xsl:otherwise>
-								<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $factTypeName )}/?a0={name($startPort/r/*/*)}&amp;a5={$quest}">удалить объект</a>
+								<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $factTypeName )}/?a0={name($startPort/r/*/*)}&amp;a4={$quest}">удалить объект</a>
 							</xsl:otherwise>
 						</xsl:choose>
 					</div>
@@ -639,10 +639,10 @@
 								<xsl:for-each select="m8:path( $avatar )/*">
 									<xsl:sort select="@name"/>
 									<xsl:variable name="typeName">
-										<xsl:value-of select="name( m8:path( name(), 'role3' )/*[name()=$avatar]/* )"/>
+										<xsl:value-of select="name( m8:path( name(), $avatar, 'terminal' )/* )"/>
 									</xsl:variable>
 									<option value="{$typeName}">
-										<xsl:apply-templates select="m8:path( name(), 'role3' )/*[name()=$avatar]/*" mode="simpleName"/>
+										<xsl:apply-templates select="m8:path( name(), $avatar, 'terminal' )/*" mode="simpleName"/>
 									</option>
 								</xsl:for-each>
 							</select>
