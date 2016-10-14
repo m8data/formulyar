@@ -500,6 +500,9 @@
 								<xsl:if test="@description">
 									<xsl:attribute name="description"><xsl:value-of select="@description"/></xsl:attribute>
 								</xsl:if>
+								<xsl:for-each select="span">
+									<xsl:attribute name="span{position()}"><xsl:value-of select="."/></xsl:attribute>
+								</xsl:for-each>
 							</input>
 							<label class="label-block" for="{name()}">
 								<xsl:if test="@activity!=1">

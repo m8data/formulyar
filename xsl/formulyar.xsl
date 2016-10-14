@@ -639,10 +639,10 @@
 								<xsl:for-each select="m8:path( $avatar )/*">
 									<xsl:sort select="@name"/>
 									<xsl:variable name="typeName">
-										<xsl:value-of select="name( m8:path( name(), 'role3' )/*[name()=$avatar]/* )"/>
+										<xsl:value-of select="name( m8:path( name(), $avatar, 'terminal' )/* )"/>
 									</xsl:variable>
 									<option value="{$typeName}">
-										<xsl:apply-templates select="m8:path( name(), 'role3' )/*[name()=$avatar]/*" mode="simpleName"/>
+										<xsl:apply-templates select="m8:path( name(), $avatar, 'terminal' )/*" mode="simpleName"/>
 									</option>
 								</xsl:for-each>
 							</select>
