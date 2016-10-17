@@ -56,6 +56,7 @@
 	</func:function>
 	<func:function name="m8:holder">
 		<xsl:param name="fact"/>
+		<xsl:message>	--- работа m8:holder с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
 		<func:result select="name( m8:path( $fact, 'subject_r' )/* )"/>
 	</func:function>
 	<func:function name="m8:mentor">
@@ -64,7 +65,7 @@
 	</func:function>
 	<func:function name="m8:color">
 		<xsl:param name="fact"/>
-		<func:result select="concat( 'color: #', translate( substring( m8:holder( $fact ), 1, 3), 'qwertyuiopasdfghjklzxcvbnm', '12345678901234567801234560' ) )"/>
+		<func:result select="concat( 'color: #', translate( substring( m8:holder( $fact ), 1, 3), 'qwertyuiopasdfghjklzxcvbnm', '1234567890abc1234567890abc' ) )"/>
 	</func:function>	
 	<!-- {$start/@prefix}a/{$ctrl}/{m8:dir( name() )}
 -->	
@@ -90,6 +91,40 @@
 				<func:result select="document( concat( $start/@planeRoot, 'm8/n/n/', $user, '/n/port.xml' ) )/*"/><!--$author, -->
 			</xsl:otherwise>
 		</xsl:choose>
+	</func:function>
+	<func:function name="m8:port">
+		<xsl:param name="fact"/>
+		<xsl:variable name="holder" select="m8:holder( $fact )"/>
+		<xsl:variable name="director" select="m8:director( $fact )"/>
+		<xsl:message> --- функция вывода порта (fact <xsl:value-of select="$fact"/>; holder <xsl:value-of select="$holder"/>; director <xsl:value-of select="$director"/>) ----</xsl:message>
+		<xsl:choose>
+			<xsl:when test="m8:path( $fact, 'role1' )/*[name()=$holder]/n">
+				<xsl:message>	найден действующий пользовательский порт</xsl:message>
+				<func:result select="m8:path( $fact, $holder, 'port' )"/>
+			</xsl:when>
+			<xsl:when test="m8:path( $fact, 'role1' )/*[name()=$holder]/*[name()=$director]">
+				<xsl:message>	найден ключевой порт факта</xsl:message>
+				<func:result select="m8:path( $fact, $holder, $director, 'port' )"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<func:result select="m8:path()"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</func:function>
+	<func:function name="m8:multport">
+		<xsl:param name="fact"/>
+		<xsl:param name="quest"/>
+		<xsl:variable name="holder" select="m8:holder( $quest )"/>
+		<xsl:message> --- функция вывода порта для мультинга (fact <xsl:value-of select="$fact"/>; holder <xsl:value-of select="$holder"/>; quest <xsl:value-of select="$quest"/>) ----</xsl:message>
+		<xsl:choose>
+			<xsl:when test="m8:path( $fact, 'role1' )/*[name()=$holder]/*[name()=$quest]">
+				<xsl:message>	найден действующий пользовательский порт</xsl:message>
+				<func:result select="m8:path( $fact, $holder, $quest, 'port' )"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<func:result select="m8:path()"/>
+			</xsl:otherwise>
+		</xsl:choose>					
 	</func:function>
 	<func:function name="m8:path_check">
 		<xsl:param name="level1"/>

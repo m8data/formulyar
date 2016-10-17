@@ -143,7 +143,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	my $cookiePrefix = '';#$prefix; #&utfText(  );
 	#$cookiePrefix =~ s!^/(.*).public/$!$1!;
 	#$cookiePrefix =~ tr!/!.!;
-	$dbg = 1 if cookie($cookiePrefix.'debug') ne '';
+	$dbg = 1 if 0 or cookie($cookiePrefix.'debug') ne '';
 	copy( $log, $log.'.txt' ) or die "Copy failed: $!" if -e $log and $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
 	&setWarn( " Обработка запроса в сайте $ENV{DOCUMENT_ROOT}", $log);#	
 	copy( $logPath.'/env.json', $logPath.'/env.json.json' ) or die "Copy failed: $!" if -e $logPath.'/env.json' and $dbg; #копировать лог не ниже, т.е. не после возможного
@@ -197,8 +197,13 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		#elsif ( $name eq $cookiePrefix.'avatar' ){ 	$temp{'avatar'} = $value if $value	}
 		elsif ( $name eq $cookiePrefix.'debug' ){		$temp{'debug'} = $value if $value	}
 	}
-	if ( $temp{'user'} ){ $temp{'author'} = $temp{'user'} }
-	else { $temp{'user'} = $temp{'author'} = $defaultAuthor } #$$cookie{'user'} = 
+	if ( $temp{'user'} ){ 
+		$temp{'author'} = $temp{'user'} 
+	}
+	else { 
+		$temp{'user'} = $temp{'author'} = $defaultAuthor 
+		#$temp{'user'} = $defaultAuthor 
+	} #$$cookie{'user'} = 
 	$temp{'avatar'} = $temp{'ctrl'} = $univer;
 	#if ( $temp{'avatar'} ){ $temp{'ctrl'} = $temp{'avatar'} }
 	#else { $temp{'avatar'} = $temp{'ctrl'} = &getSetting('avatar') || &getAvatar || $startAvatar } #$$cookie{'avatar'} = 
@@ -267,7 +272,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			&setFile( $xmlFile, &getDoc( \%temp ) );
 			my $xslFile = $planeRoot.$planeDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
 			my $documentFile = $planeRoot.$temp{'m8path'}.'/report/word/document.xml';
-			my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$planeRoot.$logPath.'/xsltproc_doc.txt' );#
+			my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$planeRoot.$logPath.'/xsltproc_generate_docx.txt' );#
 			&setWarn( "   documntXML: $status" );#
 			unlink $temp{'m8path'}.'/report.docx' if -e $temp{'m8path'}.'/report.docx';
 			my $zip = Archive::Zip->new();
@@ -344,6 +349,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 					$temp{'time'} =~/(\d\d)$/;
 					my $trashTempFile = $logPath.'/trash/'.$1.'.xml';
 					&setFile( $trashTempFile, $doc );
+					copy( $planeRoot.$logPath.'/out.txt', $planeRoot.$logPath.'/out.txt.txt' ) or die "Copy failed: $!" if -e $log and $dbg;
 					$doc = system ( 'xsltproc '.$planeRoot.$xslFile.' '.$planeRoot.$trashTempFile.' 2>'.$planeRoot.$logPath.'/out.txt' );#
 					$doc =~s/(\d*)$//;
 					print $1 if $dbg and $1
@@ -590,6 +596,7 @@ sub washProc{
 						if ( $name eq 'a' ){
 							&setWarn("			wP       $pair: подготовка редиректа" );
 							$$temp{'fact'} = $$temp{'quest'} = $num[$s][1];# if not defined $param{'fact'};
+							$$temp{'author'} = $$temp{'user'}
 							#$$temp{'fact'} = $num[$s][1] if not defined $param{'fact'};
 							#$$temp{'quest'} = $num[$s][1] if not defined $param{'quest'};
 						}
@@ -1423,8 +1430,10 @@ sub getDoc {
 	}
 	my $pp = XML::LibXML::PrettyPrint->new();
 	$pp->pretty_print($rootElement);
+	
 	my $tempFile = $logPath.'/temp.xml';
-	copy( $tempFile, $tempFile.'.xml' ) if -e $tempFile and $adminMode;
+	copy( $tempFile, $tempFile.'.xml' ) or die "Copy failed: $!" if -e $tempFile;
+	#copy( $tempFile, $tempFile.'.xml' ) if -e $tempFile and $adminMode;
 	&setFile( $tempFile, $doc );
 	return $doc
 }
