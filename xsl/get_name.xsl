@@ -22,10 +22,11 @@
 		<xsl:choose>
 			<xsl:when test="name() = 'n'">начало</xsl:when>
 			<xsl:otherwise>
-				<xsl:variable name="questName" select="name( m8:path( name(), 'subject_r' )/*[name()=$avatar]/* )"/>
+				<xsl:variable name="currentAuthor" select="name( m8:path( name(), 'subject_r' )/* )"/>
+				<!--<xsl:variable name="currentQuest" select="name( m8:path( name(), 'subject_r' )/*/* )"/>-->
 				<xsl:choose>
-					<xsl:when test="m8:path( name(), $avatar, 'port' )/i"><!--m8:path( name(), $avatar, $questName, 'port' )/i-->
-						<xsl:apply-templates select="m8:path( name(), $avatar, 'port' )/i/*" mode="simpleName"/>
+					<xsl:when test="m8:path( name(), $currentAuthor, 'port' )/i"><!--m8:path( name(), $avatar, $questName, 'port' )/i-->
+						<xsl:apply-templates select="m8:path( name(), $currentAuthor, 'port' )/i/*" mode="simpleName"/>
 					</xsl:when>
 					<!--<xsl:when test="m8:path( name(), $avatar, $questName, 'port' )/i">
 						<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/>
@@ -33,7 +34,7 @@
 						<xsl:apply-templates select="m8:path( name(), $avatar, $questName, 'port' )/i/*" mode="simpleName"/>
 					</xsl:when>-->
 					<xsl:otherwise>
-						<!--<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/>-->объект <xsl:value-of select="substring-after( name(), '-' )"/><!-- (<xsl:value-of select="$questName"/>)-->
+						<!--<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/>-->N<xsl:value-of select="substring( substring-after( name(), '-' ), 1, 4 )"/><!-- (<xsl:value-of select="$questName"/>)-->
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:otherwise>
@@ -206,6 +207,7 @@
 		<xsl:variable name="newResult">
 			<xsl:if test="$currentFactName!='n'">
 				<xsl:element name="{$parentFactName}">
+					<!--<xsl:attribute name="author"><xsl:value-of select="$parentAuthorName"/></xsl:attribute>-->
 					<xsl:element name="{$typeName}"/>
 					<!--<xsl:value-of select="$typeName"/>-->
 				</xsl:element>
@@ -216,12 +218,13 @@
 		</xsl:variable>
 		<xsl:message>		==== getParent 2 ====
 			currentFactName: <xsl:value-of select="$currentFactName"/>
-			parentFactName: <xsl:value-of select="$parentFactName"/>
+			
+			<!--parentFactName: <xsl:value-of select="$parentFactName"/>
 			parentAuthorName: <xsl:value-of select="$parentAuthorName"/>
 			typeName: <xsl:value-of select="$typeName"/>
 			title: <xsl:apply-templates select="exsl:node-set($newResult)/*[1]" mode="simpleName"/>
 			currentDeep: <xsl:value-of select="count( exsl:node-set($newResult)/* )"/>
-			newResult: 
+			newResult: -->
 			<xsl:for-each select="exsl:node-set($newResult)/*">
 				<xsl:value-of select="position()"/>
 				<xsl:text>)	</xsl:text>

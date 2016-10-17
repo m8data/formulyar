@@ -232,6 +232,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			$temp{'m8path'} = join '/', @path;
 			if ( $path[2] ){
 				$temp{'fact'} = $path[2];
+				$temp{'author'} = &m8holder( $temp{'fact'} );
 				if ( $path[3] ){
 					$temp{'author'} = $path[3];
 					if ( $path[4]){ 
@@ -553,11 +554,11 @@ sub washProc{
 					if ( $value[1] and $value[1]=~/^xsd:(\w+)$/ ){
 						&setWarn('		wP      запрос создания именнованой карты');
 						#здесь еще нужно исключить указание одному имени разных типов
-						my $authorTypeFile = $authorPath.'/'.$$temp{'author'}; #вообще не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
+						my $authorTypeFile = $authorPath.'/'.$$temp{'user'}; #вообще не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
 						my %type = &getJSON( $authorTypeFile, 'type' );
 						$type{$value}[0]{'name'} = $value[0];
 						&setXML ( $authorTypeFile, 'type', \%type );
-						&rinseProc2 ( $$temp{'author'}, %type )
+						&rinseProc2 ( $$temp{'user'}, %type )
 					}
 				} 
 				if ( $name =~/^([a-z]+)([0-5]*)$/ and not $name =~/^[dirn]/ ){
@@ -659,20 +660,30 @@ sub washProc{
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает нарушение правила иерархии';
 			next;
 		}		
-		if ( $num[$s][2]=~/^r/ and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0] ){
-			&setWarn("		wP   Проверка трипла $num[$s][0].");		
-			my ( $currentQuest ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0], 1 );
-			if ( $currentQuest ){
-				&setWarn("		wP    Удаление старой связи состава $num[$s][0].");	
-				my @triple = ( $num[$s][0], $num[$s][1], $num[$s][2], $num[$s][3], $currentQuest );
-				#push @num, \@triple;
-				&spinProc( \@triple, $$temp{'user'}, $$temp{'time'} );
-				if ( defined $$temp{'object'} ){
-					&setWarn("		wP    Добавление к новой связи состава указания такого же типа.");
-					$num[$s][3] = $num[$s][4];#$$temp{'object'};
-					$num[$s][0] = &setName( 'd', $$temp{'user'}, $num[$s][1], $num[$s][2], $num[$s][3] );
-				}			
-			
+		if ( $num[$s][2]=~/^r/ and -d 'm8/n/'.$num[$s][1] ){
+			&setWarn("		wP   Проверка изменения статуса имеющегося нечто.");
+			my $holder = &m8holder( $num[$s][1] );
+			if ( $holder ne $$temp{'user'} ){
+				&setWarn("		wP    Номер запрашивает действие над чужим нечто");
+				$$temp{'povtor'}[$s] = 4;
+				$$temp{'number'}[$s]{'message'} = 'Номер запрашивает действие над чужим нечто';
+				next
+			}
+			elsif ( -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0] ){
+				&setWarn("		wP    Проверка трипла $num[$s][0].");		
+				my ( $currentQuest ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0], 1 );
+				if ( $currentQuest ){
+					&setWarn("		wP     Удаление старой связи состава $num[$s][0].");	
+					my @triple = ( $num[$s][0], $num[$s][1], $num[$s][2], $num[$s][3], $currentQuest );
+					#push @num, \@triple;
+					&spinProc( \@triple, $$temp{'user'}, $$temp{'time'} );
+					if ( defined $$temp{'object'} ){
+						&setWarn("		wP      Добавление к новой связи состава указания такого же типа.");
+						$num[$s][3] = $num[$s][4];#$$temp{'object'};
+						$num[$s][0] = &setName( 'd', $$temp{'user'}, $num[$s][1], $num[$s][2], $num[$s][3] );
+					}			
+				
+				}
 			}
 
 		}
@@ -708,7 +719,7 @@ sub rinseProc {
 }
 
 sub rinseProc2 {
-	my ( $author, %type )=@_;
+	my ( $user, %type )=@_;
 	&setWarn("		rP2 @_"  );
 	#-d $author || return;
 	my %xsl_stylesheet;
@@ -718,11 +729,11 @@ sub rinseProc2 {
 	my $x = 0;
 	for my $mapName ( grep { $type{$_} =~/ARRAY/ } keys %type){
 		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'name'} = $type{$mapName}[0]{'name'};
-		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'select'} = "name( m8:path( '$mapName', '$author', 'terminal' )/* )";
+		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'select'} = "name( m8:path( '$mapName', '$user', 'terminal' )/* )";
 		$x++
 	}
 	my $XML = $XML2JSON->json2xml( $JSON->encode(\%xsl_stylesheet) );
-	&setFile( $authorPath.'/'.$author.'/type.xsl', $XML );
+	&setFile( $authorPath.'/'.$user.'/type.xsl', $XML );
 }
 
 sub spinProc {
@@ -1194,6 +1205,12 @@ sub m8req {
 	elsif ( $$temp{'author'} and $$temp{'author'} ne $$temp{'ctrl'} ){ $dir .= '/'.$$temp{'author'} }
 	return $dir;
 }
+sub m8holder {
+	my ( $fact ) = @_;
+	my %subject = &getJSON( &m8dir( $fact ), 'subject_r' );
+	my @author = keys %subject;
+	return $author[0]
+}
 
 
 
@@ -1257,10 +1274,10 @@ sub setXML {
 	}
 }
 sub setName {
-	my ( $type, $author, @value )=@_;
+	my ( $type, $user, @value )=@_;
 	&setWarn( "					sN @_" );
 	my $name;
-	my $tsvPath = $planeDir.'/'.$author.'/tsv';
+	my $tsvPath = $planeDir.'/'.$user.'/tsv';
 	if (@value){
 		@value = ( join( "\t", @value ) ) if $type eq 'd'; 
 		my $value = join "\n", @value;

@@ -48,6 +48,26 @@
 	<!-- 
 
 -->
+	
+	<func:function name="m8:director">
+		<xsl:param name="fact"/>
+		<xsl:message>	--- работа m8:director с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
+		<func:result select="name( m8:path( $fact, 'subject_r' )/*/* )"/>
+	</func:function>
+	<func:function name="m8:holder">
+		<xsl:param name="fact"/>
+		<func:result select="name( m8:path( $fact, 'subject_r' )/* )"/>
+	</func:function>
+	<func:function name="m8:mentor">
+		<xsl:param name="fact"/>
+		<func:result select="name( m8:path( $fact, m8:holder( $fact ), m8:director( $fact ), 'port' )/r/* )"/>
+	</func:function>
+	<func:function name="m8:color">
+		<xsl:param name="fact"/>
+		<func:result select="concat( 'color: #', translate( substring( m8:holder( $fact ), 1, 3), 'qwertyuiopasdfghjklzxcvbnm', '12345678901234567801234560' ) )"/>
+	</func:function>	
+	<!-- {$start/@prefix}a/{$ctrl}/{m8:dir( name() )}
+-->	
 	<func:function name="m8:path">
 		<xsl:param name="level1"/>
 		<xsl:param name="level2"/>
@@ -67,7 +87,7 @@
 				<func:result select="document( concat( $start/@planeRoot, 'm8/author/', $level1, '/type.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="document( concat( $start/@planeRoot, 'm8/n/n/', $author, '/n/port.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/n/n/', $user, '/n/port.xml' ) )/*"/><!--$author, -->
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
@@ -144,6 +164,10 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
+	<func:function name="m8:root">
+		<xsl:param name="fact"/>
+		<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( name() ) )"/>
+	</func:function>	
 	<!--
 
 //-->
@@ -225,7 +249,9 @@
 		<xsl:param name="ajaxMethod"/>
 		<xsl:variable name="parentPredicateName" select="name( m8:path( $predicateName, 'subject_r' )/*/*[1] )"/>
 		<xsl:message>
-		Запрос параметра <xsl:value-of select="$predicateName"/></xsl:message>
+			Запрос параметра <xsl:value-of select="$predicateName"/>
+			selectedValue <xsl:value-of select="name($selectedValue)"/>
+			</xsl:message>
 		<xsl:choose>
 			<xsl:when test="$sourceValue">
 				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> напрямую из входящего списка sourceValue</xsl:message>
