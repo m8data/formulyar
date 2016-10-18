@@ -650,7 +650,7 @@
 							</xsl:for-each>
 						</table>
 						<br/>Добавление свойства:
-					<form action="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact, $user )}">
+						<form action="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact, $user )}">
 							<!--<input type="hidden" name="a1" value="{$fact}"/>-->
 							<!--<input type="hidden" name="a4" value="n"/>-->
 							<input type="hidden" name="a3" value="r"/>
