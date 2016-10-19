@@ -92,6 +92,8 @@ my $log1 = $logPath.'/control_log.txt';
 my $guest_log = $logPath.'/guest_log.txt';
 my $trashPath = $logPath.'/trash';
 my $platformGit = '/home/git/_master/gitolite-admin/.git/refs/heads/master';
+my $typesDir = 'm8';
+my $typesFile = 'type.xml';
 
 my $JSON = JSON->new->utf8;
 my $XML2JSON = XML::XML2JSON->new(pretty => 'true');
@@ -560,11 +562,16 @@ sub washProc{
 					if ( $value[1] and $value[1]=~/^xsd:(\w+)$/ ){
 						&setWarn('		wP      запрос создания именнованой карты');
 						#здесь еще нужно исключить указание одному имени разных типов
-						my $authorTypeFile = $authorPath.'/'.$$temp{'user'}; #вообще не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
-						my %type = &getJSON( $authorTypeFile, 'type' );
-						$type{$value}[0]{'name'} = $value[0];
-						&setXML ( $authorTypeFile, 'type', \%type );
-						&rinseProc2 ( $$temp{'user'}, %type )
+						#my $authorTypeFile = $authorPath.'/'.$$temp{'user'}; #вообще не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
+						#my %type = &getJSON( $authorTypeFile, 'type' );
+						#$type{$value}[0]{'name'} = $value[0];
+						#&setXML ( $authorTypeFile, 'type', \%type );
+						#&rinseProc2 ( $$temp{'user'}, %type );
+						
+						my %types = &getJSON( $typesDir, 'type' );
+						$types{$value[0]} = $$temp{'fact'};
+						#&setXML ( $typesDir, 'type', \%types );
+						&rinseProc3 ( %types )
 					}
 				} 
 				if ( $name =~/^([a-z]+)([0-5]*)$/ and not $name =~/^[dirn]/ ){
@@ -625,8 +632,7 @@ sub washProc{
 							}
 							else {	$span[4] = $$temp{'quest'} }
 						}
-						
-						
+	
 						#$span[5] = $num[$s][5] if $num[$s][5];
 						$num[$s] = \@span
 					}
@@ -741,6 +747,24 @@ sub rinseProc2 {
 	}
 	my $XML = $XML2JSON->json2xml( $JSON->encode(\%xsl_stylesheet) );
 	&setFile( $authorPath.'/'.$user.'/type.xsl', $XML );
+}
+
+sub rinseProc3 {
+	my ( %type )=@_;
+	&setWarn("		rP2 @_"  );
+	#-d $author || return;
+	my %xsl_stylesheet;
+	$xsl_stylesheet{'xsl:stylesheet'}{'version'} = '1.0';
+	$xsl_stylesheet{'xsl:stylesheet'}{'xmlns:xsl'} = 'http://www.w3.org/1999/XSL/Transform';
+	my $x = 0;
+	for my $typeName ( keys %type ){
+		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'name'} = $typeName;
+		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'select'} = "'$type{$typeName}'";
+		$x++
+	}
+	my $XML = $XML2JSON->json2xml( $JSON->encode(\%xsl_stylesheet) );
+	&setFile( $typesDir.'/type.xsl', $XML );
+	&setXML( $typesDir, 'type', \%type );
 }
 
 sub spinProc {
@@ -859,16 +883,26 @@ sub spinProc {
 				&setXML( 'm8/d/'.$value[0], 'value' );
 				rmtree $planeDir.'/'.$user.'/tsv';
 			}
-			if ( $value[3]=~/^i\d+$/ ){
-				&setWarn("		sP    Проверка на идентификатор");
-				my $userTypeDir = $authorPath.'/'.$value[5];
-				if ( -e $userTypeDir.'/type.json' ){
-					my %type = &getJSON( $userTypeDir, 'type' );
-					if ( defined $type{$value[3]} ){ 
-						delete $type{$value[3]};
-						&setXML( $userTypeDir, 'type', \%type );
-						&rinseProc2( $value[5], %type )
-					}
+			#if ( $value[3]=~/^i\d+$/ ){
+			#	&setWarn("		sP    Проверка на идентификатор");
+			#	my $userTypeDir = $authorPath.'/'.$user;
+			#	if ( -e $userTypeDir.'/type.json' ){
+			#		my %type = &getJSON( $userTypeDir, 'type' );
+			#		if ( defined $type{$value[3]} ){ 
+			#			delete $type{$value[3]};
+			#			&setXML( $userTypeDir, 'type', \%type );
+			#			&rinseProc2( $user, %type )
+			#		}
+			#	}
+			#}
+			if ( -e $typesDir.'/'.$typesFile and $value[3]=~/^i/ ){ #Эту проверку нужно делать в сушке, т.к. она нужна и при замене старого значения
+				&setWarn("		sP    Проверка на идентификатор-тип");
+				my @val = &getFile( $planeDir.'/'.$user.'/tsv/'.$value[3].'/value.tsv' );
+				my %types = &getJSON( $typesDir, 'type' );
+				if ( $val[1]=~/^xsd:/ ){
+					delete $types{$val[0]};
+					&setXML( $typesDir, 'type', \%types );
+					&rinseProc3( %types )
 				}
 			}
 		}
@@ -962,6 +996,7 @@ sub dryProc2 {
 	}
 	my %dry;
 	my %userType;
+	my %types;
 	my $count1 = 0;
 	my $n_delG = 0;
 	my $n_delR = 0;
@@ -1032,6 +1067,7 @@ sub dryProc2 {
 			if ( $val[3] =~/^i\d+$/ ){
 				my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$val[3].'/value.tsv' );
 				$userType{$userName}{$val[3]} = $map[0] if $map[1] and $map[1]=~/^xsd:\w+$/;
+				$types{$map[0]} = $val[1] if $map[1] and $map[1]=~/^xsd:\w+$/;
 			}
 			if (1){
 			for my $questName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
@@ -1098,6 +1134,7 @@ sub dryProc2 {
 					if ( $val[3] =~/^i\d+$/ ){
 						my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$val[3].'/value.tsv' );
 						delete $userType{$userName}{$val[3]} if $map[1]=~/^xsd:\w+$/;
+						delete $types{$map[0]} if $map[1]=~/^xsd:\w+$/;
 					}
 					&spinProc( \@val, $userName, $timeProc );
 					if ( $val[2]=~/^r/ ){ $stat{$userName}{'n_delR'}++ }
@@ -1109,16 +1146,17 @@ sub dryProc2 {
 	#}
 	}
 	my $time3 = time+1;
-	for my $userName ( keys %userType ){
-		my %type;
-		#здесь еще нужно исключить указание одному имени разных типов
-		my $userTypeDir = $authorPath.'/'.$userName; #не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
-		for my $tsvName ( keys %{$userType{$userName}} ){
-			$type{$tsvName}[0]{'name'} = $userType{$userName}{$tsvName};
-		}
-		&setXML( $userTypeDir, 'type', \%type );
-		&rinseProc2( $userName, %type )
-	}
+	#for my $userName ( keys %userType ){
+	#	my %type;
+	#	my $userTypeDir = $authorPath.'/'.$userName; #не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
+	#	for my $tsvName ( keys %{$userType{$userName}} ){
+	#		$type{$tsvName}[0]{'name'} = $userType{$userName}{$tsvName};
+	#	}
+	#	&setXML( $userTypeDir, 'type', \%type );
+	#	&rinseProc2( $userName, %type )
+	#}
+	
+	&rinseProc3( %types );# if keys %types;
 
 	my $second1 = int( $time2 - $time1 ) +1;
 	my $second2 = int( $time3 - $time2 ) +1;
@@ -1268,7 +1306,7 @@ sub setXML {
 		&setFile( $pathDir.'/'.$root.'.json', $JSON->encode(\%hash) );
 		if ( $pathDir ){
 			my @path = split '/', $pathDir;
-			for ( 0..$#path ){	$hash{$root}{$level[$_]} = $path[$_] }
+			for ( 1..$#path ){	$hash{$root}{$level[$_]} = $path[$_] }
 		}
 		my $XML = $XML2JSON->json2xml( $JSON->encode(\%hash) );
 		&setFile( $pathDir.'/'.$root.'.xml', $XML );

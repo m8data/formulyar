@@ -275,7 +275,7 @@
 
 ##################### getTypeName #####################
 	-->
-	<xsl:template match="span" mode="getTypeName">
+	<!--<xsl:template match="span" mode="getTypeName">
 		<xsl:call-template name="getTypeName">
 			<xsl:with-param name="typeTitle" select="."/>
 		</xsl:call-template>
@@ -287,7 +287,6 @@
 	</xsl:template>
 	<xsl:template name="getTypeName">
 		<xsl:param name="typeTitle"/>
-		<!-- этот параметр правильнее назвать typeCode -->
 		<xsl:variable name="typeMapName" select="name( $avatarTypeRoot/*[@name=$typeTitle] )"/>
 		<xsl:choose>
 			<xsl:when test="m8:path( $typeMapName, $avatar, 'terminal' )/*">
@@ -295,12 +294,12 @@
 			</xsl:when>
 			<xsl:otherwise>BAD_NAME</xsl:otherwise>
 		</xsl:choose>
-	</xsl:template>
+	</xsl:template>-->
 	<!--
 	-->
-	<xsl:template match="span" mode="getTypeTitle">
+	<!--<xsl:template match="span" mode="getTypeTitle">
 		<xsl:apply-templates select="m8:path( name( $avatarTypeRoot/*[@name=current()] ), 'role3' )/teplotn/*" mode="simpleName"/>
-	</xsl:template>
+	</xsl:template>-->
 	<!--
 ##################### getTypeName (end) #####################
 

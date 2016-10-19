@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
 	<xsl:include href="get_name.xsl"/>
+	<!--<xsl:include href="../../../m8/type.xsl"/>-->
 	<!--
 
 	информация по стартовому xml (здесь излишне читать порт, т.к. иногда он нужен)-->
@@ -20,7 +21,7 @@
 	<xsl:variable name="time" select="$start/@time"/>
 	<xsl:variable name="adminMode" select="$start/@adminMode or $start/@debug"/>
 	<xsl:variable name="localtime" select="$start/@localtime"/>
-	<xsl:variable name="avatarTypeRoot" select="m8:path( $avatar )"/>
+	<!--<xsl:variable name="avatarTypeRoot" select="m8:path( $avatar )"/>-->
 	<xsl:variable name="parent">
 		<xsl:message>	--- parent --- </xsl:message>
 		<xsl:call-template name="getParent">
@@ -45,6 +46,7 @@
 		</xsl:choose>
 		<xsl:message>	--- end variable set --- </xsl:message>
 	</xsl:variable>
+	<xsl:variable name="types" select="document( concat( $start/@planeRoot, 'm8/type.xml' ) )/*"/>
 	<!-- 
 
 -->
