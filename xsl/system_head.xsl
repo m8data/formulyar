@@ -22,6 +22,7 @@
 	<xsl:param name="ind" select="'/m8'"/>
 	<xsl:variable name="startIndex" select="m8:path( $fact, 'index' )"/>
 	<xsl:variable name="startPort" select="m8:path( $fact, $author, $quest, 'port' )"/>
+	<xsl:variable name="factPort" select="m8:port( $fact )"/>
 	<xsl:param name="startTypeName" select="name( $startPort/r/* )"/>
 	<!--<xsl:param name="layer2" select="'gen'"/>
 	i7118132368377864911 - да

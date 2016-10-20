@@ -597,7 +597,8 @@ sub washProc{
 					}
 					else{
 						&setWarn("			wP      $pair: создание новой сущности" );
-						$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s.'-'.$$temp{'avatar'}; 
+						#$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s.'-'.$$temp{'user'}; 
+						$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$$temp{'user'}.'-'.$s; 
 						$num[$s][2] = $value;
 						#$num[$s][3] = $param{'quest'}
 						if ( $name eq 'a' ){
