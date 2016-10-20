@@ -473,8 +473,8 @@
 				<td align="center" valign="top">
 					<xsl:message>!! Левая панель: значения порта !!</xsl:message>
 					<div style="padding: 1em; margin: .5em">
-						<xsl:choose>
-							<xsl:when test="$startIndex/*[name()!='subject']">
+						<!--<xsl:choose>
+							<xsl:when test="$startIndex/*[name()!='subject']">-->
 								<table>
 									<xsl:for-each select="$startPort/*[name()!='r']">
 										<xsl:sort select="name()"/>
@@ -625,11 +625,7 @@
 										</xsl:otherwise>
 									</xsl:choose>
 								</div>
-							</xsl:when>
-							<xsl:otherwise>
-								<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $factTypeName )}/?a0={name($startPort/r/*/*)}&amp;a4={$quest}">удалить объект</a>
-							</xsl:otherwise>
-						</xsl:choose>
+						
 					</div>
 				</td>
 				<td align="center" valign="top">

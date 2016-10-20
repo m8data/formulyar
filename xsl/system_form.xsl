@@ -33,8 +33,8 @@
 	<xsl:variable name="parentName" select="name( exsl:node-set($parent)/*[last()] )"/>
 	<xsl:variable name="grandName" select="name( exsl:node-set($parent)/*[last()-1] )"/>
 	<xsl:variable name="typeName" select="name( exsl:node-set($parent)/*[last()]/* )"/>
-	<xsl:variable name="factType" select="m8:path( $fact, $avatar, $parentName, 'port' )/r/*"/>
-	<xsl:variable name="factTypeName">
+	<!--<xsl:variable name="factType" select="m8:path( $fact, $avatar, $parentName, 'port' )/r/*"/>-->
+	<!--<xsl:variable name="factTypeName">
 		<xsl:choose>
 			<xsl:when test="$fact = 'n' ">i</xsl:when>
 			<xsl:when test="starts-with($fact, 'n' )">
@@ -44,8 +44,7 @@
 				<xsl:value-of select="substring( $fact, 1, 1 )"/>
 			</xsl:otherwise>
 		</xsl:choose>
-		<xsl:message>	--- end variable set --- </xsl:message>
-	</xsl:variable>
+	</xsl:variable>-->
 	<xsl:variable name="types" select="document( concat( $start/@planeRoot, 'm8/type.xml' ) )/*"/>
 	<!-- 
 
@@ -250,9 +249,9 @@
 					<xsl:with-param name="ajaxMethod" select="$ajaxMethod"/>
 				</xsl:call-template>
 			</xsl:when>
-			<xsl:when test="m8:path( $predicateName, $avatar,  'port' )/n" xml:lang="вывод списка из tsv-файла"><!--$parentPredicateName,-->
+			<xsl:when test="m8:port( $predicateName )/n" xml:lang="вывод списка из tsv-файла"><!--$parentPredicateName,-->
 				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> списка из tsv-файла</xsl:message>
-				<xsl:variable name="currentListName" select="name( m8:path( $predicateName, $avatar, 'port' )/n/*)"/><!--$parentPredicateName, -->
+				<xsl:variable name="currentListName" select="name( m8:port( $predicateName )/n/*)"/><!--$parentPredicateName, -->
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
@@ -768,11 +767,11 @@
 						<xsl:value-of select="$calcName"/>
 						<xsl:text> | </xsl:text>
 					</xsl:if>-->
-				<a href="{$start/@prefix}{m8:dir( $fact, $avatar, 'n' )}/port.xml" style="color:gray">
+				<a href="{$start/@prefix}{m8:dir( $fact, m8:holder( $fact), 'n' )}/port.xml" style="color:gray">
 					<xsl:value-of select="$localtime"/>
 				</a>
 				<xsl:text> </xsl:text>
-				<a href="{$start/@prefix}{m8:dir( $fact, $author, $parentName )}/port.xml" style="color:gray">
+				<a href="{$start/@prefix}{m8:dir( $fact, m8:holder( $fact), m8:director( $fact) )}/port.xml" style="color:gray">
 					t
 				</a>
 				<xsl:text> |  </xsl:text>
