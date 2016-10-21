@@ -79,7 +79,7 @@ my $planeDir = '.plane';
 my $planeDir_link = 'p';
 my $indexDir = 'm8';
 
-my $logPath = $userDir.'/'.$defaultAvatar.'/log'; #'../log';
+my $logPath = $defaultAvatar.'/log'; #'../log';$userDir.'/'.
 my $authorPath = $indexDir.'/author';
 my $configDir = 'config';
 my $configPath = $userDir.'/'.$defaultAvatar.'/'.$configDir; #'../'.$configDir;
@@ -109,7 +109,7 @@ if ($bin[0]){
 }
 $bin[4] || warn ' Wrong absolute path!!' && exit;
 
-my @planePath = splice( @bin, 1, -2 );
+my @planePath = splice( @bin, 1, -3 );
 my $planePath = join '/', @planePath;
 my $planeRoot = $disk.'/'.$planePath.'/';
 
@@ -351,7 +351,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 					$temp{'time'} =~/(\d\d)$/;
 					my $trashTempFile = $logPath.'/trash/'.$1.'.xml';
 					&setFile( $trashTempFile, $doc );
-					copy( $planeRoot.$logPath.'/out.txt', $planeRoot.$logPath.'/out.txt.txt' ) or die "Copy failed: $!" if -e $log and $dbg;
+					copy( $planeRoot.$logPath.'/out.txt', $planeRoot.$logPath.'/out.txt.txt' ) or die "Copy failed: $!" if -e $log and -e $logPath.'/out.txt' and $dbg;
 					$doc = system ( 'xsltproc '.$planeRoot.$xslFile.' '.$planeRoot.$trashTempFile.' 2>'.$planeRoot.$logPath.'/out.txt' );#
 					$doc =~s/(\d*)$//;
 					print $1 if $dbg and $1
@@ -810,8 +810,11 @@ sub spinProc {
 		sP  Обработка упоминания cущности $mN: $value[$mN] (user: $user)"  );
 		my $addC = $add || 0; #заводим отдельный регистр, т.к. $add должен оставаться с значением до цикла
 		my $metter = &getID($value[$mN]);
+		#&setLink( $planeRoot.'m8',	$planeRoot.$auraDir.'/m8'			);
+		#&setLink( $planeRoot.'m8/n', 	$metter.'/q' ) if $value[$mN]=~/^n/ and $add;
 		my $type = $superrole[$mN];
 		my ( $role, $file, $first, $second );
+		
 		
 		if ( $mN == 0 ){	( $role, $file, $first, $second ) = ( 'activate',	'activate'				, $user,	$modifier ) }
 		elsif ( $mN < 4 ) {	( $role, $file, $first, $second ) = ( 'role'.$mN,	'role'.$mN 				, $user,	$modifier ) }
@@ -823,6 +826,7 @@ sub spinProc {
 		
 		if ( $mN == 1 or $mN == 2 or $mN == 3  ){
 			&setWarn("		sP   Формирование порта/дока/терминала $role ($file, $first, $second).  User: $user"  );
+			
 			my ( $master, $slave );
 			if ( $mN == 1 )		{ ( $master, $slave ) = ( $predicate, 	$object 	) }
 			elsif ( $mN == 2 )	{ ( $master, $slave ) = ( $subject, 	$object 	) }
@@ -918,7 +922,8 @@ sub dryProc2 {
 	#&setWarn("		dP 2 @_" );
 	$dbg = 0;
 	#rmtree $logPath if -d $logPath;
-	make_path( $logPath, { chmod => $chmod } );
+	-d $logPath || make_path( $logPath, { chmod => $chmod } );
+	#make_path( $logPath, { chmod => $chmod } );
 	open (REINDEX, '>'.$logPath.'/reindex.txt')|| die "Ошибка при открытии файла $logPath/reindex.txt: $!\n";
 	warn '		DRY BEGIN ';	
 	#mode1 - удаляется и переиндексируется все
@@ -929,59 +934,50 @@ sub dryProc2 {
 		print REINDEX "  Check platform \n";
 		copy $platformGit, '/var/www/m8data.com/master';
 	}
-	
-	#&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
-	-d $logPath || make_path( $logPath, { chmod => $chmod } );
-	-d $planeDir_link || &setLink( $planeRoot.$planeDir, $planeRoot.$planeDir_link );
-	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
-	-d $planeDir.'/formulyar' || &setLink( $planeRoot.'formulyar', $planeRoot.$planeDir.'/formulyar' );
-	-d $planeDir.'/'.$univer || &setLink( $multiRoot.$branche.'/'.$univer, $planeRoot.$planeDir.'/'.$univer );
-	if ( -e $planeDir.'/'.$univer.'/formulyar.conf' ){
-		warn ('  Reed formulyar.conf');
-		for my $site ( &getFile( $planeDir.'/'.$univer.'/formulyar.conf' ) ){
-			$site=~/^(\w+)-*(.*)$/;
-			my $univer_depend = $1;
-			my $branch_depend = $2 || 'master';
-			-d $planeDir.'/'.$univer_depend || &setLink( $multiRoot.$branch_depend.'/'.$univer_depend, $planeRoot.$planeDir.'/'.$univer_depend );
-		}
-	}
-	
 	if ( not -d 'm8' and 0 ){ #опция отключена 2016-10-05
 		warn 'check tempfsFolder';
 		my $tempfsFolder = &getSetting('tempfsFolder');
 		if ( -d $tempfsFolder.'/m8'.$prefix ){
 			warn 'link from '.$disk.$tempfsFolder.'/m8'.$prefix;
-			&setLink( $disk.$tempfsFolder.'/m8'.$prefix, $planeRoot.'m8' )
+			&setLink( $disk.$tempfsFolder.'/m8'.$prefix, 	$planeRoot.'m8' )
 		}
 		else {
 			warn 'add '.$planeRoot.'m8';
 			make_path( $planeRoot.'m8', { chmod => $chmod } )
 		}
 	}
+	else { make_path( $planeRoot.'m8', { chmod => $chmod } ) }
+	#&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
 	
-	#if ( &getAvatar(1) and ( &getSetting('avatar') ne $startAvatar ) ){ 
-	#	rmdir $planeDir.'/'.$startAvatar if -d $planeDir.'/'.$startAvatar 
-	#}#здесь нельзя удалять через rmtree
-	#else { 
-	#	warn 'link from '.$planeRoot.$planeDir.'/'.$univer.'/formulyar/'.$startAvatar;
-	#	symlink( $planeRoot.$planeDir.'/formulyar/'.$startAvatar => $planeRoot.$planeDir.'/'.$startAvatar ) 
-	#}
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
-	-d $auraDir.'/m8' || &setLink( $planeRoot.'m8', $planeRoot.$auraDir.'/m8' );
-	#-d 'formulyar' || symlink( $planeRoot.$planeDir.'/formulyar' => $planeRoot.'formulyar' );
+	-d 'formulyar' || make_path( 'formulyar', { chmod => $chmod } );
+	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
+	&setLink( $planeRoot.'m8',					$planeRoot.$auraDir.'/m8'			);
+	&setLink( $planeRoot.$planeDir, 			$planeRoot.$planeDir_link 			);
+	#&setLink( $planeRoot.'formulyar', 			$planeRoot.$planeDir.'/formulyar' 	);
+	&setLink( $multiRoot.$branche.'/'.$univer, 	$planeRoot.$planeDir.'/'.$univer 	);
+	if ( -e $planeDir.'/'.$univer.'/formulyar.conf' ){
+		warn ('  Reed formulyar.conf');
+		for my $site ( &getFile( $planeDir.'/'.$univer.'/formulyar.conf' ) ){
+			$site=~/^(\w+)-*(.*)$/;
+			my $univer_depend = $1;
+			my $branch_depend = $2 || 'master';
+			&setLink( $multiRoot.$branch_depend.'/'.$univer_depend, 	$planeRoot.$planeDir.'/'.$univer_depend );
+		}
+	}
+	
+
 	
 	my @ava = &getDir( $planeDir, 1 );
 	for my $ava ( @ava ){
 		-d $auraDir.'/'.$ava || make_path( $auraDir.'/'.$ava, { chmod => $chmod } );
-		-d $auraDir.'/'.$ava.'/m8' || &setLink( $planeRoot.'m8', $planeRoot.$auraDir.'/'.$ava.'/m8' );
+		&setLink( $planeRoot.'m8', $planeRoot.$auraDir.'/'.$ava.'/m8' );
 		-e $userDir.'/'.$ava.'/'.$passwordFile || &setFile( $userDir.'/'.$ava.'/'.$passwordFile );
 	}
 	for my $format ( keys %formatDir ){
-		-d $format || &setLink( $planeRoot.$auraDir, $planeRoot.$format );
+		&setLink( $planeRoot.$auraDir, $planeRoot.$format );
 	}
-
 	$reindex || return;
-	
 	my %stat;
 
 	my $guestDays = &getSetting('guestDays');
@@ -991,7 +987,10 @@ sub dryProc2 {
 	if ( $reindex == 2 or 0 ){
 		warn '		delete all index';
 		for my $d ( &getDir( 'm8' ) ){
-			if ( -d 'm8/'.$d ){ rmtree 'm8/'.$d }
+			if ( -d 'm8/'.$d ){ 
+				
+				rmtree 'm8/'.$d 
+			}
 			else { unlink 'm8/'.$d }
 		}
 	}

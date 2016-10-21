@@ -30,6 +30,7 @@
 		</xsl:call-template>
 	</xsl:variable>
 	<xsl:variable name="rootName" select="name( exsl:node-set($parent)/*[3] )"/>
+	<xsl:variable name="directorName" select="m8:director( $fact )"/>
 	<xsl:variable name="parentName" select="name( exsl:node-set($parent)/*[last()] )"/>
 	<xsl:variable name="grandName" select="name( exsl:node-set($parent)/*[last()-1] )"/>
 	<xsl:variable name="typeName" select="name( exsl:node-set($parent)/*[last()]/* )"/>
@@ -739,6 +740,9 @@
 				<xsl:value-of select="$avatar"/>
 			</div>
 		</xsl:if>
+		<xsl:if test="$user != 'guest' or $adminMode">
+		
+
 		<div style="position: fixed; bottom: 5px; right: 10px; color: gray; z-index: 1">
 			<xsl:if test="$user != 'guest'">
 				<a href="{$start/@prefix}a/{$ctrl}/?reindex=1" style="color: gray">
@@ -790,5 +794,7 @@
 				</xsl:when>
 			</xsl:choose>
 		</div>
+		</xsl:if>
+				
 	</xsl:template>
 </xsl:stylesheet>

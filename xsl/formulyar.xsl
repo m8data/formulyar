@@ -551,7 +551,7 @@
 													<td valign="top">
 														<xsl:call-template name="editParamOfPort">
 															<xsl:with-param name="predicateName" select="'modifier'"/>
-															<xsl:with-param name="objectElement" select="m8:path( $typeName, $user, 'port' )"/>
+															<xsl:with-param name="objectElement" select="m8:path( $fact, m8:holder( $directorName ), $directorName, 'port' )"/><!--<xsl:with-param name="objectElement" select="m8:path( $typeName, $user, 'port' )"/>-->
 															<xsl:with-param name="action" select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ) )"/>
 															<xsl:with-param name="hidden">
 																<r>
