@@ -194,7 +194,7 @@
 											<div style="padding: .2em">
 												<xsl:value-of select="position()"/>
 												<xsl:text>. </xsl:text>
-												<a href="{m8:root( name() )}" style="{m8:color( name() )}" title="{m8:holder( name() )}"><!--, $actionAuthor, $fact -->
+												<a href="{$start/@prefix}a/{$ctrl}/{ m8:dir( name(), m8:holder( $fact), $fact )}" style="{m8:color( name() )}" title="{m8:holder( name() )}"><!--, $actionAuthor, $fact -->
 													<xsl:apply-templates select="$currentType" mode="simpleName"/>
 													<xsl:text> :: </xsl:text>
 													<xsl:apply-templates select="." mode="simpleName"/>
@@ -473,8 +473,8 @@
 				<td align="center" valign="top">
 					<xsl:message>!! Левая панель: значения порта !!</xsl:message>
 					<div style="padding: 1em; margin: .5em">
-						<xsl:choose>
-							<xsl:when test="$startIndex/*[name()!='subject']">
+						<!--<xsl:choose>
+							<xsl:when test="$startIndex/*[name()!='subject']">-->
 								<table>
 									<xsl:for-each select="$startPort/*[name()!='r']">
 										<xsl:sort select="name()"/>
@@ -551,7 +551,7 @@
 													<td valign="top">
 														<xsl:call-template name="editParamOfPort">
 															<xsl:with-param name="predicateName" select="'modifier'"/>
-															<xsl:with-param name="objectElement" select="m8:path( $typeName, $user, 'port' )"/>
+															<xsl:with-param name="objectElement" select="m8:path( $fact, m8:holder( $directorName ), $directorName, 'port' )"/><!--<xsl:with-param name="objectElement" select="m8:path( $typeName, $user, 'port' )"/>-->
 															<xsl:with-param name="action" select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ) )"/>
 															<xsl:with-param name="hidden">
 																<r>
@@ -625,11 +625,7 @@
 										</xsl:otherwise>
 									</xsl:choose>
 								</div>
-							</xsl:when>
-							<xsl:otherwise>
-								<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $factTypeName )}/?a0={name($startPort/r/*/*)}&amp;a4={$quest}">удалить объект</a>
-							</xsl:otherwise>
-						</xsl:choose>
+						
 					</div>
 				</td>
 				<td align="center" valign="top">
@@ -649,14 +645,17 @@
 								</tr>
 							</xsl:for-each>
 						</table>
-						<br/>Добавление свойства:
-						<form action="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact, $user )}">
+						<div style="padding-bottom: .2em">Добавление свойства:</div>
+						<xsl:if test="not( $factPort/*[name()='i'] )"><div style="padding-bottom: .2em"><a href="{m8:root( $fact )}/?i=">имя</a></div></xsl:if>
+						<xsl:if test="not( $factPort/*[name()='d'] )"><div style="padding-bottom: .2em"><a href="{m8:root( $fact )}/?d=">описание</a></div></xsl:if>
+						<xsl:if test="not( $factPort/*[name()='n'] )"><div style="padding-bottom: .4em"><a href="{m8:root( $fact )}/?n=">структура</a></div></xsl:if>
+						<form action="{m8:root( $fact )}">
 							<!--<input type="hidden" name="a1" value="{$fact}"/>-->
 							<!--<input type="hidden" name="a4" value="n"/>-->
 							<input type="hidden" name="a3" value="r"/>
 							<select name="a2" onchange="this.form.submit()">
 								<option/>
-								<xsl:if test="not($startPort[name()='i'])">
+								<!--<xsl:if test="not($startPort[name()='i'])">
 									<option value="i">имя</option>
 								</xsl:if>
 								<xsl:if test="not($startPort[name()='d'])">
@@ -664,18 +663,20 @@
 								</xsl:if>
 								<xsl:if test="not($startPort[name()='n'])">
 									<option value="n">структура</option>
-								</xsl:if>
-								<xsl:if test="not($startPort[name()=$fact])">
+								</xsl:if>-->
+								<xsl:if test="not( $factPort/*[name()=$fact] )">
 									<option value="{$fact}">начало</option>
 								</xsl:if>
-								<xsl:for-each select="m8:path( $avatar )/*">
-									<xsl:sort select="@name"/>
-									<xsl:variable name="typeName">
+								<xsl:for-each select="$types/@*">
+									<xsl:sort select="name(.)"/>
+									<!--<xsl:variable name="typeName">
 										<xsl:value-of select="name( m8:path( name(), $avatar, 'terminal' )/* )"/>
-									</xsl:variable>
-									<option value="{$typeName}">
-										<xsl:apply-templates select="m8:path( name(), $avatar, 'terminal' )/*" mode="simpleName"/>
+									</xsl:variable>-->
+									<xsl:if test="not( $factPort/*[name()=current()] )">
+									<option value="{.}">
+										<xsl:apply-templates select="." mode="simpleName"/>
 									</option>
+									</xsl:if>
 								</xsl:for-each>
 							</select>
 						</form>

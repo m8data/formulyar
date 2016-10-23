@@ -79,7 +79,7 @@ my $planeDir = '.plane';
 my $planeDir_link = 'p';
 my $indexDir = 'm8';
 
-my $logPath = $userDir.'/'.$defaultAvatar.'/log'; #'../log';
+my $logPath = $defaultAvatar.'/log'; #'../log';$userDir.'/'.
 my $authorPath = $indexDir.'/author';
 my $configDir = 'config';
 my $configPath = $userDir.'/'.$defaultAvatar.'/'.$configDir; #'../'.$configDir;
@@ -92,6 +92,8 @@ my $log1 = $logPath.'/control_log.txt';
 my $guest_log = $logPath.'/guest_log.txt';
 my $trashPath = $logPath.'/trash';
 my $platformGit = '/home/git/_master/gitolite-admin/.git/refs/heads/master';
+my $typesDir = 'm8';
+my $typesFile = 'type.xml';
 
 my $JSON = JSON->new->utf8;
 my $XML2JSON = XML::XML2JSON->new(pretty => 'true');
@@ -107,7 +109,7 @@ if ($bin[0]){
 }
 $bin[4] || warn ' Wrong absolute path!!' && exit;
 
-my @planePath = splice( @bin, 1, -2 );
+my @planePath = splice( @bin, 1, -3 );
 my $planePath = join '/', @planePath;
 my $planeRoot = $disk.'/'.$planePath.'/';
 
@@ -349,7 +351,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 					$temp{'time'} =~/(\d\d)$/;
 					my $trashTempFile = $logPath.'/trash/'.$1.'.xml';
 					&setFile( $trashTempFile, $doc );
-					copy( $planeRoot.$logPath.'/out.txt', $planeRoot.$logPath.'/out.txt.txt' ) or die "Copy failed: $!" if -e $log and $dbg;
+					copy( $planeRoot.$logPath.'/out.txt', $planeRoot.$logPath.'/out.txt.txt' ) or die "Copy failed: $!" if -e $log and -e $logPath.'/out.txt' and $dbg;
 					$doc = system ( 'xsltproc '.$planeRoot.$xslFile.' '.$planeRoot.$trashTempFile.' 2>'.$planeRoot.$logPath.'/out.txt' );#
 					$doc =~s/(\d*)$//;
 					print $1 if $dbg and $1
@@ -560,11 +562,16 @@ sub washProc{
 					if ( $value[1] and $value[1]=~/^xsd:(\w+)$/ ){
 						&setWarn('		wP      запрос создания именнованой карты');
 						#здесь еще нужно исключить указание одному имени разных типов
-						my $authorTypeFile = $authorPath.'/'.$$temp{'user'}; #вообще не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
-						my %type = &getJSON( $authorTypeFile, 'type' );
-						$type{$value}[0]{'name'} = $value[0];
-						&setXML ( $authorTypeFile, 'type', \%type );
-						&rinseProc2 ( $$temp{'user'}, %type )
+						#my $authorTypeFile = $authorPath.'/'.$$temp{'user'}; #вообще не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
+						#my %type = &getJSON( $authorTypeFile, 'type' );
+						#$type{$value}[0]{'name'} = $value[0];
+						#&setXML ( $authorTypeFile, 'type', \%type );
+						#&rinseProc2 ( $$temp{'user'}, %type );
+						
+						my %types = &getJSON( $typesDir, 'type' );
+						$types{$value[0]} = $$temp{'fact'};
+						#&setXML ( $typesDir, 'type', \%types );
+						&rinseProc3 ( %types )
 					}
 				} 
 				if ( $name =~/^([a-z]+)([0-5]*)$/ and not $name =~/^[dirn]/ ){
@@ -590,7 +597,8 @@ sub washProc{
 					}
 					else{
 						&setWarn("			wP      $pair: создание новой сущности" );
-						$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s.'-'.$$temp{'avatar'}; 
+						#$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s.'-'.$$temp{'user'}; 
+						$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$$temp{'user'}.'-'.$s; 
 						$num[$s][2] = $value;
 						#$num[$s][3] = $param{'quest'}
 						if ( $name eq 'a' ){
@@ -625,8 +633,7 @@ sub washProc{
 							}
 							else {	$span[4] = $$temp{'quest'} }
 						}
-						
-						
+	
 						#$span[5] = $num[$s][5] if $num[$s][5];
 						$num[$s] = \@span
 					}
@@ -743,6 +750,24 @@ sub rinseProc2 {
 	&setFile( $authorPath.'/'.$user.'/type.xsl', $XML );
 }
 
+sub rinseProc3 {
+	my ( %type )=@_;
+	&setWarn("		rP2 @_"  );
+	#-d $author || return;
+	my %xsl_stylesheet;
+	$xsl_stylesheet{'xsl:stylesheet'}{'version'} = '1.0';
+	$xsl_stylesheet{'xsl:stylesheet'}{'xmlns:xsl'} = 'http://www.w3.org/1999/XSL/Transform';
+	my $x = 0;
+	for my $typeName ( keys %type ){
+		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'name'} = $typeName;
+		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'select'} = "'$type{$typeName}'";
+		$x++
+	}
+	my $XML = $XML2JSON->json2xml( $JSON->encode(\%xsl_stylesheet) );
+	&setFile( $typesDir.'/type.xsl', $XML );
+	&setXML( $typesDir, 'type', \%type );
+}
+
 sub spinProc {
 	my ( $val, $user, $time )=@_;
 	&setWarn("
@@ -785,8 +810,11 @@ sub spinProc {
 		sP  Обработка упоминания cущности $mN: $value[$mN] (user: $user)"  );
 		my $addC = $add || 0; #заводим отдельный регистр, т.к. $add должен оставаться с значением до цикла
 		my $metter = &getID($value[$mN]);
+		#&setLink( $planeRoot.'m8',	$planeRoot.$auraDir.'/m8'			);
+		#&setLink( $planeRoot.'m8/n', 	$metter.'/q' ) if $value[$mN]=~/^n/ and $add;
 		my $type = $superrole[$mN];
 		my ( $role, $file, $first, $second );
+		
 		
 		if ( $mN == 0 ){	( $role, $file, $first, $second ) = ( 'activate',	'activate'				, $user,	$modifier ) }
 		elsif ( $mN < 4 ) {	( $role, $file, $first, $second ) = ( 'role'.$mN,	'role'.$mN 				, $user,	$modifier ) }
@@ -798,6 +826,7 @@ sub spinProc {
 		
 		if ( $mN == 1 or $mN == 2 or $mN == 3  ){
 			&setWarn("		sP   Формирование порта/дока/терминала $role ($file, $first, $second).  User: $user"  );
+			
 			my ( $master, $slave );
 			if ( $mN == 1 )		{ ( $master, $slave ) = ( $predicate, 	$object 	) }
 			elsif ( $mN == 2 )	{ ( $master, $slave ) = ( $subject, 	$object 	) }
@@ -859,16 +888,26 @@ sub spinProc {
 				&setXML( 'm8/d/'.$value[0], 'value' );
 				rmtree $planeDir.'/'.$user.'/tsv';
 			}
-			if ( $value[3]=~/^i\d+$/ ){
-				&setWarn("		sP    Проверка на идентификатор");
-				my $userTypeDir = $authorPath.'/'.$value[5];
-				if ( -e $userTypeDir.'/type.json' ){
-					my %type = &getJSON( $userTypeDir, 'type' );
-					if ( defined $type{$value[3]} ){ 
-						delete $type{$value[3]};
-						&setXML( $userTypeDir, 'type', \%type );
-						&rinseProc2( $value[5], %type )
-					}
+			#if ( $value[3]=~/^i\d+$/ ){
+			#	&setWarn("		sP    Проверка на идентификатор");
+			#	my $userTypeDir = $authorPath.'/'.$user;
+			#	if ( -e $userTypeDir.'/type.json' ){
+			#		my %type = &getJSON( $userTypeDir, 'type' );
+			#		if ( defined $type{$value[3]} ){ 
+			#			delete $type{$value[3]};
+			#			&setXML( $userTypeDir, 'type', \%type );
+			#			&rinseProc2( $user, %type )
+			#		}
+			#	}
+			#}
+			if ( -e $typesDir.'/'.$typesFile and $value[3]=~/^i/ ){ #Эту проверку нужно делать в сушке, т.к. она нужна и при замене старого значения
+				&setWarn("		sP    Проверка на идентификатор-тип");
+				my @val = &getFile( $planeDir.'/'.$user.'/tsv/'.$value[3].'/value.tsv' );
+				my %types = &getJSON( $typesDir, 'type' );
+				if ( $val[1]=~/^xsd:/ ){
+					delete $types{$val[0]};
+					&setXML( $typesDir, 'type', \%types );
+					&rinseProc3( %types )
 				}
 			}
 		}
@@ -883,7 +922,8 @@ sub dryProc2 {
 	#&setWarn("		dP 2 @_" );
 	$dbg = 0;
 	#rmtree $logPath if -d $logPath;
-	make_path( $logPath, { chmod => $chmod } );
+	-d $logPath || make_path( $logPath, { chmod => $chmod } );
+	#make_path( $logPath, { chmod => $chmod } );
 	open (REINDEX, '>'.$logPath.'/reindex.txt')|| die "Ошибка при открытии файла $logPath/reindex.txt: $!\n";
 	warn '		DRY BEGIN ';	
 	#mode1 - удаляется и переиндексируется все
@@ -894,59 +934,50 @@ sub dryProc2 {
 		print REINDEX "  Check platform \n";
 		copy $platformGit, '/var/www/m8data.com/master';
 	}
-	
-	#&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
-	-d $logPath || make_path( $logPath, { chmod => $chmod } );
-	-d $planeDir_link || &setLink( $planeRoot.$planeDir, $planeRoot.$planeDir_link );
-	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
-	-d $planeDir.'/formulyar' || &setLink( $planeRoot.'formulyar', $planeRoot.$planeDir.'/formulyar' );
-	-d $planeDir.'/'.$univer || &setLink( $multiRoot.$branche.'/'.$univer, $planeRoot.$planeDir.'/'.$univer );
-	if ( -e $planeDir.'/'.$univer.'/formulyar.conf' ){
-		warn ('  Reed formulyar.conf');
-		for my $site ( &getFile( $planeDir.'/'.$univer.'/formulyar.conf' ) ){
-			$site=~/^(\w+)-*(.*)$/;
-			my $univer_depend = $1;
-			my $branch_depend = $2 || 'master';
-			-d $planeDir.'/'.$univer_depend || &setLink( $multiRoot.$branch_depend.'/'.$univer_depend, $planeRoot.$planeDir.'/'.$univer_depend );
-		}
-	}
-	
 	if ( not -d 'm8' and 0 ){ #опция отключена 2016-10-05
 		warn 'check tempfsFolder';
 		my $tempfsFolder = &getSetting('tempfsFolder');
 		if ( -d $tempfsFolder.'/m8'.$prefix ){
 			warn 'link from '.$disk.$tempfsFolder.'/m8'.$prefix;
-			&setLink( $disk.$tempfsFolder.'/m8'.$prefix, $planeRoot.'m8' )
+			&setLink( $disk.$tempfsFolder.'/m8'.$prefix, 	$planeRoot.'m8' )
 		}
 		else {
 			warn 'add '.$planeRoot.'m8';
 			make_path( $planeRoot.'m8', { chmod => $chmod } )
 		}
 	}
+	else { make_path( $planeRoot.'m8', { chmod => $chmod } ) }
+	#&setFile( '.htaccess', 'DirectoryIndex '.$prefix.'formulyar/reg.pl' );
 	
-	#if ( &getAvatar(1) and ( &getSetting('avatar') ne $startAvatar ) ){ 
-	#	rmdir $planeDir.'/'.$startAvatar if -d $planeDir.'/'.$startAvatar 
-	#}#здесь нельзя удалять через rmtree
-	#else { 
-	#	warn 'link from '.$planeRoot.$planeDir.'/'.$univer.'/formulyar/'.$startAvatar;
-	#	symlink( $planeRoot.$planeDir.'/formulyar/'.$startAvatar => $planeRoot.$planeDir.'/'.$startAvatar ) 
-	#}
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
-	-d $auraDir.'/m8' || &setLink( $planeRoot.'m8', $planeRoot.$auraDir.'/m8' );
-	#-d 'formulyar' || symlink( $planeRoot.$planeDir.'/formulyar' => $planeRoot.'formulyar' );
+	-d 'formulyar' || make_path( 'formulyar', { chmod => $chmod } );
+	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
+	&setLink( $planeRoot.'m8',					$planeRoot.$auraDir.'/m8'			);
+	&setLink( $planeRoot.$planeDir, 			$planeRoot.$planeDir_link 			);
+	#&setLink( $planeRoot.'formulyar', 			$planeRoot.$planeDir.'/formulyar' 	);
+	&setLink( $multiRoot.$branche.'/'.$univer, 	$planeRoot.$planeDir.'/'.$univer 	);
+	if ( -e $planeDir.'/'.$univer.'/formulyar.conf' ){
+		warn ('  Reed formulyar.conf');
+		for my $site ( &getFile( $planeDir.'/'.$univer.'/formulyar.conf' ) ){
+			$site=~/^(\w+)-*(.*)$/;
+			my $univer_depend = $1;
+			my $branch_depend = $2 || 'master';
+			&setLink( $multiRoot.$branch_depend.'/'.$univer_depend, 	$planeRoot.$planeDir.'/'.$univer_depend );
+		}
+	}
+	
+
 	
 	my @ava = &getDir( $planeDir, 1 );
 	for my $ava ( @ava ){
 		-d $auraDir.'/'.$ava || make_path( $auraDir.'/'.$ava, { chmod => $chmod } );
-		-d $auraDir.'/'.$ava.'/m8' || &setLink( $planeRoot.'m8', $planeRoot.$auraDir.'/'.$ava.'/m8' );
+		&setLink( $planeRoot.'m8', $planeRoot.$auraDir.'/'.$ava.'/m8' );
 		-e $userDir.'/'.$ava.'/'.$passwordFile || &setFile( $userDir.'/'.$ava.'/'.$passwordFile );
 	}
 	for my $format ( keys %formatDir ){
-		-d $format || &setLink( $planeRoot.$auraDir, $planeRoot.$format );
+		&setLink( $planeRoot.$auraDir, $planeRoot.$format );
 	}
-
 	$reindex || return;
-	
 	my %stat;
 
 	my $guestDays = &getSetting('guestDays');
@@ -956,12 +987,16 @@ sub dryProc2 {
 	if ( $reindex == 2 or 0 ){
 		warn '		delete all index';
 		for my $d ( &getDir( 'm8' ) ){
-			if ( -d 'm8/'.$d ){ rmtree 'm8/'.$d }
+			if ( -d 'm8/'.$d ){ 
+				
+				rmtree 'm8/'.$d 
+			}
 			else { unlink 'm8/'.$d }
 		}
 	}
 	my %dry;
 	my %userType;
+	my %types;
 	my $count1 = 0;
 	my $n_delG = 0;
 	my $n_delR = 0;
@@ -1032,6 +1067,7 @@ sub dryProc2 {
 			if ( $val[3] =~/^i\d+$/ ){
 				my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$val[3].'/value.tsv' );
 				$userType{$userName}{$val[3]} = $map[0] if $map[1] and $map[1]=~/^xsd:\w+$/;
+				$types{$map[0]} = $val[1] if $map[1] and $map[1]=~/^xsd:\w+$/;
 			}
 			if (1){
 			for my $questName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
@@ -1098,6 +1134,7 @@ sub dryProc2 {
 					if ( $val[3] =~/^i\d+$/ ){
 						my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$val[3].'/value.tsv' );
 						delete $userType{$userName}{$val[3]} if $map[1]=~/^xsd:\w+$/;
+						delete $types{$map[0]} if $map[1]=~/^xsd:\w+$/;
 					}
 					&spinProc( \@val, $userName, $timeProc );
 					if ( $val[2]=~/^r/ ){ $stat{$userName}{'n_delR'}++ }
@@ -1109,16 +1146,17 @@ sub dryProc2 {
 	#}
 	}
 	my $time3 = time+1;
-	for my $userName ( keys %userType ){
-		my %type;
-		#здесь еще нужно исключить указание одному имени разных типов
-		my $userTypeDir = $authorPath.'/'.$userName; #не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
-		for my $tsvName ( keys %{$userType{$userName}} ){
-			$type{$tsvName}[0]{'name'} = $userType{$userName}{$tsvName};
-		}
-		&setXML( $userTypeDir, 'type', \%type );
-		&rinseProc2( $userName, %type )
-	}
+	#for my $userName ( keys %userType ){
+	#	my %type;
+	#	my $userTypeDir = $authorPath.'/'.$userName; #не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
+	#	for my $tsvName ( keys %{$userType{$userName}} ){
+	#		$type{$tsvName}[0]{'name'} = $userType{$userName}{$tsvName};
+	#	}
+	#	&setXML( $userTypeDir, 'type', \%type );
+	#	&rinseProc2( $userName, %type )
+	#}
+	
+	&rinseProc3( %types );# if keys %types;
 
 	my $second1 = int( $time2 - $time1 ) +1;
 	my $second2 = int( $time3 - $time2 ) +1;
@@ -1268,7 +1306,7 @@ sub setXML {
 		&setFile( $pathDir.'/'.$root.'.json', $JSON->encode(\%hash) );
 		if ( $pathDir ){
 			my @path = split '/', $pathDir;
-			for ( 0..$#path ){	$hash{$root}{$level[$_]} = $path[$_] }
+			for ( 1..$#path ){	$hash{$root}{$level[$_]} = $path[$_] }
 		}
 		my $XML = $XML2JSON->json2xml( $JSON->encode(\%hash) );
 		&setFile( $pathDir.'/'.$root.'.xml', $XML );
