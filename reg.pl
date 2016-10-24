@@ -61,7 +61,7 @@ my $admin = 'admin';
 my $canonicalHomeAvatar = 'formulyar';	
 my $tNode = '$t';
 my @sentence = ( undef, 'subject', 	'predicate',	'object',	'modifier' );
-my @matrix = ( undef, $defaultFact, $defaultFact, $defaultQuest, $defaultQuest );
+my @matrix = ( undef, $defaultFact, $defaultFact, $defaultQuest );
 my @level = ( 'system', 'prefix', 'fact', 'quest' );
 #my @role = (	'triple', 	'role1', 	'role2', 		'role3', 	'author', 'quest', 'target' );
 my @number = (	'name',		'subject', 	'predicate',	'object',	'modifier', 'add' );
@@ -438,16 +438,18 @@ sub washProc{
 			}
 		}
 		
-		$$temp{'modifier'} = 'n' if not defined $$temp{'modifier'} or not -d 'm8/n/'.$$temp{'modifier'} or $$temp{'modifier'} eq $$temp{'fact'};
+		
 		#весь блок работы с матрицей нужно уводить в работу с пустотой, т.к. может быть и не 'а', а 'b' и 'с' и 'd'.
-		&setWarn( "		wP  Имеется строка запроса $$temp{'QUERY_STRING'}. Идет идет ее парсинг" );
+		#&setWarn( "		wP  Имеется строка запроса $$temp{'QUERY_STRING'}. Идет идет ее парсинг" );
 		if ( defined $param{'a'} ){
-			$$temp{'modifier'} = $matrix[3] = $$temp{'fact'}
+			$$temp{'modifier'} = $$temp{'fact'} if not defined $$temp{'modifier'};
+			$matrix[3] = $$temp{'fact'};
 		}
 		else{
-			( $matrix[1], $matrix[4] ) = ( $$temp{'fact'}, 'n' );
+			$$temp{'modifier'} = 'n' if not defined $$temp{'modifier'} or not -d 'm8/n/'.$$temp{'modifier'} or $$temp{'modifier'} eq $$temp{'fact'};
+			$matrix[1] = $$temp{'fact'};
 		}
-		for my $ps ( 1..4 ){
+		for my $ps ( 1..3 ){
 			$matrix[$ps] = $$temp{$sentence[$ps]} if defined $$temp{$sentence[$ps]} 
 		}
 		#keys %param || return;

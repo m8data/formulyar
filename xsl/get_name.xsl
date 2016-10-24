@@ -40,18 +40,25 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
-	<xsl:template match="@*" mode="simpleName">
-		<xsl:variable name="ss">
+	<xsl:template match="@*|span" mode="simpleName">
+		<xsl:variable name="element">
 			<xsl:element name="{.}">_</xsl:element>
 		</xsl:variable>
-		<xsl:apply-templates select="exsl:node-set($ss)/*" mode="simpleName"/>
+		<xsl:apply-templates select="exsl:node-set($element)/*" mode="simpleName"/>
 	</xsl:template>
-	<xsl:template match="span" mode="simpleName">
-		<xsl:variable name="ss">
+	<!--<xsl:template match="span" mode="simpleName">
+		<xsl:variable name="element">
 			<xsl:element name="{.}">_</xsl:element>
 		</xsl:variable>
-		<xsl:apply-templates select="exsl:node-set($ss)/*" mode="simpleName"/>
-	</xsl:template>
+		<xsl:apply-templates select="exsl:node-set($element)/*" mode="simpleName"/>
+	</xsl:template>-->
+	<xsl:template name="simpleName">
+		<xsl:param name="name"/>
+		<xsl:variable name="element">
+			<xsl:element name="{$name}">_</xsl:element>
+		</xsl:variable>
+		<xsl:apply-templates select="exsl:node-set($element)/*" mode="simpleName"/>
+	</xsl:template>	
 	<!--
 ##################### simpleName (end) #####################
 

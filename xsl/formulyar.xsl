@@ -199,16 +199,18 @@
 						<td align="center" valign="top" width="30%">
 							<xsl:if test="m8:path( $fact,  'index' )/object/*">
 								<div style="display: normal">
-									<b style="color: #555">Послушники</b>
+									<div><b style="color: #555">Команда</b></div><br/>
 									<div style="padding: .2em">
 										<xsl:for-each select="m8:path( $fact, 'index' )/object/*">
 											<xsl:sort select="@time"/>
-											<xsl:variable name="position" select="position()"/>
+											<!--<xsl:variable name="position" select="position()"/>-->
 											<xsl:if test="m8:director( name() ) != $fact">
 												<div style="font-size: 1.2em; padding: .1em">
 													<a href="{ m8:root( name() )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
-														<xsl:value-of select="$position"/>
-														<xsl:text>. </xsl:text>
+														<xsl:call-template name="simpleName">
+															<xsl:with-param name="name" select="m8:director( name() )"/>
+														</xsl:call-template>
+														<xsl:text> :: </xsl:text>
 														<xsl:apply-templates select="." mode="simpleName"/>
 													</a>
 												</div>
@@ -431,9 +433,11 @@
 											</td>
 											<xsl:if test="$modifier != 'n' ">
 												<td valign="top">
+													<xsl:text>&#160;</xsl:text>
 													<a href="{m8:action( $fact, m8:director( $modifier ) )}" title="to new Quest - { $newQuestName }">^</a>
 												</td>
 												<td valign="top">
+													<xsl:text>&#160;</xsl:text>
 													<a href="{m8:action( $fact )}" title="to new Quest - { $newQuestName }">x</a>
 												</td>
 											</xsl:if>
@@ -491,6 +495,7 @@
 											</td>
 											<td valign="top">
 												<xsl:if test="$director != 'n' ">
+													<xsl:text>&#160;</xsl:text>
 													<a title="to new Quest - { $newQuestName } COMMON">
 														<xsl:attribute name="href">
 															<xsl:value-of select="concat( m8:action( $fact, $newQuestName ), '&amp;r=', $typeName )"/>
@@ -502,7 +507,8 @@
 													</a>
 												</xsl:if>
 											</td>
-											<td valign="top">&#160;
+											<td valign="top">
+												<xsl:text>&#160;</xsl:text>
 												<a href="{m8:root( $director )}/?a0={m8:triple( $fact )}">x</a>
 												<!--&amp;a4={$parentName}-->
 											</td>
@@ -520,11 +526,7 @@
 														<option/>
 														<xsl:copy-of select="m8:path( $leader, 'index' )/object/*[name()!=$fact]"/><!--m8:director( -->
 													</xsl:with-param>
-													<xsl:with-param name="hidden">
-														<modifier>
-															<xsl:value-of select="$parentName"/>
-														</modifier>
-													</xsl:with-param>
+													<xsl:with-param name="modifierName" select="$director"/>
 												</xsl:call-template>
 											</td>
 											<xsl:variable name="typePosition" select="count( exsl:node-set($parent)/*[name(*)=$typeName][position()=1]/preceding-sibling::* )"/>
@@ -538,12 +540,12 @@
 											</xsl:variable>
 											<td valign="top">
 												<xsl:if test="$leader != 'n' ">
-													<a href="{m8:action( $fact, $director )}&amp;r={$newTypeName}" title="to new typePosition - {$typePosition} / newTypeName - { $newTypeName }">^</a>
+													<a href="{m8:action( $fact, $director )}&amp;r={$newTypeName}" title="to new typePosition - {$typePosition} / newTypeName - { $newTypeName }">&#160;^</a>
 												</xsl:if>
 											</td>
 											<td valign="top">
 												<xsl:if test="$leader != $director">
-													<a href="{m8:action( $fact, $director )}&amp;r={$director}">x</a>
+													<a href="{m8:action( $fact, $director )}&amp;r={$director}">&#160;x</a>
 													<!--&amp;a4={$parentName}-->
 												</xsl:if>
 											</td>
