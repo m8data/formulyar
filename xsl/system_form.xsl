@@ -13,8 +13,9 @@
 	<xsl:variable name="author" select="$start/@author"/>
 	<xsl:variable name="avatar" select="$start/@avatar"/>
 	<xsl:variable name="quest" select="$start/@quest"/>
+	<xsl:variable name="modifier" select="$start/@modifier"/>
 	<xsl:variable name="xsStartID" select="m8:dir( $fact )"/>
-	<xsl:variable name="sStartID" select="m8:dir( $fact, $author, $quest )"/>
+	<xsl:variable name="sStartID" select="m8:dir( $fact, $quest )"/>
 	<xsl:variable name="startID" select="concat( $start/@prefix, 'a/', $ctrl, '/', $sStartID )"/>
 	<xsl:variable name="startGroup" select="$start/@group"/>
 	<xsl:variable name="user" select="$start/@user"/>
@@ -30,10 +31,36 @@
 		</xsl:call-template>
 	</xsl:variable>
 	<xsl:variable name="rootName" select="name( exsl:node-set($parent)/*[3] )"/>
-	<xsl:variable name="directorName" select="m8:director( $fact )"/>
+	<xsl:variable name="director" select="m8:director( $fact )"/>
+	<xsl:variable name="directorName" select="$director"/>
+	<xsl:variable name="leader" select="m8:leader( $fact )"/>
 	<xsl:variable name="parentName" select="name( exsl:node-set($parent)/*[last()] )"/>
 	<xsl:variable name="grandName" select="name( exsl:node-set($parent)/*[last()-1] )"/>
 	<xsl:variable name="typeName" select="name( exsl:node-set($parent)/*[last()]/* )"/>
+	<xsl:param name="DirectoryRoot" select="'file:C:/Dropbox/xampp/htdocs/livecells/www'"/>
+	<xsl:param name="mainServer" select="'www.m8data.com'"/>
+	<xsl:param name="admin" select="'admin'"/>
+	<xsl:param name="tempAuthor" select="/*/@tempAuthor"/>
+	<xsl:param name="moment" select="/*/@moment"/>
+	<xsl:param name="login" select="/*/@login"/>
+	<xsl:param name="new_author" select="/*/@new_author"/>
+	<xsl:param name="new_avatar" select="/*/@new_avatar"/>
+	<xsl:param name="object" select="/*/@object"/>
+	<xsl:param name="m8mode" select="/*/@m8mode"/>
+	<xsl:param name="referer" select="/*/@referer"/>
+	<xsl:param name="message" select="/*/@message"/>
+	<xsl:param name="add" select="/*/@add"/>
+	<xsl:param name="del" select="/*/@del"/>
+	<xsl:param name="Sec_of_New" select="100000"/>
+	<xsl:param name="focus" select="/*/*/@focus"/>
+	<xsl:param name="queryDeep" select="2"/>
+	<xsl:param name="vf" select="'/value.xml'"/>
+	<xsl:param name="if" select="'/index.xml'"/>
+	<xsl:param name="ind" select="'/m8'"/>
+	<xsl:variable name="startIndex" select="m8:path( $fact, 'index' )"/>
+	<xsl:variable name="startPort" select="m8:port( $fact, $modifier )"/>
+	<xsl:variable name="factPort" select="m8:port( $fact )"/>
+	<xsl:param name="startTypeName" select="name( $startPort/r/* )"/>
 	<!--<xsl:variable name="factType" select="m8:path( $fact, $avatar, $parentName, 'port' )/r/*"/>-->
 	<!--<xsl:variable name="factTypeName">
 		<xsl:choose>
@@ -53,95 +80,118 @@
 	<func:function name="m8:director">
 		<xsl:param name="fact"/>
 		<xsl:message>	--- работа m8:director с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
-		<func:result select="name( m8:path( $fact, 'subject_r' )/*/* )"/>
+		<func:result select="m8:path( $fact, 'subject_r' )/n/@director"/>
 	</func:function>
 	<func:function name="m8:holder">
 		<xsl:param name="fact"/>
 		<xsl:message>	--- работа m8:holder с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
-		<func:result select="name( m8:path( $fact, 'subject_r' )/* )"/>
+		<func:result select="m8:path( $fact, 'subject_r' )/n/@holder"/>
 	</func:function>
-	<func:function name="m8:mentor">
+	<func:function name="m8:leader">
 		<xsl:param name="fact"/>
-		<func:result select="name( m8:path( $fact, m8:holder( $fact ), m8:director( $fact ), 'port' )/r/* )"/>
+		<func:result select="name( m8:port( $fact )/r/* )"/>
+	</func:function>
+	<func:function name="m8:triple">
+		<xsl:param name="fact"/>
+		<xsl:message>	--- работа m8:holder с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
+		<func:result select="name( m8:port( $fact )/r/*/* )"/>
 	</func:function>
 	<func:function name="m8:color">
 		<xsl:param name="fact"/>
-		<func:result select="concat( 'color: #', translate( substring( m8:holder( $fact ), 1, 3), 'qwertyuiopasdfghjklzxcvbnm', '1234567890abc1234567890abc' ) )"/>
+		<func:result select="m8:fact_color( m8:holder( $fact ) )"/>
+		<!--<func:result select="concat( 'color: #', translate( substring( $fact ), 'qwertyuiopasdfghjklzxcvbnm', '1234567890abc1234567890abc' ) )"/> -->
 	</func:function>
+	<func:function name="m8:fact_color">
+		<xsl:param name="fact"/>
+		<func:result select="concat( 'color: #', translate( substring( $fact, 1, 3 ), 'qwertyuiopasdfghjklzxcvbnm', '1234567890abc1234567890abc' ) )"/>
+	</func:function>
+	<func:function name="m8:value">
+		<xsl:param name="fact"/>
+		<!--<xsl:message>	работа m8:value с фактом <xsl:value-of select="$fact"/> </xsl:message>-->
+		<func:result select="m8:path( $fact, 'value' )"/>
+	</func:function>
+	<func:function name="m8:index">
+		<xsl:param name="fact"/>
+		<!--<xsl:message>	работа m8:index с фактом <xsl:value-of select="$fact"/> </xsl:message>-->
+		<func:result select="m8:path( $fact, 'index' )"/>
+	</func:function>	
 	<!-- {$start/@prefix}a/{$ctrl}/{m8:dir( name() )}
 -->
 	<func:function name="m8:path">
 		<xsl:param name="level1"/>
 		<xsl:param name="level2"/>
 		<xsl:param name="level3"/>
-		<xsl:param name="level4"/>
 		<xsl:choose>
-			<xsl:when test="$level4">
-				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3, '/', $level4, '.xml' ) )/*"/>
-			</xsl:when>
 			<xsl:when test="$level3">
-				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/n/', $level3, '.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3, '.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:when test="$level2">
 				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:when test="$level1">
-				<func:result select="document( concat( $start/@planeRoot, 'm8/author/', $level1, '/type.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/', substring( $level1, 1, 1 ), '/', $level1, '.xml' ) )/*"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="document( concat( $start/@planeRoot, 'm8/n/n/', $user, '/n/port.xml' ) )/*"/>
+				<func:result select="document( concat( $start/@planeRoot, 'm8/type.xml' ) )/*"/>
 				<!--$author, -->
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
 	<func:function name="m8:port">
-		<xsl:param name="fact"/>
-		<xsl:variable name="holder" select="m8:holder( $fact )"/>
-		<xsl:variable name="director" select="m8:director( $fact )"/>
-		<xsl:message> --- функция вывода порта (fact <xsl:value-of select="$fact"/>; holder <xsl:value-of select="$holder"/>; director <xsl:value-of select="$director"/>) ----</xsl:message>
+		<xsl:param name="cFact"/>
+		<xsl:param name="cQuest"/>
+		<!--<xsl:variable name="holder" select="m8:holder( $fact )"/>
+		<xsl:variable name="director" select="m8:director( $fact )"/>-->
+		<xsl:message> --- функция вывода порта (fact <xsl:value-of select="$cFact"/>) ----</xsl:message>
 		<xsl:choose>
-			<xsl:when test="m8:path( $fact, 'role1' )/*[name()=$holder]/n">
-				<xsl:message>	найден действующий пользовательский порт</xsl:message>
-				<func:result select="m8:path( $fact, $holder, 'port' )"/>
+			<xsl:when test="$cQuest and m8:path( $cFact, 'role1' )/*[name()=$cQuest]">
+				<!--and $quest != 'n' -->
+				<xsl:message>	   найден порт в квесте</xsl:message>
+				<func:result select="m8:path( $cFact, $cQuest, 'port' )"/>
 			</xsl:when>
-			<xsl:when test="m8:path( $fact, 'role1' )/*[name()=$holder]/*[name()=$director]">
-				<xsl:message>	найден ключевой порт факта</xsl:message>
-				<func:result select="m8:path( $fact, $holder, $director, 'port' )"/>
+			<xsl:when test="not( $cQuest ) and m8:path( $cFact, 'role1' )/n">
+				<xsl:message>	   найден основной порт</xsl:message>
+				<func:result select="m8:path( $cFact, 'n', 'port' )"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="m8:path()"/>
+				<func:result select="m8:path( 'n', 'n', 'port' )"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
 	<func:function name="m8:multport">
 		<xsl:param name="fact"/>
 		<xsl:param name="quest"/>
-		<xsl:variable name="holder" select="m8:holder( $quest )"/>
-		<xsl:message> --- функция вывода порта для мультинга (fact <xsl:value-of select="$fact"/>; holder <xsl:value-of select="$holder"/>; quest <xsl:value-of select="$quest"/>) ----</xsl:message>
+		<xsl:message> --- функция вывода порта для мультинга (fact <xsl:value-of select="$fact"/>; quest <xsl:value-of select="$quest"/>) ----</xsl:message>
 		<xsl:choose>
-			<xsl:when test="m8:path( $fact, 'role1' )/*[name()=$holder]/*[name()=$quest]">
+			<xsl:when test="m8:path( $fact, 'role1' )/*[name()=$quest]">
 				<xsl:message>	найден действующий пользовательский порт</xsl:message>
-				<func:result select="m8:path( $fact, $holder, $quest, 'port' )"/>
+				<func:result select="m8:path( $fact, $quest, 'port' )"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="m8:path()"/>
+				<func:result select="m8:path( 'n', 'n', 'port' )"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
 	<func:function name="m8:dir">
-		<xsl:param name="level1"/>
-		<xsl:param name="level2"/>
-		<xsl:param name="level3"/>
+		<xsl:param name="fact"/>
+		<xsl:param name="quest"/>
 		<xsl:choose>
-			<xsl:when test="$level3">
-				<func:result select="concat( 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2, '/', $level3 )"/>
+			<xsl:when test="$quest">
+				<func:result select="concat( 'm8/', substring( $fact, 1, 1 ), '/', $fact, '/', $quest )"/>
 			</xsl:when>
-			<xsl:when test="$level2">
-				<func:result select="concat( 'm8/', substring( $level1, 1, 1 ), '/', $level1, '/', $level2)" xml:lang="не добавляем значение квеста по умолчанию т.к. это может мешать, например, при создании первой записи в порте значений"/>
-				<!--, '/', 'n' -->
+			<xsl:when test="$fact">
+				<func:result select="concat( 'm8/', substring( $fact, 1, 1 ), '/', $fact )"/>
 			</xsl:when>
-			<xsl:when test="$level1">
-				<func:result select="concat( 'm8/', substring( $level1, 1, 1 ), '/', $level1 )"/>
+			<xsl:otherwise>
+				<func:result select="'m8/n/n'"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</func:function>
+	<func:function name="m8:author">
+		<xsl:param name="author"/>
+		<xsl:choose>
+			<xsl:when test="$author">
+				<func:result select="concat( 'm8/author/', $author )"/>
 			</xsl:when>
 			<xsl:otherwise>
 				<func:result select="'m8/n/n'"/>
@@ -150,7 +200,30 @@
 	</func:function>
 	<func:function name="m8:root">
 		<xsl:param name="fact"/>
-		<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ) )"/>
+		<xsl:param name="modifier"/>
+		<xsl:choose>
+			<xsl:when test="$fact">
+				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ) )"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir() )"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</func:function>
+	<func:function name="m8:action">
+		<xsl:param name="fact"/>
+		<xsl:param name="modifier"/>
+		<xsl:choose>
+			<xsl:when test="$modifier">
+				<func:result select="concat( m8:root( $fact), '/?modifier=', $modifier )"/>
+			</xsl:when>
+			<xsl:when test="$fact">
+				<func:result select="concat( m8:root( $fact ), '/?modifier=n' )"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<func:result select="concat( m8:root(), '/?modifier=n' )"/>
+			</xsl:otherwise>
+		</xsl:choose>
 	</func:function>
 	<!--
 
@@ -166,6 +239,7 @@
 		<xsl:param name="size"/>
 		<xsl:param name="hidden"/>
 		<xsl:param name="inputType"/>
+		<xsl:param name="modifierName"/>
 		<xsl:param name="questName"/>
 		<xsl:param name="sourceValue"/>
 		<xsl:param name="sortSelect"/>
@@ -176,7 +250,7 @@
 			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
 		</xsl:if>
 		<form id="editParamOfPort" selectedValue="{name($selectedValue)}">
-			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="$startID"/></xsl:otherwise></xsl:choose>/</xsl:attribute>
+			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose></xsl:attribute>
 			<xsl:if test="$predicateName = 'n' ">
 				<xsl:attribute name="ENCTYPE">multipart/form-data</xsl:attribute>
 				<xsl:attribute name="method">POST</xsl:attribute>
@@ -198,11 +272,20 @@
 					</input>
 				</xsl:for-each>
 			</xsl:if>
+			<input type="hidden" name="modifier" value="{$questName}"/>
 			<xsl:if test="$predicateName != 'n' ">
-				<xsl:if test="$questName">
-					<input type="hidden" name="modifier" value="{$questName}"/>
-					<!--<input type="hidden" name="quest" value="{$questName}"/>-->
-				</xsl:if>
+				<xsl:choose>
+					<xsl:when test="$questName">
+						<input type="hidden" name="modifier" value="{$questName}"/>
+					</xsl:when>
+					<xsl:when test="$modifierName">
+						<input type="hidden" name="modifier" value="{$modifierName}"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<input type="hidden" name="modifier" value="{$modifier}"/>
+					</xsl:otherwise>
+				</xsl:choose>
+				<!--<input type="hidden" name="quest" value="{$questName}"/>-->
 			</xsl:if>
 			<xsl:call-template name="inputParamOfPortPre">
 				<xsl:with-param name="inputType" select="$inputType"/>
@@ -231,7 +314,6 @@
 		<xsl:param name="titleSelect"/>
 		<xsl:param name="option"/>
 		<xsl:param name="ajaxMethod"/>
-		<xsl:variable name="parentPredicateName" select="name( m8:path( $predicateName, 'subject_r' )/*/*[1] )"/>
 		<xsl:message>
 			Запрос параметра <xsl:value-of select="$predicateName"/>
 			selectedValue <xsl:value-of select="name($selectedValue)"/>
@@ -366,7 +448,7 @@
 		<xsl:param name="ajaxMethod"/>
 		<xsl:param name="option"/>
 		<xsl:param name="method"/>
-		<xsl:variable name="params_of_quest" select="m8:path( $fact, $author, $quest, 'port' )/*"/>
+		<xsl:variable name="params_of_quest" select="m8:path( $fact, $quest, 'port' )/*"/>
 		<xsl:message>		inputParamOfPort :: sourceValue: <xsl:copy-of select="count(exsl:node-set($sourceValue)/*)"/>
 		</xsl:message>
 		<xsl:choose>
@@ -706,7 +788,7 @@
 	-->
 	<xsl:template name="footer">
 		<!--<div style="position: fixed;  bottom: 1px; left: 1px; z-index: 1; color:gray">-</div>-->
-		<xsl:if test="$user != 'guest'">
+		<xsl:if test="$user != 'guest' or $adminMode">
 			<!-- or $start/@debug-->
 			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray">
 				<!--<a href="{$start/@prefix}" style="color:gray">START</a>
@@ -722,10 +804,10 @@
 								<xsl:text> | </xsl:text>
 							</xsl:if>
 						</xsl:for-each>-->
-						<a href="{$start/@prefix}a/{$avatar}/{ m8:dir( $fact, $author ) }" style="color:orange">публичный раздел</a>
+						<a href="{$start/@prefix}a/{$avatar}/{ m8:dir( $fact, $quest ) }" style="color:orange">публичный раздел</a>
 					</xsl:when>
 					<xsl:otherwise>
-						<a href="{$start/@prefix}a/formulyar/{ m8:dir( $fact, $author ) }" style="color:brown">aдминистративный раздел</a>
+						<a href="{$start/@prefix}a/formulyar/{ m8:dir( $fact, $quest ) }" style="color:brown">aдминистративный раздел</a>
 					</xsl:otherwise>
 				</xsl:choose>
 				<!--<xsl:text> | </xsl:text>
@@ -735,66 +817,62 @@
 					<xsl:text> | </xsl:text>
 					<a href="{$start/@prefix}m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}/port.xml" style="color:gray">xml</a>-->
 			</div>
-			<!--//-->
-			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray; display: none">
-				<xsl:value-of select="$avatar"/>
-			</div>
-		</xsl:if>
-		<xsl:if test="$user != 'guest' or $adminMode">
-		
-
-		<div style="position: fixed; bottom: 5px; right: 10px; color: gray; z-index: 1">
-			<xsl:if test="$user != 'guest'">
-				<a href="{$start/@prefix}a/{$ctrl}/?reindex=1" style="color: gray">
-					<xsl:value-of select="$start/@version"/>
-				</a>
-				<xsl:text> / </xsl:text>
-				<xsl:if test="$start/@branche">
-					<a href="{$start/@prefix}a/{$ctrl}/?reindex=2" style="color: gray">
-						<xsl:value-of select="$start/@branche"/>
+			<div style="position: fixed; bottom: 5px; right: 10px; color: gray; z-index: 1">
+				<xsl:if test="$user = $avatar">
+					<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray; display: none">
+						<xsl:value-of select="$avatar"/>
+					</div>
+					<a href="{$start/@prefix}a/{$ctrl}/?reindex=1" style="color: gray">
+						<xsl:value-of select="$start/@version"/>
 					</a>
-					<xsl:text> </xsl:text>
-					<xsl:value-of select="substring( $start/@head, 1, 4 )"/>
-					<xsl:if test="$start/@dry">
-						<sup style="color: red">&#160;new</sup>
+					<xsl:text> / </xsl:text>
+					<xsl:if test="$start/@branche">
+						<a href="{$start/@prefix}a/{$ctrl}/?reindex=2" style="color: gray">
+							<xsl:value-of select="$start/@branche"/>
+						</a>
+						<xsl:text> </xsl:text>
+						<xsl:value-of select="substring( $start/@head, 1, 4 )"/>
+						<xsl:if test="$start/@dry">
+							<sup style="color: red">&#160;new</sup>
+						</xsl:if>
 					</xsl:if>
+					<xsl:text> | </xsl:text>
+					<!--<xsl:text> &lt;- </xsl:text>-->
+					<xsl:choose>
+						<xsl:when test="$start/@debug">
+							<a href="{m8:root( $fact )}/?debug=switch" style="color: purple">debug on</a>
+						</xsl:when>
+						<xsl:otherwise>
+							<a href="{m8:root( $fact )}/?debug=switch" style="color: gray">debug off</a>
+						</xsl:otherwise>
+					</xsl:choose>
+					<xsl:text> | </xsl:text>
 				</xsl:if>
-				<xsl:text> | </xsl:text>
-				<!--<xsl:text> &lt;- </xsl:text>-->
-				<xsl:choose>
-					<xsl:when test="$start/@debug">
-						<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact, $author, $quest )}/?debug=switch" style="color: purple">debug on</a>
-					</xsl:when>
-					<xsl:otherwise>
-						<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $fact, $author, $quest )}/?debug=switch" style="color: gray">debug off</a>
-					</xsl:otherwise>
-				</xsl:choose>
-				<xsl:text> | </xsl:text>
 				<!--<xsl:if test="$calcName">
 						<xsl:value-of select="$calcName"/>
 						<xsl:text> | </xsl:text>
 					</xsl:if>-->
-				<a href="{$start/@prefix}{m8:dir( $fact, m8:holder( $fact), 'n' )}/port.xml" style="color:gray">
+				<a href="{m8:root( $fact, 'n' )}/port.xml" style="color:gray">
 					<xsl:value-of select="$localtime"/>
 				</a>
 				<xsl:text> </xsl:text>
-				<a href="{$start/@prefix}{m8:dir( $fact, m8:holder( $fact), m8:director( $fact) )}/port.xml" style="color:gray">
-					t
+				<a href="{m8:root( $fact )}/{$modifier}/port.xml" style="color:gray">
+					s
 				</a>
 				<xsl:text> |  </xsl:text>
-				<xsl:value-of select="$user"/>
+				<span style="{ m8:fact_color( $user )}">
+					<xsl:value-of select="$user"/>
+				</span>
 				<xsl:text> | </xsl:text>
-			</xsl:if>
-			<xsl:choose>
-				<xsl:when test="$user != 'guest' ">
-					<a href="{m8:root( $fact )}/?logout=true" style="color: red">выйти</a>
-				</xsl:when>
-				<xsl:when test="$adminMode">
-					<a href="{$start/@prefix}formulyar" style="color:blue">войти</a>
-				</xsl:when>
-			</xsl:choose>
-		</div>
+				<xsl:choose>
+					<xsl:when test="$user != 'guest' ">
+						<a href="{m8:root( $fact )}/?logout=true" style="color: red">выйти</a>
+					</xsl:when>
+					<xsl:when test="$adminMode">
+						<a href="{$start/@prefix}formulyar" style="color:blue">войти</a>
+					</xsl:when>
+				</xsl:choose>
+			</div>
 		</xsl:if>
-				
 	</xsl:template>
 </xsl:stylesheet>

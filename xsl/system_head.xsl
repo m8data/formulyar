@@ -1,29 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:m8="http://m8data.com">
-	<xsl:param name="DirectoryRoot" select="'file:C:/Dropbox/xampp/htdocs/livecells/www'"/>
-	<xsl:param name="mainServer" select="'www.m8data.com'"/>
-	<xsl:param name="admin" select="'admin'"/>
-	<xsl:param name="tempAuthor" select="/*/@tempAuthor"/>
-	<xsl:param name="moment" select="/*/@moment"/>
-	<xsl:param name="login" select="/*/@login"/>
-	<xsl:param name="new_author" select="/*/@new_author"/>
-	<xsl:param name="new_avatar" select="/*/@new_avatar"/>
-	<xsl:param name="object" select="/*/@object"/>
-	<xsl:param name="m8mode" select="/*/@m8mode"/>
-	<xsl:param name="referer" select="/*/@referer"/>
-	<xsl:param name="message" select="/*/@message"/>
-	<xsl:param name="add" select="/*/@add"/>
-	<xsl:param name="del" select="/*/@del"/>
-	<xsl:param name="Sec_of_New" select="100000"/>
-	<xsl:param name="focus" select="/*/*/@focus"/>
-	<xsl:param name="queryDeep" select="2"/>
-	<xsl:param name="vf" select="'/value.xml'"/>
-	<xsl:param name="if" select="'/index.xml'"/>
-	<xsl:param name="ind" select="'/m8'"/>
-	<xsl:variable name="startIndex" select="m8:path( $fact, 'index' )"/>
-	<xsl:variable name="startPort" select="m8:path( $fact, $author, $quest, 'port' )"/>
-	<xsl:variable name="factPort" select="m8:port( $fact )"/>
-	<xsl:param name="startTypeName" select="name( $startPort/r/* )"/>
+
 	<!--<xsl:param name="layer2" select="'gen'"/>
 	i7118132368377864911 - да
 
@@ -39,19 +16,19 @@
 					</xsl:when>
 					<xsl:when test="$factIndex/role/role1">
 						<xsl:choose>
-							<xsl:when test="m8:path( $fact, 'role1' )/*/*[2]"><xsl:apply-templates select="m8:path( $fact, $author, $quest, 'port' )"/></xsl:when>
-							<xsl:otherwise><xsl:apply-templates select="m8:path( 'n', $author, 'n', 'port' )"/></xsl:otherwise>
+							<xsl:when test="m8:path( $fact, 'role1' )/*[2]"><xsl:apply-templates select="m8:path( $fact, $quest, 'port' )"/></xsl:when>
+							<xsl:otherwise><xsl:apply-templates select="m8:path( 'n', 'n', 'port' )"/></xsl:otherwise>
 						</xsl:choose>
 						
 					</xsl:when>
 					<xsl:when test="$factIndex/role/role2">
-						<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'dock' )"/>
+						<xsl:apply-templates select="m8:path( $fact, $quest, 'dock' )"/>
 					</xsl:when>
 					<xsl:when test="$factIndex/role/role3">
-						<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'terminal' )"/>
+						<xsl:apply-templates select="m8:path( $fact, $quest, 'terminal' )"/>
 					</xsl:when>
 					<xsl:otherwise>
-						<xsl:apply-templates select="m8:path( 'n', 'admin', 'port' )"/>
+						<xsl:apply-templates select="m8:path( 'n', 'port' )"/>
 					</xsl:otherwise>
 				</xsl:choose>
 			

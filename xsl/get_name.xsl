@@ -22,11 +22,11 @@
 		<xsl:choose>
 			<xsl:when test="name() = 'n'">начало</xsl:when>
 			<xsl:otherwise>
-				<xsl:variable name="currentAuthor" select="name( m8:path( name(), 'subject_r' )/* )"/>
+				<!--<xsl:variable name="currentAuthor" select="name( m8:path( name(), 'subject_r' )/* )"/>-->
 				<!--<xsl:variable name="currentQuest" select="name( m8:path( name(), 'subject_r' )/*/* )"/>-->
 				<xsl:choose>
-					<xsl:when test="m8:path( name(), $currentAuthor, 'port' )/i"><!--m8:path( name(), $avatar, $questName, 'port' )/i-->
-						<xsl:apply-templates select="m8:path( name(), $currentAuthor, 'port' )/i/*" mode="simpleName"/>
+					<xsl:when test="m8:port( name() )/i"><!--m8:path( name(), $avatar, $questName, 'port' )/i-->
+						<xsl:apply-templates select="m8:port( name() )/i/*" mode="simpleName"/>
 					</xsl:when>
 					<!--<xsl:when test="m8:path( name(), $avatar, $questName, 'port' )/i">
 						<xsl:apply-templates select="m8:path_check( name(), $avatar, '*', 'port' )/r/*" mode="simpleName"/>
@@ -59,7 +59,7 @@
 	<xsl:template match="*" mode="titleWord_withType">
 		<xsl:param name="currentAuthorName"/>
 		<xsl:param name="currentQuestName"/>
-		<xsl:apply-templates select="m8:path( name(), $avatar, 'port' )/r/*" mode="titleWord"/>
+		<xsl:apply-templates select="m8:port( name() )/r/*" mode="titleWord"/>
 		<xsl:text> </xsl:text>
 		<xsl:apply-templates select="." mode="titleWord">
 			<xsl:with-param name="currentAuthorName" select="$currentAuthorName"/>
@@ -71,7 +71,7 @@
 	<xsl:template match="@*" mode="titleWord_withType">
 		<xsl:param name="currentAuthorName"/>
 		<xsl:param name="currentQuestName"/>
-		<xsl:apply-templates select="m8:path( ., $author, $fact, 'port' )/r/*" mode="titleWord"/>
+		<xsl:apply-templates select="m8:path( ., $fact, 'port' )/r/*" mode="titleWord"/>
 		<xsl:text> </xsl:text>
 		<xsl:apply-templates select="." mode="titleWord">
 			<xsl:with-param name="currentAuthorName" select="$currentAuthorName"/>
@@ -154,27 +154,23 @@
 				</xsl:choose>
 			</xsl:when>
 			<xsl:when test="name() = 'n' ">начало</xsl:when>
-			<xsl:when test="1 and $currentQuestName and $currentAuthorName and m8:path( name(), $currentAuthorName, $currentQuestName, 'port' )/i">
+			<xsl:when test="1 and $currentQuestName and $currentAuthorName and m8:path( name(), $currentQuestName, 'port' )/i">
 				<xsl:message>Попытка найти имя в потру текущего автора</xsl:message>
-				<xsl:apply-templates select="m8:path( name(), $currentAuthorName, $currentQuestName, 'port' )/i/*" mode="titleWord"/>
+				<xsl:apply-templates select="m8:path( name(), $currentQuestName, 'port' )/i/*" mode="titleWord"/>
 			</xsl:when>
-			<xsl:when test="1 and m8:path( name(), $author, $quest, 'port' )/i">
+			<xsl:when test="1 and m8:port( name(), $quest )/i">
 				<xsl:message>Попытка найти имя в потру текущего автора</xsl:message>
-				<xsl:apply-templates select="m8:path( name(), $author, $quest, 'port' )/i/*" mode="titleWord"/>
+				<xsl:apply-templates select="m8:port( name(), $quest )/i/*" mode="titleWord"/>
 			</xsl:when>
-			<xsl:when test="1 and m8:path( name(), $author, 'port' )/i">
+			<xsl:when test="1 and m8:port( name() )/i">
 				<xsl:message>Попытка найти имя в потру аватар-автора</xsl:message>
-				<xsl:apply-templates select="m8:path( name(), $author, 'port' )/i/*" mode="titleWord"/>
+				<xsl:apply-templates select="m8:port( name() )/i/*" mode="titleWord"/>
 			</xsl:when>
-			<xsl:when test="0 and m8:path( name(), $avatar, 'port' )/i">
-				<xsl:message>Попытка найти имя в потру аватар-автора (!! на этом выводе виснет по какой-то причине, видимо уходит в цикл !!)</xsl:message>
-				<xsl:apply-templates select="m8:path( name(), $avatar, 'port' )/i/*" mode="titleWord"/>
-			</xsl:when>
-			<xsl:when test="1 and m8:path( name(), 'subject_r' )/*/*/*">
+			<xsl:when test="1 and m8:path( name(), 'subject_r' )/*">
 				<xsl:if test="not($currentQuestName)">
-					<xsl:variable name="parentFact" select="m8:path( name(), 'subject_r' )/*/*[1]"/>
+					<xsl:variable name="parentFact" select="m8:path( name(), 'subject_r' )/*/@director"/>
 					<xsl:variable name="parentFactName" select="name($parentFact)"/>
-					<xsl:apply-templates select="m8:path( name(), $avatar, $parentFactName, 'port' )/r/*" mode="titleWord"/>
+					<xsl:apply-templates select="m8:path( name(), $parentFactName, 'port' )/r/*" mode="titleWord"/>
 					<xsl:text> </xsl:text>
 				</xsl:if>
 				<xsl:value-of select="substring (name(), 13)"/>
@@ -201,15 +197,12 @@
 	<xsl:template name="getParent">
 		<xsl:param name="currentFactName"/>
 		<xsl:param name="currentResult"/>
-		<xsl:variable name="parentFactName" select="name( m8:path( $currentFactName, 'subject_r' )/*/*[1] )"/>
-		<xsl:variable name="parentAuthorName" select="name( m8:path( $currentFactName, 'subject_r' )/* )"/>
-		<xsl:variable name="typeName" select="name( m8:path( $currentFactName, $parentAuthorName, $parentFactName, 'port' )/r/* )"/>
+		<xsl:variable name="parentFactName" select="m8:director( $currentFactName )"/>
+		<xsl:variable name="typeName" select="m8:leader( $currentFactName )"/>
 		<xsl:variable name="newResult">
 			<xsl:if test="$currentFactName!='n'">
 				<xsl:element name="{$parentFactName}">
-					<!--<xsl:attribute name="author"><xsl:value-of select="$parentAuthorName"/></xsl:attribute>-->
 					<xsl:element name="{$typeName}"/>
-					<!--<xsl:value-of select="$typeName"/>-->
 				</xsl:element>
 			</xsl:if>
 			<xsl:if test="$currentResult">
@@ -218,9 +211,8 @@
 		</xsl:variable>
 		<xsl:message>		==== getParent 2 ====
 			currentFactName: <xsl:value-of select="$currentFactName"/>
-			
-			<!--parentFactName: <xsl:value-of select="$parentFactName"/>
-			parentAuthorName: <xsl:value-of select="$parentAuthorName"/>
+			parentFactName: <xsl:value-of select="$parentFactName"/>
+			<!--parentAuthorName: <xsl:value-of select="$parentAuthorName"/>
 			typeName: <xsl:value-of select="$typeName"/>
 			title: <xsl:apply-templates select="exsl:node-set($newResult)/*[1]" mode="simpleName"/>
 			currentDeep: <xsl:value-of select="count( exsl:node-set($newResult)/* )"/>

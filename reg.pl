@@ -62,13 +62,13 @@ my $canonicalHomeAvatar = 'formulyar';
 my $tNode = '$t';
 my @sentence = ( undef, 'subject', 	'predicate',	'object',	'modifier' );
 my @matrix = ( undef, $defaultFact, $defaultFact, $defaultQuest, $defaultQuest );
-my @level = ( 'system', 'prefix', 'fact', 'author', 'quest' );
+my @level = ( 'system', 'prefix', 'fact', 'quest' );
 #my @role = (	'triple', 	'role1', 	'role2', 		'role3', 	'author', 'quest', 'target' );
 my @number = (	'name',		'subject', 	'predicate',	'object',	'modifier', 'add' );
 my @transaction = ( 'DOCUMENT_ROOT', 'REMOTE_ADDR', 'HTTP_USER_AGENT', 'REQUEST_URI', 'QUERY_STRING', 'HTTP_COOKIE', 'REQUEST_METHOD', 'HTTP_X_REQUESTED_WITH' );#, 'HTTP_USER_AGENT', 'HTTP_ACCEPT_LANGUAGE', 'REMOTE_ADDR' $$transaction{'QUERY_STRING'}
 my @mainTriple = ( 'n', 'r', 'i' );
 my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1, '_xml', 1 );
-my @superrole = ( 'triple', 'role', 'role', 'role', 'quest', 'author', 'subject', 'predicate', 'object' );
+my @superrole = ( 'triple', 'role', 'role', 'role', 'quest', 'author', 'subject', 'predicate', 'object', 'director' );
 my @superfile = ( undef, 'port', 'dock', 'terminal' ); 
 
 my $type = 'xml';
@@ -220,7 +220,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	$q->charset('utf-8');
 
 	if ( $request_uri[0] ne '' && -d $request_uri[0]) { 
-		&setWarn( "  В пожелании $temp{'REQUEST_URI'} директория $request_uri[0] действительна. Идет детектирование факта/квеста" );# стирка 	
+		&setWarn( "  В пожелании $temp{'REQUEST_URI'} директория $request_uri[0] действительна. Идет прием факта/квеста" );# стирка 	
 		$temp{'workpath'} = $request_uri[0];
 		my @path = split '/', $temp{'workpath'};
 		if ( $path[0] ne 'm8' ){
@@ -241,10 +241,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 				$temp{'fact'} = $path[2];
 				$temp{'author'} = &m8holder( $temp{'fact'} );
 				if ( $path[3] ){
-					$temp{'author'} = $path[3];
-					if ( $path[4]){ 
-						$temp{'quest'} = $path[4] 
-					} 
+					$temp{'quest'} = $path[3];
 					#( $matrix[1], $matrix[4] ) = ( $temp{'fact'}, $temp{'quest'} );
 				}
 				#else { $matrix[3] = $matrix[4] = $temp{'fact'} }
@@ -252,6 +249,8 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		}
 	}
 	&setWarn( " Завершение разбора рабочего пути");#	
+	#if ( $ENV{'QUERY_STRING'} =~ /^modifier=([\w\-\d]+)$/ and -d 'm8/n/'.$1 ){ $temp{'modifier'} = $1 }
+	#else { $temp{'modifier'} = 'n' }
 	if ( $ENV{'QUERY_STRING'} =~ /^reindex=(\d)$/ ){
 		&dryProc2( $1 );
 		print $q->header( -location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.$temp{'prefix'}.$auraDir.'/'.$temp{'ctrl'} )
@@ -297,7 +296,8 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		&setWarn( "  Выдача текстовой информации" );
 		my %cookie;
 		$temp{'user'} = $temp{'author'} = $cookie{'user'} = $defaultAuthor if not -d $planeDir.'/'.$temp{'user'}; 
-		&washProc( \%temp, \%cookie ) if $temp{'REQUEST_METHOD'} eq 'POST' or $temp{'QUERY_STRING'};
+		&washProc( \%temp, \%cookie ) if $temp{'REQUEST_METHOD'} eq 'POST' or $temp{'QUERY_STRING'};# and $temp{'QUERY_STRING'}=~/&/ or {'QUERY_STRING'} eq 'a=');
+		$temp{'modifier'} = 'n' if not defined $temp{'modifier'};	
 		$temp{'fact'} = $temp{'quest'} = $defaultFact if not defined $temp{'fact'};	
 		$temp{'ctrl'} = $defaultAvatar if $temp{'mission'} eq $defaultAvatar;	
 		my @cookie;
@@ -364,7 +364,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			#copy( $log, $log.'.txt' ) or die "Copy failed: $!" if $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
 			my $location = $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.$temp{'prefix'};
 			if ( defined $temp{'message'} and $temp{'message'} ne 'OK' ){ $location .= $defaultAvatar.'/?error='.$temp{'message'} }
-			else { $location .= &m8req( \%temp ).'/' }
+			else { $location .= &m8req( \%temp ) }
 			print $q->header( -location => $location, -cookie => [@cookie] )# -status => '201 Created' #куки нужны исключительно для случая указания автора		
 		}
 	}
@@ -417,7 +417,7 @@ sub washProc{
 		$$temp{'QUERY_STRING'} = &utfText($$temp{'QUERY_STRING'});
 		$$temp{'QUERY_STRING'} = Encode::decode_utf8($$temp{'QUERY_STRING'});
 		for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
-			&setWarn( "		wP   Анализ пары $pair" );	
+			&setWarn( "		wP   Прием пары $pair" );	
 			my ($name, $value) = split( /=/, $pair );
 			next if $name eq 'user';
 			$param{$name} = $value; #&utfText($value);
@@ -437,9 +437,12 @@ sub washProc{
 				$$temp{$name} = $param{$name} 
 			}
 		}
+		
+		$$temp{'modifier'} = 'n' if not defined $$temp{'modifier'} or not -d 'm8/n/'.$$temp{'modifier'} or $$temp{'modifier'} eq $$temp{'fact'};
 		#весь блок работы с матрицей нужно уводить в работу с пустотой, т.к. может быть и не 'а', а 'b' и 'с' и 'd'.
+		&setWarn( "		wP  Имеется строка запроса $$temp{'QUERY_STRING'}. Идет идет ее парсинг" );
 		if ( defined $param{'a'} ){
-			$matrix[3] = $matrix[4] = $$temp{'fact'}
+			$$temp{'modifier'} = $matrix[3] = $$temp{'fact'}
 		}
 		else{
 			( $matrix[1], $matrix[4] ) = ( $$temp{'fact'}, 'n' );
@@ -631,7 +634,7 @@ sub washProc{
 							if ( $span[2]=~/^r/ ){
 								( $span[4] ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0], 1 );
 							}
-							else {	$span[4] = $$temp{'quest'} }
+							else {	$span[4] = $$temp{'modifier'} }
 						}
 	
 						#$span[5] = $num[$s][5] if $num[$s][5];
@@ -649,9 +652,16 @@ sub washProc{
 						$num[$s][0] = &setName( 'd', $$temp{'user'}, $num[$s][1], $num[$s][2], $num[$s][3] );
 					}
 					#$num[$s][4] = $$temp{'user'};
-					$num[$s][4] = $matrix[4] if not $num[$s][4];
-				} 
+					#$num[$s][4] = $matrix[4] if not $num[$s][4];
+					if ( $num[$s][4] ){ &setWarn("		wP      имеется обстоятельство - $num[$s][4] ") }
+					if ( not $num[$s][4] ){
+						&setWarn("		wP      присвоение номеру обстоятельства - $$temp{'modifier'} ");
+						$num[$s][4] = $$temp{'modifier'} 
+					}
+				}
+				$$temp{'modifier'} = 'n' if $num[0][2] eq 'r';
 			}
+			
 		}
 	}
 	@num || return;
@@ -772,14 +782,23 @@ sub spinProc {
 	my ( $val, $user, $time )=@_;
 	&setWarn("
 		sP @_"  );
-	for my $key ( 0..5 ){ 
-		&setWarn("		sP  Значение на сушку $key: $$val[$key]"  );
-	}	
+	#if ( $$val[] ){
+	if ( $$val[5] ){
+		for my $key ( 0..5 ){ 
+			&setWarn("		sP  Значение на сушку $key: $$val[$key]"  )
+			#else { warn "delete $key - $$val[$key]"
+		}	
+	}
+	else{ warn "delete @{$val}" }
 	my ( $name, $subject, $predicate, $object, $modifier, $add ) = ( $$val[0], $$val[1], $$val[2], $$val[3], $$val[4], $$val[5] );
-	my $mainDir = &m8dir( $subject, $user, $modifier );
+	my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
+	my $quest = $modifier;
+	if ( $predicate eq 'r' ){
+		$value[4] = $quest = 'n';
+		push @value, ( $subject, $predicate, $object, $modifier )
+	}
+	my $mainDir = &m8dir( $subject, $quest );
 	my $good;
-	
-	
 	#if (-d $mainDir){
 	my %port = &getJSON( $mainDir, 'port' );
 	if ( $add ){
@@ -802,9 +821,9 @@ sub spinProc {
 	}
 	elsif ( not defined $port{$predicate} or not defined $port{$predicate}[0]{$object} ){ $good = 1 }
 	#}
-	my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
+	#my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
 	if (not $good){
-	push @value, ( $subject, $predicate, $object ) if $predicate=~/^r\d*$/;
+	#push @value, ( $subject, $predicate, $object ) if $predicate=~/^r\d*$/;
 	for my $mN ( grep { $value[$_] } 0..$#value ){
 		&setWarn("		
 		sP  Обработка упоминания cущности $mN: $value[$mN] (user: $user)"  );
@@ -813,27 +832,26 @@ sub spinProc {
 		#&setLink( $planeRoot.'m8',	$planeRoot.$auraDir.'/m8'			);
 		#&setLink( $planeRoot.'m8/n', 	$metter.'/q' ) if $value[$mN]=~/^n/ and $add;
 		my $type = $superrole[$mN];
-		my ( $role, $file, $first, $second );
-		
-		
-		if ( $mN == 0 ){	( $role, $file, $first, $second ) = ( 'activate',	'activate'				, $user,	$modifier ) }
-		elsif ( $mN < 4 ) {	( $role, $file, $first, $second ) = ( 'role'.$mN,	'role'.$mN 				, $user,	$modifier ) }
-		elsif ( $mN == 4 ){ ( $role, $file, $first, $second ) = ( 'quest',		'quest'					, $user,	$subject ) }#вероятнее всего, здесь subject нужно поменять на name		
-		elsif ( $mN == 5 ){ ( $role, $file, $first, $second ) = ( 'author',		'author'				, $name, 	$modifier ) }
-		elsif ( $mN == 6 ){ ( $role, $file, $first, $second ) = ( $predicate,	'subject_'.$predicate	, $user,	$modifier ) }
-		elsif ( $mN == 7 ){	( $role, $file, $first, $second ) = ( $object,		'predicate_'.$object	, $user,	$modifier ) }
-		elsif ( $mN == 8 ){	( $role, $file, $first, $second ) = ( $subject, 	'object_'.$subject		, $user,	$modifier ) } 
+		my ( $role, $file, $first );
+		if ( $mN == 0 ){	( $role, $file, $first ) = ( 'activate',	'activate'				, $quest ) }
+		elsif ( $mN < 4 ) {	( $role, $file, $first ) = ( 'role'.$mN,	'role'.$mN 				, $quest ) }
+		elsif ( $mN == 4 ){ ( $role, $file, $first ) = ( 'quest',		'quest'					, $subject ) }#вероятнее всего, здесь subject нужно поменять на name		
+		elsif ( $mN == 5 ){ ( $role, $file, $first ) = ( 'author',		'author'				, $quest ) }
+		elsif ( $mN == 6 ){ ( $role, $file, $first ) = ( $predicate,	'subject_'.$predicate	, $quest ) }
+		elsif ( $mN == 7 ){	( $role, $file, $first ) = ( $object,		'predicate_'.$object	, $quest ) }
+		elsif ( $mN == 8 ){	( $role, $file, $first ) = ( $subject, 		'object_'.$subject		, $quest ) } 
+		elsif ( $mN == 9 ){	( $role, $file, $first ) = ( $subject, 		'director_'.$subject	, $quest ) } 
 		
 		if ( $mN == 1 or $mN == 2 or $mN == 3  ){
-			&setWarn("		sP   Формирование порта/дока/терминала $role ($file, $first, $second).  User: $user"  );
+			&setWarn("		sP   Формирование порта/дока/терминала $role ($file, $first).  User: $user"  );
 			
 			my ( $master, $slave );
 			if ( $mN == 1 )		{ ( $master, $slave ) = ( $predicate, 	$object 	) }
 			elsif ( $mN == 2 )	{ ( $master, $slave ) = ( $subject, 	$object 	) }
 			elsif ( $mN == 3 ) 	{ ( $master, $slave ) = ( $subject, 	$predicate 	) }
-			my %role = &getJSON( $metter.'/'.$user.'/'.$modifier, $superfile[$mN] );
+			my %role = &getJSON( $metter.'/'.$quest, $superfile[$mN] );
 			if ( $addC ){
-				&setWarn("		sP    Операции при добавлении значения в индекс $metter/$user/$modifier  ($master, $slave)"  );
+				&setWarn("		sP    Операции при добавлении значения в индекс $metter/$quest  ($master, $slave)"  );
 				$role{$master}[0]{$slave}[0]{$name}[0]{'time'} = $time;
 			}
 			else { 
@@ -841,21 +859,24 @@ sub spinProc {
 				delete $role{$master} ; 
 				$addC = 1 if keys %role; 
 			} 
-			&setXML ( $metter.'/'.$user.'/'.$modifier, $superfile[$mN], \%role );
+			&setXML ( $metter.'/'.$quest, $superfile[$mN], \%role );
 		}
 		my %role1 = &getJSON( $metter, $file );
 		if ( $addC == 1 ) {
-			&setWarn("		sP   Счетчик упоминаний не пустой - дополняем/обновляем индекс-файл роли $role ($file, $first, $second)"  );
-			$role1{$first}[0]{'time'} = $time;		
-			$role1{$first}[0]{$second}[0]{'time'} = $time;
-			$role1{$first}[0]{$second}[0]{'triple'} = $name;
+			&setWarn("		sP   Счетчик упоминаний не пустой - дополняем/обновляем индекс-файл роли $role ($file, $first)"  );
+			$role1{$first}[0]{'time'} = $time;
+			$role1{$first}[0]{'triple'} = $name;
+			if ( $mN == 6 ){
+				$role1{$first}[0]{'holder'} = $user;
+				$role1{$first}[0]{'director'} = $modifier;# if $modifier ne 'n';
+			}
 		}
 		else {
 			&setWarn("		sP   Счетчик упоминаний пустой - сокращаем индекс-файл роли"  );
-			delete $role1{$first}[0]{$second};
-			if ( not grep {$_ ne 'time'} keys %{$role1{$first}[0]} ){
-				delete $role1{$first};		
-			}			
+			delete $role1{$first};
+			#if ( not grep {$_ ne 'time'} keys %{$role1{$first}[0]} ){
+			#	delete $role1{$first};		
+			#}			
 		}
 		&setXML ( $metter, $file, \%role1 ); 	
 
@@ -888,18 +909,6 @@ sub spinProc {
 				&setXML( 'm8/d/'.$value[0], 'value' );
 				rmtree $planeDir.'/'.$user.'/tsv';
 			}
-			#if ( $value[3]=~/^i\d+$/ ){
-			#	&setWarn("		sP    Проверка на идентификатор");
-			#	my $userTypeDir = $authorPath.'/'.$user;
-			#	if ( -e $userTypeDir.'/type.json' ){
-			#		my %type = &getJSON( $userTypeDir, 'type' );
-			#		if ( defined $type{$value[3]} ){ 
-			#			delete $type{$value[3]};
-			#			&setXML( $userTypeDir, 'type', \%type );
-			#			&rinseProc2( $user, %type )
-			#		}
-			#	}
-			#}
 			if ( -e $typesDir.'/'.$typesFile and $value[3]=~/^i/ ){ #Эту проверку нужно делать в сушке, т.к. она нужна и при замене старого значения
 				&setWarn("		sP    Проверка на идентификатор-тип");
 				my @val = &getFile( $planeDir.'/'.$user.'/tsv/'.$value[3].'/value.tsv' );
@@ -1026,12 +1035,10 @@ sub dryProc2 {
 			$DL_cookie++
 		}		
 	}
-	my $time1 = time;
-	my $time2;		
+	my $time1 = time;	
 	for my $userName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){ 
 		print REINDEX "userName	$userName \n";
 		warn '		userName  '.$userName;
-		
 		if ( -e $planeDir.'/'.$userName.'/.git/refs/heads/'.$branche ){
 			print REINDEX "    Копирование указателя состояния ветки $branche";
 			warn '	Copy of branche head  ';
@@ -1095,10 +1102,15 @@ sub dryProc2 {
 			}
 			}
 		}
-		$time2 = time;
+	}
+	my $time2 = time;
+	for my $userName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){ 
+		print REINDEX "userName2	$userName \n";
+		warn '		userName2  '.$userName;
+		my $tsvPath = $planeDir.'/'.$userName.'/tsv';
 		for my $tsvName ( &getDir( $tsvPath, 1 ) ){ 
 			warn '	tsv2  '.$tsvName;
-			print REINDEX "tsv2	$tsvName \n";
+			print REINDEX "  tsv2	$tsvName \n";
 			if ( $tsvName=~/^i/ ){
 				if ( not -e &m8path( $tsvName, 'index' ) and $tsvName ne 'i' ){
 					rmtree $tsvPath.'/'.$tsvName;
@@ -1112,6 +1124,7 @@ sub dryProc2 {
 				my $parent = $val[1];
 				#$val[4] = $userName;
 				for my $questName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
+					print REINDEX "     Исследование квеста $questName \n";
 					$val[4] = $questName;
 					#if(0){
 					#	if ( $val[2]=~/^r/ ){
@@ -1125,8 +1138,16 @@ sub dryProc2 {
 					#else{
 						my $good = 1;
 						for my $n ( grep { $val[$_]=~/^n/ and $good } 1..4 ){
+							my $dirr = &m8dir( $val[$n] );
+							print REINDEX "      Исследование роли $n: $val[$n] в папке $dirr \n";
 							my %index = &getJSON( &m8dir( $val[$n] ), 'index' );
-							$good = 0 if not defined $index{'subject'}
+							if ( not defined $index{'subject'} ){
+								$good = 0; 
+								print REINDEX "       Cущность удалена. Номер испорчен. \n";
+								#for my $key ( %index ){
+								#	print REINDEX "       key: $key => $index{$key} \n";
+								#}
+							}
 						}
 						next if $good;
 					#}
@@ -1226,35 +1247,37 @@ sub parseNew {
 
 ######### функции второго порядка ##########
 sub m8path {
-	my ( $level1, $level2, $level3, $level4 ) = @_;
-	my $path;
-	if ( $level2 ){
-		$path = 'm8/'.substr($level1,0,1).'/'.$level1.'/'.$level2;
-		if ( $level4 ){ 	$path .= '/'.$level3.'/'.$level4 }
-		elsif ( $level3 ){	$path .= '/'.$level1.'/'.$level3 }
+	my @level = @_;
+	my $path = 'm8/';
+	if ( @level ){
+		$path .= substr( $level[0], 0, 1 ).'/';
+		$path .= join '/', @level
 	}
-	else { $path = $authorPath.'/'.$level1.'/type' }
+	#if ( $level2 ){
+	#	$path = 'm8/'.substr($level1,0,1).'/'.$level1.'/'.$level2;
+		#if ( $level4 ){ 	$path .= '/'.$level3.'/'.$level4 }
+	#	if ( $level3 ){	$path .= '/'.$level3 }
+	#}
+	#else { $path = $authorPath.'/'.$level1.'/type' }
 	return $path.'.xml'
 }
 sub m8dir {
-	my ( $fact, $author, $quest ) = @_;
+	my ( $fact, $quest ) = @_;
 	my $dir = 'm8/'.substr($fact,0,1).'/'.$fact;
-	if ( $quest ){ 	$dir .= '/'.$author.'/'.$quest }
-	elsif ( $author ){	$dir .= '/'.$author.'/'.$fact }
+	$dir .= '/'.$quest if $quest; 
 	return $dir
 }
 sub m8req {
 	my ( $temp ) = @_;
-	my $dir = $auraDir.'/'.$$temp{'ctrl'}.'/m8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'};
-	if ( $$temp{'quest'} ne $$temp{'fact'} ){ $dir .= '/'.$$temp{'author'}.'/'.$$temp{'quest'} }
-	elsif ( $$temp{'author'} and $$temp{'author'} ne $$temp{'ctrl'} ){ $dir .= '/'.$$temp{'author'} }
+	my $dir = $auraDir.'/'.$$temp{'ctrl'}.'/m8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/?modifier='.$$temp{'modifier'};
+	#if ( $$temp{'quest'} ne $$temp{'fact'} ){ $dir .= '/'.$$temp{'author'}.'/'.$$temp{'quest'} }
+	#elsif ( $$temp{'author'} and $$temp{'author'} ne $$temp{'ctrl'} ){ $dir .= '/'.$$temp{'author'} }
 	return $dir;
 }
 sub m8holder {
 	my ( $fact ) = @_;
 	my %subject = &getJSON( &m8dir( $fact ), 'subject_r' );
-	my @author = keys %subject;
-	return $author[0]
+	return $subject{'n'}[0]{'holder'}
 }
 
 
