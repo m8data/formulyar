@@ -1,37 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:m8="http://m8data.com">
-
 	<!--<xsl:param name="layer2" select="'gen'"/>
 	i7118132368377864911 - да
 
 	 -->
 	<xsl:template match="/">
-		<xsl:message terminate="no">interface match="/"</xsl:message>
-			<xsl:variable name="factIndex" select="m8:path( $fact, 'index' )"/>
-				<xsl:choose>
-					<xsl:when test="$start/@user='guest' and $start/@mission='formulyar'">
-						<!-- or $start/@ipath='a' -->
-						<!--<xsl:when test="$start/@path = '/m8' or $start/@path=concat( '/', $ctrl, '/m8' ) or $start/@path = '/formulyar' or $start/@path = '/a/formulyar' ">-->
-						<xsl:call-template name="authorDef"/>
-					</xsl:when>
-					<xsl:when test="$factIndex/role/role1">
-						<xsl:choose>
-							<xsl:when test="m8:path( $fact, 'role1' )/*[2]"><xsl:apply-templates select="m8:path( $fact, $quest, 'port' )"/></xsl:when>
-							<xsl:otherwise><xsl:apply-templates select="m8:path( 'n', 'n', 'port' )"/></xsl:otherwise>
-						</xsl:choose>
-						
-					</xsl:when>
-					<xsl:when test="$factIndex/role/role2">
-						<xsl:apply-templates select="m8:path( $fact, $quest, 'dock' )"/>
-					</xsl:when>
-					<xsl:when test="$factIndex/role/role3">
-						<xsl:apply-templates select="m8:path( $fact, $quest, 'terminal' )"/>
+		<xsl:message terminate="no">	system_head template match="/"</xsl:message>
+		<xsl:variable name="factIndex" select="m8:index( $fact )"/>
+		<xsl:choose>
+			<xsl:when test="$start/@user='guest' and $start/@mission='formulyar'">
+				<!-- or $start/@ipath='a' -->
+				<!--<xsl:when test="$start/@path = '/m8' or $start/@path=concat( '/', $ctrl, '/m8' ) or $start/@path = '/formulyar' or $start/@path = '/a/formulyar' ">-->
+				<xsl:call-template name="authorDef"/>
+			</xsl:when>
+			<xsl:when test="$factIndex/role/role1">
+				<xsl:apply-templates select="m8:port( $fact, $modifier )"/>
+				<!--<xsl:choose>
+					<xsl:when test="m8:path( $fact, 'role1' )/*[2]">
+						<xsl:apply-templates select="m8:port( $fact, $modifier, 'port' )"/>
 					</xsl:when>
 					<xsl:otherwise>
-						<xsl:apply-templates select="m8:path( 'n', 'port' )"/>
+						<xsl:apply-templates select="m8:port( )"/>
 					</xsl:otherwise>
-				</xsl:choose>
-			
+				</xsl:choose>-->
+			</xsl:when>
+			<xsl:when test="$factIndex/role/role2">
+				<xsl:apply-templates select="m8:path( $fact, $modifier, 'dock' )"/>
+			</xsl:when>
+			<xsl:when test="$factIndex/role/role3">
+				<xsl:apply-templates select="m8:path( $fact, $modifier, 'terminal' )"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates select="m8:port()"/>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	<!--
 

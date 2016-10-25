@@ -142,7 +142,7 @@
 		<xsl:param name="cQuest"/>
 		<!--<xsl:variable name="holder" select="m8:holder( $fact )"/>
 		<xsl:variable name="director" select="m8:director( $fact )"/>-->
-		<xsl:message> --- функция вывода порта (fact <xsl:value-of select="$cFact"/>) ----</xsl:message>
+		<xsl:message> --- функция вывода порта (cFact: <xsl:value-of select="$cFact"/>; cQuest: <xsl:value-of select="$cQuest"/>) ----</xsl:message>
 		<xsl:choose>
 			<xsl:when test="$cQuest and m8:path( $cFact, 'role1' )/*[name()=$cQuest]">
 				<!--and $quest != 'n' -->

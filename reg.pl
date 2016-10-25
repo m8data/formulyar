@@ -54,7 +54,7 @@ my $sessionFile = 'session.json';
 my $stylesheetDir = 'xsl';
 my $defaultAvatar = 'formulyar';
 my $startAvatar = 'start';
-my $defaultAuthor = 'guest';
+my $defaultUser = 'guest';
 my $defaultFact = 'n';
 my $defaultQuest = 'n';
 my $admin = 'admin';
@@ -63,7 +63,6 @@ my $tNode = '$t';
 my @sentence = ( undef, 'subject', 	'predicate',	'object',	'modifier' );
 my @matrix = ( undef, $defaultFact, $defaultFact, $defaultQuest );
 my @level = ( 'system', 'prefix', 'fact', 'quest' );
-#my @role = (	'triple', 	'role1', 	'role2', 		'role3', 	'author', 'quest', 'target' );
 my @number = (	'name',		'subject', 	'predicate',	'object',	'modifier', 'add' );
 my @transaction = ( 'DOCUMENT_ROOT', 'REMOTE_ADDR', 'HTTP_USER_AGENT', 'REQUEST_URI', 'QUERY_STRING', 'HTTP_COOKIE', 'REQUEST_METHOD', 'HTTP_X_REQUESTED_WITH' );#, 'HTTP_USER_AGENT', 'HTTP_ACCEPT_LANGUAGE', 'REMOTE_ADDR' $$transaction{'QUERY_STRING'}
 my @mainTriple = ( 'n', 'r', 'i' );
@@ -80,7 +79,7 @@ my $planeDir_link = 'p';
 my $indexDir = 'm8';
 
 my $logPath = $defaultAvatar.'/log'; #'../log';$userDir.'/'.
-my $authorPath = $indexDir.'/author';
+my $userPath = $indexDir.'/author';
 my $configDir = 'config';
 my $configPath = $userDir.'/'.$defaultAvatar.'/'.$configDir; #'../'.$configDir;
 my $sessionPath = $configPath.'/temp_name';
@@ -157,10 +156,10 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		#if ( $^O ne 'MSWin32' ){ #and -d '/home/git'
 		#	&setWarn( "   Обнаружена работа на сервере");#	
 		if(0){
-			for my $authorName ( grep{ not $dry and not /^_/ and -d $planeDir.'/'.$_.'/.git' and -e $planeDir.'/'.$_.'/.git/refs/heads/'.$branche } &getDir( $planeDir, 1 ) ){ 
-				&setWarn( "    Проверка коммитов в репозитории $authorName");#	
-				$head = &getFile( $planeDir.'/'.$authorName.'/.git/refs/heads/'.$branche );
-				$dry = 1 if not -e $userDir.'/'.$authorName.'/'.$branche or &getFile( $userDir.'/'.$authorName.'/'.$branche ) ne $head;
+			for my $userName ( grep{ not $dry and not /^_/ and -d $planeDir.'/'.$_.'/.git' and -e $planeDir.'/'.$_.'/.git/refs/heads/'.$branche } &getDir( $planeDir, 1 ) ){ 
+				&setWarn( "    Проверка коммитов в репозитории $userName");#	
+				$head = &getFile( $planeDir.'/'.$userName.'/.git/refs/heads/'.$branche );
+				$dry = 1 if not -e $userDir.'/'.$userName.'/'.$branche or &getFile( $userDir.'/'.$userName.'/'.$branche ) ne $head;
 			}
 		}
 		#}
@@ -196,19 +195,10 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			if ( $value eq 'guest' ){ $temp{'user'} = 'guest' }
 			else { $temp{'user'} = &getFile( $sessionPath.'/'.$value.'/value.txt' ) if -e $sessionPath.'/'.$value.'/value.txt' }
 		}
-		#elsif ( $name eq $cookiePrefix.'avatar' ){ 	$temp{'avatar'} = $value if $value	}
 		elsif ( $name eq $cookiePrefix.'debug' ){		$temp{'debug'} = $value if $value	}
 	}
-	if ( $temp{'user'} ){ 
-		$temp{'author'} = $temp{'user'} 
-	}
-	else { 
-		$temp{'user'} = $temp{'author'} = $defaultAuthor 
-		#$temp{'user'} = $defaultAuthor 
-	} #$$cookie{'user'} = 
+	$temp{'user'} = $defaultUser if not defined $temp{'user'} or not $temp{'user'};
 	$temp{'avatar'} = $temp{'ctrl'} = $univer;
-	#if ( $temp{'avatar'} ){ $temp{'ctrl'} = $temp{'avatar'} }
-	#else { $temp{'avatar'} = $temp{'ctrl'} = &getSetting('avatar') || &getAvatar || $startAvatar } #$$cookie{'avatar'} = 
 	$temp{'mission'} = $temp{'format'} = 'html';
 	$temp{'ajax'} = $temp{'HTTP_X_REQUESTED_WITH'} if $temp{'HTTP_X_REQUESTED_WITH'}; 
 	$temp{'wkhtmltopdf'} = 'true' if $temp{'HTTP_USER_AGENT'}=~/ wkhtmltopdf/ or $temp{'HTTP_USER_AGENT'}=~m!Qt/4.6.1!;
@@ -234,12 +224,11 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 				$temp{'ctrl'} = shift @path;
 			}
 		}		
-		elsif ( $temp{'mission'} eq $defaultAvatar and $temp{'user'} eq $defaultAuthor ) {	$temp{'ctrl'} = $defaultAvatar } #Это указание не дает выйти на текущие контроллеры при переходе на страницу авторизации }
+		elsif ( $temp{'mission'} eq $defaultAvatar and $temp{'user'} eq $defaultUser ) {	$temp{'ctrl'} = $defaultAvatar } #Это указание не дает выйти на текущие контроллеры при переходе на страницу авторизации }
 		if ( @path ){
 			$temp{'m8path'} = join '/', @path;
 			if ( $path[2] ){
 				$temp{'fact'} = $path[2];
-				$temp{'author'} = &m8holder( $temp{'fact'} );
 				if ( $path[3] ){
 					$temp{'quest'} = $path[3];
 					#( $matrix[1], $matrix[4] ) = ( $temp{'fact'}, $temp{'quest'} );
@@ -295,7 +284,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 	else{
 		&setWarn( "  Выдача текстовой информации" );
 		my %cookie;
-		$temp{'user'} = $temp{'author'} = $cookie{'user'} = $defaultAuthor if not -d $planeDir.'/'.$temp{'user'}; 
+		$temp{'user'} = $cookie{'user'} = $defaultUser if not -d $planeDir.'/'.$temp{'user'}; 
 		&washProc( \%temp, \%cookie ) if $temp{'REQUEST_METHOD'} eq 'POST' or $temp{'QUERY_STRING'};# and $temp{'QUERY_STRING'}=~/&/ or {'QUERY_STRING'} eq 'a=');
 		$temp{'modifier'} = 'n' if not defined $temp{'modifier'};	
 		$temp{'fact'} = $temp{'quest'} = $defaultFact if not defined $temp{'fact'};	
@@ -466,18 +455,14 @@ sub washProc{
 					&setWarn('		wP    фиксация создания автора '); 
 					$$temp{'fact'} = $$temp{'quest'} = $defaultFact;
 					$$temp{'user'} = $pass{'new_password'};
-					$$temp{'author'} = $$temp{'user'} = $$temp{'new_author'};
+					$$temp{'user'} = $$temp{'new_author'};
 					my @value = ( 'd', @mainTriple, $$temp{'user'}, $$temp{'quest'}, 1 );
 					push @num, \@value;
 					my $data = join "\t", @mainTriple;
 					&setFile( $$temp{'user'}.'/tsv/d/value.tsv', $data );
 					&rinseProc ( 'd', $data)
 				}
-				else { 
-					$$temp{'user'} = $$temp{'login'}; #$$temp{'author'} = 
-					$$temp{'author'} = $$temp{'user'} if not $$temp{'m8path'}
-				
-				}
+				else { $$temp{'user'} = $$temp{'login'}	}
 				my $sessionListFile = $userDir.'/'.$$temp{'user'}.'/'.$sessionFile;
 				my $tempName = 'u';
 				$tempName .= murmur128_x64(rand(10000000));
@@ -498,7 +483,7 @@ sub washProc{
 					else { unlink $sessionListFile } 
 				}
 				rmtree $sessionPath.'/'.$$temp{'tempkey'} if -d $sessionPath.'/'.$$temp{'tempkey'};
-				$$cookie{'user'} = $defaultAuthor 
+				$$cookie{'user'} = $defaultUser 
 			}
 			$$temp{'message'} = 'OK';
 		}
@@ -506,11 +491,11 @@ sub washProc{
 			&setWarn( "		wP   Найден запрос удаления автора" );
 			my @value = ( 'd' );
 			push @num, \@value;
-			$$cookie{'user'} = $$temp{'author'} = $defaultAuthor
+			$$cookie{'user'} = $defaultUser
 		}
 		elsif ( defined $$temp{'control'} ){
 			&setWarn ('		wP   Контроль');
-			if ( $$temp{'author'} ne $admin ){
+			if ( $$temp{'user'} ne $admin ){
 				$$temp{'message'} = 'Требуются админские полномочия';
 				return
 			}
@@ -526,7 +511,7 @@ sub washProc{
 					}
 					else { 
 						&setWarn ("		wP      Удаление директории $m8subdir");
-						if ( $$temp{'del'} == 3 ){ $$cookie{'user'} = $defaultAuthor; $$cookie{'group'} = '' }
+						if ( $$temp{'del'} == 3 ){ $$cookie{'user'} = $defaultUser; $$cookie{'group'} = '' }
 					} 
 				}
 			}
@@ -567,12 +552,7 @@ sub washProc{
 					if ( $value[1] and $value[1]=~/^xsd:(\w+)$/ ){
 						&setWarn('		wP      запрос создания именнованой карты');
 						#здесь еще нужно исключить указание одному имени разных типов
-						#my $authorTypeFile = $authorPath.'/'.$$temp{'user'}; #вообще не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
-						#my %type = &getJSON( $authorTypeFile, 'type' );
-						#$type{$value}[0]{'name'} = $value[0];
-						#&setXML ( $authorTypeFile, 'type', \%type );
-						#&rinseProc2 ( $$temp{'user'}, %type );
-						
+					
 						my %types = &getJSON( $typesDir, 'type' );
 						$types{$value[0]} = $$temp{'fact'};
 						#&setXML ( $typesDir, 'type', \%types );
@@ -602,20 +582,10 @@ sub washProc{
 					}
 					else{
 						&setWarn("			wP      $pair: создание новой сущности" );
-						#$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s.'-'.$$temp{'user'}; 
 						$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$$temp{'user'}.'-'.$s; 
 						$num[$s][2] = $value;
-						#$num[$s][3] = $param{'quest'}
-						if ( $name eq 'a' ){
-							&setWarn("			wP       $pair: подготовка редиректа" );
-							$$temp{'fact'} = $$temp{'quest'} = $num[$s][1];# if not defined $param{'fact'};
-							$$temp{'author'} = $$temp{'user'}
-							#$$temp{'fact'} = $num[$s][1] if not defined $param{'fact'};
-							#$$temp{'quest'} = $num[$s][1] if not defined $param{'quest'};
-						}
-						#elsif ( not $num[$s][5] ) { $num[$s][5] = $num[$s][1] }
-						#my @triple = ( undef, $num[$s][1], 'n', 'r', 'n', 1 );
-						#push @num, \@triple;
+						$num[$s][5] = 2;
+						$$temp{'fact'} = $$temp{'quest'} = $num[$s][1] if $name eq 'a'; # подготовка редиректа
 					}
 				}
 				else{ 
@@ -673,7 +643,29 @@ sub washProc{
 		&setWarn("		wP  Проверка номера $s ");
 		for my $key ( 0..5 ){ 
 			$$temp{'number'}[$s]{$number[$key]} = $num[$s][$key] if $num[$s][$key];
-		}	
+		}
+		if ( $num[$s][5] != 2 ){
+			&setWarn("		wP    Проверка собственности при изменениях");
+			if ( $num[$s][4] eq 'n' ){
+				my $holder = &m8holder( $num[$s][1] );
+				if ( $holder ne $$temp{'user'} ){
+					&setWarn("		wP    Номер запрашивает действие над чужим подлежащим");
+					$$temp{'povtor'}[$s] = 4;
+					$$temp{'number'}[$s]{'message'} = 'Номер запрашивает действие над чужим подлежащим';
+					next
+				}
+			}
+			else {
+				my $holder = &m8holder( $num[$s][4] );
+				if ( $holder ne $$temp{'user'} ){
+					&setWarn("		wP    Номер запрашивает действие под чужим обстоятельством");
+					$$temp{'povtor'}[$s] = 4;
+					$$temp{'number'}[$s]{'message'} = 'Номер запрашивает действие под чужим обстоятельством';
+					next
+				}
+			}
+		}
+			
 		if ( grep { $s != $_ and $num[$_] and ( $num[$s][0] eq $num[$_][0] ) } 0..$#num ) { 
 			&setWarn("		wP   Номер запрашивает повтор трипла в запросе");
 			$$temp{'povtor'}[$s] = 1;
@@ -688,14 +680,14 @@ sub washProc{
 		}		
 		if ( $num[$s][2]=~/^r/ and -d 'm8/n/'.$num[$s][1] ){
 			&setWarn("		wP   Проверка изменения статуса имеющегося нечто.");
-			my $holder = &m8holder( $num[$s][1] );
-			if ( $holder ne $$temp{'user'} ){
-				&setWarn("		wP    Номер запрашивает действие над чужим нечто");
-				$$temp{'povtor'}[$s] = 4;
-				$$temp{'number'}[$s]{'message'} = 'Номер запрашивает действие над чужим нечто';
-				next
-			}
-			elsif ( -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0] ){
+			#my $holder = &m8holder( $num[$s][1] );
+			#if ( $holder ne $$temp{'user'} ){
+			#	&setWarn("		wP    Номер запрашивает действие над чужим нечто");
+			#	$$temp{'povtor'}[$s] = 4;
+			#	$$temp{'number'}[$s]{'message'} = 'Номер запрашивает действие над чужим нечто';
+			#	next
+			#}
+			if ( -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0] ){
 				&setWarn("		wP    Проверка трипла $num[$s][0].");		
 				my ( $currentQuest ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0], 1 );
 				if ( $currentQuest ){
@@ -711,7 +703,6 @@ sub washProc{
 				
 				}
 			}
-
 		}
 		if ( &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'} ) ){
 			&setWarn("		wP   Номер запрашивает повтор трипла в базе.");
@@ -744,28 +735,9 @@ sub rinseProc {
 	&setXML ( &m8dir( $name ), 'value', \%value );		
 }
 
-sub rinseProc2 {
-	my ( $user, %type )=@_;
-	&setWarn("		rP2 @_"  );
-	#-d $author || return;
-	my %xsl_stylesheet;
-	$xsl_stylesheet{'xsl:stylesheet'}{'version'} = '1.0';
-	$xsl_stylesheet{'xsl:stylesheet'}{'xmlns:xsl'} = 'http://www.w3.org/1999/XSL/Transform';
-	$xsl_stylesheet{'xsl:stylesheet'}{'xmlns:m8'} = 'http://m8data.com';
-	my $x = 0;
-	for my $mapName ( grep { $type{$_} =~/ARRAY/ } keys %type){
-		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'name'} = $type{$mapName}[0]{'name'};
-		$xsl_stylesheet{'xsl:stylesheet'}{'xsl:param'}[$x]{'select'} = "name( m8:path( '$mapName', '$user', 'terminal' )/* )";
-		$x++
-	}
-	my $XML = $XML2JSON->json2xml( $JSON->encode(\%xsl_stylesheet) );
-	&setFile( $authorPath.'/'.$user.'/type.xsl', $XML );
-}
-
 sub rinseProc3 {
 	my ( %type )=@_;
 	&setWarn("		rP2 @_"  );
-	#-d $author || return;
 	my %xsl_stylesheet;
 	$xsl_stylesheet{'xsl:stylesheet'}{'version'} = '1.0';
 	$xsl_stylesheet{'xsl:stylesheet'}{'xmlns:xsl'} = 'http://www.w3.org/1999/XSL/Transform';
@@ -793,6 +765,7 @@ sub spinProc {
 	}
 	else{ warn "delete @{$val}" }
 	my ( $name, $subject, $predicate, $object, $modifier, $add ) = ( $$val[0], $$val[1], $$val[2], $$val[3], $$val[4], $$val[5] );
+	#$add = 1 if $add;
 	my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
 	my $quest = $modifier;
 	if ( $predicate eq 'r' ){
@@ -864,7 +837,7 @@ sub spinProc {
 			&setXML ( $metter.'/'.$quest, $superfile[$mN], \%role );
 		}
 		my %role1 = &getJSON( $metter, $file );
-		if ( $addC == 1 ) {
+		if ( $addC ) {#==1
 			&setWarn("		sP   Счетчик упоминаний не пустой - дополняем/обновляем индекс-файл роли $role ($file, $first)"  );
 			$role1{$first}[0]{'time'} = $time;
 			$role1{$first}[0]{'triple'} = $name;
@@ -962,7 +935,7 @@ sub dryProc2 {
 	
 	-d $auraDir || make_path( $auraDir, { chmod => $chmod } );
 	-d 'formulyar' || make_path( 'formulyar', { chmod => $chmod } );
-	-d $planeDir.'/'.$defaultAuthor || make_path( $planeDir.'/'.$defaultAuthor, { chmod => $chmod } );
+	-d $planeDir.'/'.$defaultUser || make_path( $planeDir.'/'.$defaultUser, { chmod => $chmod } );
 	&setLink( $planeRoot.'m8',					$planeRoot.$auraDir.'/m8'			);
 	&setLink( $planeRoot.$planeDir, 			$planeRoot.$planeDir_link 			);
 	#&setLink( $planeRoot.'formulyar', 			$planeRoot.$planeDir.'/formulyar' 	);
@@ -1023,8 +996,8 @@ sub dryProc2 {
 		print REINDEX "sessionName	$sessionName \n";
 		warn '		sessionName  '.$sessionName;
 		$cookie++;
-		my $cAuthor = &getFile( $sessionPath.'/'.$sessionName.'/value.txt' );
-		my $tempKeysFile = $userDir.'/'.$cAuthor.'/'.$sessionFile;
+		my $cUser = &getFile( $sessionPath.'/'.$sessionName.'/value.txt' );
+		my $tempKeysFile = $userDir.'/'.$cUser.'/'.$sessionFile;
 		if ( -e $tempKeysFile ){
 			my %tempkey = &getHash( $tempKeysFile );
 			if ( not defined $tempkey{$sessionName} or $tempkey{$sessionName} < $userTime ){
@@ -1169,16 +1142,6 @@ sub dryProc2 {
 	#}
 	}
 	my $time3 = time+1;
-	#for my $userName ( keys %userType ){
-	#	my %type;
-	#	my $userTypeDir = $authorPath.'/'.$userName; #не верно здесь работать с именованными индексами, т.к. автор может прийти из а4
-	#	for my $tsvName ( keys %{$userType{$userName}} ){
-	#		$type{$tsvName}[0]{'name'} = $userType{$userName}{$tsvName};
-	#	}
-	#	&setXML( $userTypeDir, 'type', \%type );
-	#	&rinseProc2( $userName, %type )
-	#}
-	
 	&rinseProc3( %types );# if keys %types;
 
 	my $second1 = int( $time2 - $time1 ) +1;
@@ -1236,7 +1199,7 @@ sub parseNew {
 		&setWarn('			pN   Создание автора');
 		$$temp{'new_author'} =~/^\w+$/ || return 'В имени могут быть лишь буквы латинского алфавита и цифры.';
 		34 >= length $$temp{'new_author'} || return 'Имя не должно быть длиннее 34 символов.';
-		return 'Такой пользователь уже существует' if -d $userDir.'/'.$$temp{'new_author'}; #-e $authorRuneDIR.'/mult/index.xml';
+		return 'Такой пользователь уже существует' if -d $userDir.'/'.$$temp{'new_author'};
 		defined $$pass{'new_password'} and $$pass{'new_password'} || return 'Введите пароль';
 		defined $$pass{'new_password2'} and $$pass{'new_password2'} || return 'Введите пароль с повтором';		
 		$$pass{'new_password'} eq $$pass{'new_password2'} || return 'Пароль повторен не верно';
@@ -1260,7 +1223,7 @@ sub m8path {
 		#if ( $level4 ){ 	$path .= '/'.$level3.'/'.$level4 }
 	#	if ( $level3 ){	$path .= '/'.$level3 }
 	#}
-	#else { $path = $authorPath.'/'.$level1.'/type' }
+	#else { $path = $userPath.'/'.$level1.'/type' }
 	return $path.'.xml'
 }
 sub m8dir {
@@ -1272,8 +1235,6 @@ sub m8dir {
 sub m8req {
 	my ( $temp ) = @_;
 	my $dir = $auraDir.'/'.$$temp{'ctrl'}.'/m8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/?modifier='.$$temp{'modifier'};
-	#if ( $$temp{'quest'} ne $$temp{'fact'} ){ $dir .= '/'.$$temp{'author'}.'/'.$$temp{'quest'} }
-	#elsif ( $$temp{'author'} and $$temp{'author'} ne $$temp{'ctrl'} ){ $dir .= '/'.$$temp{'author'} }
 	return $dir;
 }
 sub m8holder {
@@ -1411,7 +1372,7 @@ sub getID {
 #	&setWarn("						gI  @_" );
 	if ( $name=~m!^/m8/[dirn]/[dirn][\d\w_\-]*$! or $name=~m!^/m8/author/[a-z]{2}[\w\d]*$! ){ $name=~s!^/!!; return $name }
 	elsif( $name=~m!^([dirn])[\w\d_\-]*$! ){ return 'm8/'.$1.'/'.$name }
-	else{ return $authorPath.'/'.$name }
+	else{ return $userPath.'/'.$name }
 }
 sub getFile {
 	&setWarn( "						gF @_" );

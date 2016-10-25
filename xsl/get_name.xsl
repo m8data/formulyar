@@ -219,6 +219,8 @@
 		<xsl:message>		==== getParent 2 ====
 			currentFactName: <xsl:value-of select="$currentFactName"/>
 			parentFactName: <xsl:value-of select="$parentFactName"/>
+			<xsl:text>
+			</xsl:text>
 			<!--parentAuthorName: <xsl:value-of select="$parentAuthorName"/>
 			typeName: <xsl:value-of select="$typeName"/>
 			title: <xsl:apply-templates select="exsl:node-set($newResult)/*[1]" mode="simpleName"/>

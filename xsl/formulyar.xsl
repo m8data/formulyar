@@ -78,9 +78,15 @@
 										</td>
 										<td width="40%" align="center" style="color: #444" valign="top">
 											<div style="padding-bottom: .4em">
-												<span style="font-size: 1.2em; {m8:color( $fact )}" title="{m8:holder( $fact )}">
-													<xsl:text>нечто </xsl:text>
-													<xsl:value-of select="$fact"/>
+												<span style="font-size: 1.3em; {m8:color( $fact )}" title="{m8:holder( $fact )}">
+													<xsl:choose>
+														<xsl:when test="m8:port( $fact )/i[not(r)]"><xsl:apply-templates select="m8:port( $fact )/i/*" mode="simpleName"/>&#160;<sup style="font-size: .5em; color: #777" title="{$fact}"><xsl:value-of select="substring-before( substring-after( $fact, '-' ), '-' )"/></sup></xsl:when>
+														<xsl:otherwise>
+															<xsl:text>нечто </xsl:text>
+															<xsl:value-of select="$fact"/>
+														</xsl:otherwise>
+													</xsl:choose>
+													
 												</span>
 											</div>
 											<xsl:if test="$parentName != $typeName">
@@ -99,7 +105,7 @@
 											<xsl:if test="$modifier != 'n'">
 												<span> в модификации </span>
 												<a href="{m8:root( $modifier )}" style="{m8:color( $modifier )}" title="{m8:holder( $modifier )}">
-													<xsl:apply-templates select="$start/@modifier" mode="simpleName"/>
+													<b><xsl:apply-templates select="$start/@modifier" mode="simpleName"/></b>
 												</a>
 											</xsl:if>
 										</td>
@@ -159,7 +165,7 @@
 				<table width="100%" style="font-size: .9em;">
 					<tr>
 						<td align="center" valign="top" width="30%">
-							<xsl:if test="m8:path( $fact,  'index' )/director/*">
+							<xsl:if test="m8:path( $fact,  'index' )/director/*[name()!='n']">
 								<b style="color: #555">Состав	
 							</b>
 								<xsl:for-each select="m8:path( $fact, 'index' )/director/*[name()!='n']">
@@ -231,7 +237,7 @@
 		</xsl:if>
 		<div style="color: #777">
 			<xsl:message>= = = = = = = - Зона упоминаний - = = = = = =</xsl:message>
-			<xsl:if test="m8:path( $fact, 'quest' )/*">
+			<xsl:if test="m8:path( $fact, 'quest' )/*[name()!=$fact]">
 				<br/>
 				<div>
 					<b>модификатор</b>
@@ -353,7 +359,7 @@
 												<xsl:choose>
 													<xsl:when test="$pName = 'i' ">имя</xsl:when>
 													<xsl:when test="$pName = 'n' ">файл</xsl:when>
-													<xsl:when test="$pName = 'd' ">описание</xsl:when>
+													<xsl:when test="$pName = 'd' ">связь</xsl:when>
 													<xsl:when test="$pName=$fact">по умолчанию</xsl:when>
 													<xsl:otherwise>
 														<xsl:apply-templates select="." mode="simpleName"/>
@@ -367,10 +373,12 @@
 										<table>
 											<tr>
 												<td>
-													<xsl:call-template name="editParamOfPort">
-														<xsl:with-param name="predicateName" select="$pName"/>
-														<xsl:with-param name="objectElement" select="$startPort"/>
-													</xsl:call-template>
+													<xsl:if test="$pName != 'd' or $modifier='n'">
+														<xsl:call-template name="editParamOfPort">
+															<xsl:with-param name="predicateName" select="$pName"/>
+															<xsl:with-param name="objectElement" select="$startPort"/>
+														</xsl:call-template>
+													</xsl:if>
 												</td>
 												<td valign="top">
 													<a href="{m8:root( name() )}">q</a>
@@ -562,7 +570,8 @@
 					</div>
 				</td>
 				<td align="center" valign="top">
-					<div style="padding: 1em; ">
+					<xsl:if test="not($modifier) or $modifier = 'n' or m8:holder( $modifier )=$user">
+						<div style="padding: 1em; ">
 						<xsl:message>!! Правая панель: подсказки значений !!</xsl:message>
 						<table cellpadding="3px">
 							<xsl:for-each select="exsl:node-set($final_sort)/*">
@@ -579,17 +588,27 @@
 							</xsl:for-each>
 						</table>
 						<div style="padding-bottom: .2em">Добавление свойства:</div>
-						<xsl:if test="not( $startPort/*[name()='i'] )">
+						<!--<xsl:if test="not( $startPort/r )"></xsl:if>-->
+							<!--<div style="padding-bottom: .2em">
+								<a href="{m8:action( $fact, $modifier )}&amp;r=">связь</a>
+							</div>-->
+						
+						<xsl:if test="not( $startPort/i )">
 							<div style="padding-bottom: .2em">
 								<a href="{m8:action( $fact, $modifier )}&amp;i=">имя</a>
 							</div>
 						</xsl:if>
-						<xsl:if test="not( $startPort/*[name()='d'] )">
+						<xsl:if test="not( $startPort/d )">
 							<div style="padding-bottom: .2em">
-								<a href="{m8:action( $fact, $modifier )}&amp;d=">описание</a>
+								<a href="{m8:action( $fact, $modifier )}&amp;d=">
+									<xsl:choose>
+										<xsl:when test="$modifier = 'n' ">описание</xsl:when>
+										<xsl:otherwise>связь</xsl:otherwise>
+									</xsl:choose>								
+								</a>
 							</div>
 						</xsl:if>
-						<xsl:if test="not( $startPort/*[name()='n'] )">
+						<xsl:if test="not( $startPort/n ) and $modifier = 'n'">
 							<div style="padding-bottom: .4em">
 								<a href="{m8:action( $fact, $modifier )}&amp;n=">структура</a>
 							</div>
@@ -631,6 +650,7 @@
 							</select>
 						</form>
 					</div>
+					</xsl:if>
 				</td>
 			</tr>
 		</table>
