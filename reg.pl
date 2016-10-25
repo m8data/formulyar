@@ -605,6 +605,7 @@ sub washProc{
 						else{
 							if ( $span[2]=~/^r/ ){
 								( $span[4] ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0], 1 );
+								&setWarn("		wP       присвоение модификатора $span[4]");
 							}
 							else {	$span[4] = $$temp{'modifier'} }
 						}
@@ -641,26 +642,41 @@ sub washProc{
 	&setWarn( "		wP ## Имеются номера. Идет запись." );
 	for my $s ( grep { $num[$_] } 0..$#num ){
 		&setWarn("		wP  Проверка номера $s ");
+		my $miss;
 		for my $key ( 0..5 ){ 
-			$$temp{'number'}[$s]{$number[$key]} = $num[$s][$key] if $num[$s][$key];
+			if ( $num[$s][$key] ){ 
+				&setWarn("		wP   Элемент $key:  $num[$s][$key]");
+				$$temp{'number'}[$s]{$number[$key]} = $num[$s][$key] 
+			}
+			elsif ( $key != 5 ){ 
+				$miss = $key;
+				&setWarn("		wP   Не найден элемент номера $miss");
+			}	
+		}
+		if ( $miss ){
+			$$temp{'povtor'}[$s] = 4;
+			$$temp{'number'}[$s]{'message'} = "Не найден элемент номера $miss";
+			next
 		}
 		if ( $num[$s][5] != 2 ){
-			&setWarn("		wP    Проверка собственности при изменениях");
-			if ( $num[$s][4] eq 'n' ){
+			&setWarn("		wP   Проверка собственности при изменениях");
+			if ( $num[$s][4] eq 'n' or not $num[$s][5] ){
+				&setWarn("		wP    Проверка подлежащего");
 				my $holder = &m8holder( $num[$s][1] );
 				if ( $holder ne $$temp{'user'} ){
-					&setWarn("		wP    Номер запрашивает действие над чужим подлежащим");
+					&setWarn("		wP     Номер запрашивает действие над  подлежащим пользователя $holder");
 					$$temp{'povtor'}[$s] = 4;
-					$$temp{'number'}[$s]{'message'} = 'Номер запрашивает действие над чужим подлежащим';
+					$$temp{'number'}[$s]{'message'} = "Номер запрашивает действие над подлежащим пользователя $holder";
 					next
 				}
 			}
 			else {
+				&setWarn("		wP    Проверка обстоятельства");
 				my $holder = &m8holder( $num[$s][4] );
 				if ( $holder ne $$temp{'user'} ){
-					&setWarn("		wP    Номер запрашивает действие под чужим обстоятельством");
+					&setWarn("		wP     Номер запрашивает действие в обстоятельствах пользователя $holder");
 					$$temp{'povtor'}[$s] = 4;
-					$$temp{'number'}[$s]{'message'} = 'Номер запрашивает действие под чужим обстоятельством';
+					$$temp{'number'}[$s]{'message'} = "Номер запрашивает действие в обстоятельствах пользователя $holder";
 					next
 				}
 			}
@@ -1238,6 +1254,7 @@ sub m8req {
 	return $dir;
 }
 sub m8holder {
+	&setWarn( "			m8holder @_" );	
 	my ( $fact ) = @_;
 	my %subject = &getJSON( &m8dir( $fact ), 'subject_r' );
 	return $subject{'n'}[0]{'holder'}

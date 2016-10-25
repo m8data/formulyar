@@ -45,7 +45,7 @@
 	<xsl:param name="login" select="/*/@login"/>
 	<xsl:param name="new_author" select="/*/@new_author"/>
 	<xsl:param name="new_avatar" select="/*/@new_avatar"/>
-	<xsl:param name="object" select="/*/@object"/>
+	<!--<xsl:param name="object" select="/*/@object"/>-->
 	<xsl:param name="m8mode" select="/*/@m8mode"/>
 	<xsl:param name="referer" select="/*/@referer"/>
 	<xsl:param name="message" select="/*/@message"/>
@@ -200,7 +200,7 @@
 	</func:function>
 	<func:function name="m8:root">
 		<xsl:param name="fact"/>
-		<xsl:param name="modifier"/>
+		<!--<xsl:param name="modifier"/>-->
 		<xsl:choose>
 			<xsl:when test="$fact">
 				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ) )"/>
@@ -245,6 +245,7 @@
 		<xsl:param name="sortSelect"/>
 		<xsl:param name="titleSelect"/>
 		<xsl:param name="ajaxMethod"/>
+		<!--<xsl:variable name="selectedValue" select="$objectElement/*[name()=$predicateName]/*"/>-->
 		<xsl:variable name="selectedValue" select="$objectElement/*[name()=$predicateName]/*"/>
 		<xsl:if test="not($sourceValue)" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
 			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
@@ -749,6 +750,64 @@
 			</body>
 		</html>
 	</xsl:template>
+	
+	<!--
+
+%%%%%%%%%%%%%%                    copyNamedType    			  %%%%%%%%%%%%%%                
+	-->	
+	<xsl:template name="getNamedType">
+		<xsl:param name="metterName"/>
+		<!--<xsl:variable name="cType" select="$types/@*[name()=$metterName]"/>-->
+		<xsl:variable name="cType" select="$metterName"/>
+		<xsl:element name="{$cType}">
+			<xsl:call-template name="copyNamedType">
+				<xsl:with-param name="metterName" select="$cType"/>
+			</xsl:call-template>
+			<xsl:choose>
+				<xsl:when test="m8:index( $cType )/director/*">
+					<children>
+					<xsl:for-each select="m8:index( $cType )/director/*"><!--[name() != $constructionCalcName]-->
+						<xsl:sort select="@time"/>
+						<xsl:element name="{name()}">
+							<xsl:call-template name="copyNamedType">
+								<xsl:with-param name="metterName" select="name()"/>
+							</xsl:call-template>
+						</xsl:element>
+					</xsl:for-each>
+				</children>
+				</xsl:when>
+				<xsl:otherwise>_</xsl:otherwise>
+			</xsl:choose>
+			
+		</xsl:element>		
+	</xsl:template>	
+	<xsl:template name="copyNamedType">
+		<xsl:param name="metterName"/>
+		<xsl:apply-templates select="m8:port( $metterName )/*" mode="copyNamedType"/>
+	</xsl:template>
+	<!--  -->
+	<xsl:template match="*" mode="copyNamedType">
+		<xsl:choose>
+			<xsl:when test="name() = 'd' or name()='n' or name()='r' ">
+				<xsl:attribute name="{name()}"><xsl:value-of select="name(*)"/></xsl:attribute>
+			</xsl:when>
+			<xsl:when test="name() = 'i' ">
+				<xsl:attribute name="title" xml:lang="здесь нельзя брать из value/span, т.к. значением может быть и число"><xsl:apply-templates select="*" mode="simpleName"/></xsl:attribute>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:variable name="dName" select="name( m8:port( name() )/d/* )"/>
+				<xsl:variable name="namedType" select="m8:value( $dName )"/>
+				<xsl:if test="starts-with( $namedType/div[2]/span, 'xsd:' )">
+					<xsl:attribute name="{$namedType/div[1]/span}"><xsl:choose><xsl:when test="starts-with( name(*), 'n' )"><xsl:value-of select="name(*)"/></xsl:when><xsl:otherwise><xsl:apply-templates select="*" mode="simpleName"/></xsl:otherwise></xsl:choose></xsl:attribute>
+				</xsl:if>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	<!--
+%%%%%%%%%%%%%%                    copyNamedType (END)   			  %%%%%%%%%%%%%%    
+	-->	
+	
+	
 	<!--
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -852,13 +911,13 @@
 						<xsl:value-of select="$calcName"/>
 						<xsl:text> | </xsl:text>
 					</xsl:if>-->
-				<a href="{m8:root( $fact, 'n' )}/port.xml" style="color:gray">
+				<a href="/{m8:dir( $fact, $modifier )}/port.xml" style="color:gray">
 					<xsl:value-of select="$localtime"/>
 				</a>
-				<xsl:text> </xsl:text>
-				<a href="{m8:root( $fact )}/{$modifier}/port.xml" style="color:gray">
+	<!--					<xsl:text> </xsl:text>
+		<a href="/{m8:dir( $fact, $modifier )}/port.xml" style="color:gray">
 					s
-				</a>
+				</a>-->
 				<xsl:text> |  </xsl:text>
 				<span style="{ m8:fact_color( $user )}">
 					<xsl:value-of select="$user"/>
