@@ -103,7 +103,7 @@
 	</func:function>
 	<func:function name="m8:fact_color">
 		<xsl:param name="fact"/>
-		<func:result select="concat( 'color: #', translate( substring( $fact, 1, 3 ), 'qwertyuiopasdfghjklzxcvbnm', '1234567890abc1234567890abc' ) )"/>
+		<func:result select="concat( 'color: #', translate( substring( $fact, 2, 3 ), '5qwertyuiopasdfghjklzxcvbnm', 'b1234567890abc1234567890abc' ) )"/>
 	</func:function>
 	<func:function name="m8:value">
 		<xsl:param name="fact"/>
@@ -114,7 +114,7 @@
 		<xsl:param name="fact"/>
 		<!--<xsl:message>	работа m8:index с фактом <xsl:value-of select="$fact"/> </xsl:message>-->
 		<func:result select="m8:path( $fact, 'index' )"/>
-	</func:function>	
+	</func:function>
 	<!-- {$start/@prefix}a/{$ctrl}/{m8:dir( name() )}
 -->
 	<func:function name="m8:path">
@@ -750,11 +750,10 @@
 			</body>
 		</html>
 	</xsl:template>
-	
 	<!--
 
 %%%%%%%%%%%%%%                    copyNamedType    			  %%%%%%%%%%%%%%                
-	-->	
+	-->
 	<xsl:template name="getNamedType">
 		<xsl:param name="metterName"/>
 		<!--<xsl:variable name="cType" select="$types/@*[name()=$metterName]"/>-->
@@ -766,21 +765,21 @@
 			<xsl:choose>
 				<xsl:when test="m8:index( $cType )/director/*">
 					<children>
-					<xsl:for-each select="m8:index( $cType )/director/*"><!--[name() != $constructionCalcName]-->
-						<xsl:sort select="@time"/>
-						<xsl:element name="{name()}">
-							<xsl:call-template name="copyNamedType">
-								<xsl:with-param name="metterName" select="name()"/>
-							</xsl:call-template>
-						</xsl:element>
-					</xsl:for-each>
-				</children>
+						<xsl:for-each select="m8:index( $cType )/director/*">
+							<!--[name() != $constructionCalcName]-->
+							<xsl:sort select="@time"/>
+							<xsl:element name="{name()}">
+								<xsl:call-template name="copyNamedType">
+									<xsl:with-param name="metterName" select="name()"/>
+								</xsl:call-template>
+							</xsl:element>
+						</xsl:for-each>
+					</children>
 				</xsl:when>
 				<xsl:otherwise>_</xsl:otherwise>
 			</xsl:choose>
-			
-		</xsl:element>		
-	</xsl:template>	
+		</xsl:element>
+	</xsl:template>
 	<xsl:template name="copyNamedType">
 		<xsl:param name="metterName"/>
 		<xsl:apply-templates select="m8:port( $metterName )/*" mode="copyNamedType"/>
@@ -805,9 +804,7 @@
 	</xsl:template>
 	<!--
 %%%%%%%%%%%%%%                    copyNamedType (END)   			  %%%%%%%%%%%%%%    
-	-->	
-	
-	
+	-->
 	<!--
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -897,16 +894,16 @@
 					</xsl:if>
 					<xsl:text> | </xsl:text>
 					<!--<xsl:text> &lt;- </xsl:text>-->
-					<xsl:choose>
-						<xsl:when test="$start/@debug">
-							<a href="{m8:root( $fact )}/?debug=switch" style="color: purple">debug on</a>
-						</xsl:when>
-						<xsl:otherwise>
-							<a href="{m8:root( $fact )}/?debug=switch" style="color: gray">debug off</a>
-						</xsl:otherwise>
-					</xsl:choose>
-					<xsl:text> | </xsl:text>
 				</xsl:if>
+				<xsl:choose>
+					<xsl:when test="$start/@debug">
+						<a href="{m8:root( $fact )}/?debug=switch" style="color: purple">debug on</a>
+					</xsl:when>
+					<xsl:otherwise>
+						<a href="{m8:root( $fact )}/?debug=switch" style="color: gray">debug off</a>
+					</xsl:otherwise>
+				</xsl:choose>
+				<xsl:text> | </xsl:text>
 				<!--<xsl:if test="$calcName">
 						<xsl:value-of select="$calcName"/>
 						<xsl:text> | </xsl:text>
@@ -914,7 +911,7 @@
 				<a href="/{m8:dir( $fact, $modifier )}/port.xml" style="color:gray">
 					<xsl:value-of select="$localtime"/>
 				</a>
-	<!--					<xsl:text> </xsl:text>
+				<!--					<xsl:text> </xsl:text>
 		<a href="/{m8:dir( $fact, $modifier )}/port.xml" style="color:gray">
 					s
 				</a>-->

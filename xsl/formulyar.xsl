@@ -408,8 +408,7 @@
 						<xsl:variable name="holder" select="m8:holder( $fact )"/>
 						<div style="background: #ded; padding: 1em; opacity: 0.75; position: absolute; left:0; bottom: 4em">
 							<xsl:message>				-- Вывод пульта навигации --</xsl:message>
-							<xsl:choose>
-								<xsl:when test="$holder = $user">
+
 									<xsl:variable name="newQuestName">
 										<xsl:choose>
 											<xsl:when test="exsl:node-set($parent)/*[last()-1]">
@@ -476,6 +475,8 @@
 												<a href="{m8:root( $fact )}/?r={$typeName}&amp;modifier={ $newQuestName }" title="to new Quest - { $newQuestName }">^</a>
 											</td>
 										</tr>-->
+								<xsl:choose>
+								<xsl:when test="$holder = $user">
 										<tr>
 											<td valign="top">
 												<span style="font-size: .8em; color: black">перемещение</span>
@@ -558,19 +559,22 @@
 												</xsl:if>
 											</td>
 										</tr>
+																		</xsl:when>
+								<xsl:otherwise><tr>
+									<td colspan="2">Владелец - <span style="{m8:fact_color( $holder )}"><xsl:value-of select="$holder"/></span></td>
+								</tr>
+								</xsl:otherwise>
+							</xsl:choose>
 									</table>
 									<xsl:message>				-- Вывод пульта навигации (END) --
 											</xsl:message>
 									<!--<a href="{m8:root($parentName)}/?a0={name($parentPort/r/*/*)}&amp;a4={$parentName}" style="color: #222">удаление</a>-->
-								</xsl:when>
-								<xsl:otherwise>Владелец - <xsl:value-of select="$holder"/>
-								</xsl:otherwise>
-							</xsl:choose>
+
 						</div>
 					</div>
 				</td>
 				<td align="center" valign="top">
-					<xsl:if test="not($modifier) or $modifier = 'n' or m8:holder( $modifier )=$user">
+					<xsl:if test=" m8:holder( $fact )=$user or m8:holder( $modifier )=$user "><!--not($modifier) or -->
 						<div style="padding: 1em; ">
 						<xsl:message>!! Правая панель: подсказки значений !!</xsl:message>
 						<table cellpadding="3px">
@@ -587,29 +591,24 @@
 								</tr>
 							</xsl:for-each>
 						</table>
-						<div style="padding-bottom: .2em">Добавление свойства:</div>
+						<div style="padding-bottom: .5em">Добавление свойства:</div>
 						<!--<xsl:if test="not( $startPort/r )"></xsl:if>-->
 							<!--<div style="padding-bottom: .2em">
 								<a href="{m8:action( $fact, $modifier )}&amp;r=">связь</a>
 							</div>-->
 						
 						<xsl:if test="not( $startPort/i )">
-							<div style="padding-bottom: .2em">
+							<div style="padding-bottom: .5em">
 								<a href="{m8:action( $fact, $modifier )}&amp;i=">имя</a>
 							</div>
 						</xsl:if>
 						<xsl:if test="not( $startPort/d )">
-							<div style="padding-bottom: .2em">
-								<a href="{m8:action( $fact, $modifier )}&amp;d=">
-									<xsl:choose>
-										<xsl:when test="$modifier = 'n' ">описание</xsl:when>
-										<xsl:otherwise>связь</xsl:otherwise>
-									</xsl:choose>								
-								</a>
+							<div style="padding-bottom: .5em">
+								<a href="{m8:action( $fact, $modifier )}&amp;d=">связь</a>
 							</div>
 						</xsl:if>
 						<xsl:if test="not( $startPort/n ) and $modifier = 'n'">
-							<div style="padding-bottom: .4em">
+							<div style="padding-bottom: .5em">
 								<a href="{m8:action( $fact, $modifier )}&amp;n=">структура</a>
 							</div>
 						</xsl:if>
