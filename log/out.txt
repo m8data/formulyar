@@ -1,2 +1,0 @@
-warning: failed to load external entity "C:/var/www/m8data/.public/start-develop/.plane/start/xsl/start.xsl"
-cannot parse C:/var/www/m8data/.public/start-develop/.plane/start/xsl/start.xsl
