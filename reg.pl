@@ -710,7 +710,7 @@ sub washProc{
 					&setWarn("		wP     Удаление старой связи состава $num[$s][0].");	
 					my @triple = ( $num[$s][0], $num[$s][1], $num[$s][2], $num[$s][3], $currentQuest );
 					#push @num, \@triple;
-					&spinProc( \@triple, $$temp{'user'}, $$temp{'time'} );
+					&spinProc( \@triple, $$temp{'user'}, $$temp{'time'}, 713 );
 					if ( defined $$temp{'object'} ){
 						&setWarn("		wP      Добавление к новой связи состава указания такого же типа.");
 						$num[$s][3] = $num[$s][4];#$$temp{'object'};
@@ -720,7 +720,7 @@ sub washProc{
 				}
 			}
 		}
-		if ( &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'} ) ){
+		if ( &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'}, 723 ) ){
 			&setWarn("		wP   Номер запрашивает повтор трипла в базе.");
 			$$temp{'povtor'}[$s] = 2;
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает повтор установления значения';
@@ -769,7 +769,7 @@ sub rinseProc3 {
 }
 
 sub spinProc {
-	my ( $val, $user, $time )=@_;
+	my ( $val, $user, $time, $dry )=@_;
 	&setWarn("
 		sP @_"  );
 	#if ( $$val[] ){
@@ -779,7 +779,7 @@ sub spinProc {
 			#else { warn "delete $key - $$val[$key]"
 		}	
 	}
-	else{ warn "delete @{$val}" }
+	else{ warn " DEL ($time / $dry): @{$val}" }
 	my ( $name, $subject, $predicate, $object, $modifier, $add ) = ( $$val[0], $$val[1], $$val[2], $$val[3], $$val[4], $$val[5] );
 	#$add = 1 if $add;
 	my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
@@ -793,24 +793,31 @@ sub spinProc {
 	#if (-d $mainDir){
 	my %port = &getJSON( $mainDir, 'port' );
 	if ( $add ){
-		&setWarn("		sP  Поиск старого значения в порту директории $mainDir"  );
+		&setWarn("		sP  Поиск такого же значения в порту директории $mainDir"  );
 		if ( defined $port{$predicate} ){
-			&setWarn("		sP   Анализ старого значения"  );
+			&setWarn("		sP   Анализ значения"  );
 			my @oldObject = keys %{$port{$predicate}[0]};
 			my $oldObject = $oldObject[0];
 			my @oldTriple = keys %{$port{$predicate}[0]{$oldObject}[0]};
 			my $oldTriple = $oldTriple[0];
 			my $oldTime = $port{$predicate}[0]{$oldObject}[0]{$oldTriple}[0]{'time'};
-			if ( $time < $oldTime ){ $add = undef }
-			elsif ( $oldObject eq $object ){ $good = 1 }
+			if ( $time < $oldTime ){ 
+				warn " DELETE OLD ( $time < $oldTime ): @{$val} \n";
+				$add = undef; return; $good = 1 } #имеющееся значение новее текущего, индексируем удаление (хотя тут видимо достаточно просто удалить номер)
+			elsif ( $oldObject eq $object or ( 0 and $$val[2] eq 'r' and $$val[5] == 1 ) ){ 
+				#warn " REPET RECORD ($time): @{$val} \n";
+				$good = 1 } # or $$val[2] = 'r' повтор, пропускаем реиндексацию, но (излишне?) перезаписываем базу
 			else{
 				&setWarn("		sP    Удаление старого значения"  );
+				
 				my @triple = ( $oldTriple, $subject, $predicate, $oldObject, $modifier );
-				&spinProc ( \@triple, $user, $time );
+				warn " NEW VALUE ($time): @{$val} \n";
+				&spinProc ( \@triple, $user, $oldTime, 809 );
 			}
 		}
 	}
 	elsif ( not defined $port{$predicate} or not defined $port{$predicate}[0]{$object} ){ $good = 1 }
+	#return 0 if $dry eq 809;
 	#}
 	#my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
 	if (not $good){
@@ -889,7 +896,7 @@ sub spinProc {
 	my $questDir = $planeDir.'/'.$user.'/tsv/'.$name.'/'.$modifier;
 	if ( $add ){
 		&setWarn("		sP   Добавление директории $questDir в базу");
-		&setFile ( $planeDir.'/'.$user.'/tsv/'.$name.'/'.$modifier.'/time.txt', $time ); #ss
+		&setFile ( $questDir.'/time.txt', $time ); #ss
 	}
 	else{
 		&setWarn("		sP   Удаление директории $questDir из базы");
@@ -922,6 +929,8 @@ sub dryProc2 {
 	#&setWarn("		dP 2 @_" );
 	$dbg = 0;
 	#rmtree $logPath if -d $logPath;
+	#:: емкости и резервуары n1477307416-546366-pgstn-0
+	#:: огнезащита воздуховода n1477308145-515249-pgstn-0
 	-d $logPath || make_path( $logPath, { chmod => $chmod } );
 	#make_path( $logPath, { chmod => $chmod } );
 	open (REINDEX, '>'.$logPath.'/reindex.txt')|| die "Ошибка при открытии файла $logPath/reindex.txt: $!\n";
@@ -1025,11 +1034,13 @@ sub dryProc2 {
 			rmtree $sessionPath.'/'.$sessionName;
 			$DL_cookie++
 		}		
-	}
-	my $time1 = time;	
-	for my $userName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){ 
-		print REINDEX "userName	$userName \n";
-		warn '		userName  '.$userName;
+	}	
+	print REINDEX "\n Круг1 \n";
+	warn "		\n==== Round 1 ====\n  ";
+	my $time1 = time;
+	for my $userName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){  # 
+		print REINDEX "\n userName	$userName \n";
+		warn "		\n userName  $userName";
 		if ( -e $planeDir.'/'.$userName.'/.git/refs/heads/'.$branche ){
 			print REINDEX "    Копирование указателя состояния ветки $branche";
 			warn '	Copy of branche head  ';
@@ -1085,19 +1096,22 @@ sub dryProc2 {
 					$n_delG++
 				}
 				else {
-					print REINDEX "     Реиндексация значений '$div[0]' \n";
 					$val[5] = 1;
+					print REINDEX "     Реиндексация значений @val \n"; # d1341061753575729161 d14757079324734822550
 					$stat{$userName}{'add'}++;
 				}
-				&spinProc( \@val, $userName, $timeProc );
+				&spinProc( \@val, $userName, $timeProc, 1094 );
 			}
 			}
 		}
 	}
+	print REINDEX "\n Круг2 \n";
+	warn "		\n==== Round 2 ====\n  ";
 	my $time2 = time;
+	if (1){
 	for my $userName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){ 
 		print REINDEX "userName2	$userName \n";
-		warn '		userName2  '.$userName;
+		warn "\n		userName2  $userName \n";
 		my $tsvPath = $planeDir.'/'.$userName.'/tsv';
 		for my $tsvName ( &getDir( $tsvPath, 1 ) ){ 
 			warn '	tsv2  '.$tsvName;
@@ -1135,6 +1149,7 @@ sub dryProc2 {
 							if ( not defined $index{'subject'} ){
 								$good = 0; 
 								print REINDEX "       Cущность удалена. Номер испорчен. \n";
+								warn "  No find $val[$n]. Delete nechto"
 								#for my $key ( %index ){
 								#	print REINDEX "       key: $key => $index{$key} \n";
 								#}
@@ -1148,7 +1163,7 @@ sub dryProc2 {
 						delete $userType{$userName}{$val[3]} if $map[1]=~/^xsd:\w+$/;
 						delete $types{$map[0]} if $map[1]=~/^xsd:\w+$/;
 					}
-					&spinProc( \@val, $userName, $timeProc );
+					&spinProc( \@val, $userName, $timeProc, 1156 );
 					if ( $val[2]=~/^r/ ){ $stat{$userName}{'n_delR'}++ }
 					else { $stat{$userName}{'n_delN'}++ }
 				}
@@ -1156,6 +1171,7 @@ sub dryProc2 {
 		}
 
 	#}
+	}
 	}
 	my $time3 = time+1;
 	&rinseProc3( %types );# if keys %types;

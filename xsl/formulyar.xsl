@@ -453,7 +453,7 @@
 										</td>
 										<td valign="top">
 											<xsl:text>&#160;</xsl:text>
-											<a style="font-size: .7em" href="{m8:action( $fact )}" title="to new Quest - { $newQuestName }">&#10060;</a>
+											<a style="font-size: .7em" href="{m8:action( $fact )}" title="удаление">&#10060;</a>
 										</td>
 									</xsl:if>
 								</tr>
