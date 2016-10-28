@@ -526,7 +526,7 @@
 														<a style="font-size: .7em" href="{m8:root( $director )}/?a0={m8:triple( $fact )}" title="удаление">&#10060;</a>
 													</xsl:when>
 													<xsl:otherwise>
-														<a href="{m8:action( $fact, $leader )}&amp;r={$director}" title="поменять местами диреторию и тип">&#8644;</a>
+														<a href="{m8:action( $fact, $leader )}&amp;r={$director}" title="поменять местами директорию и тип">&#8644;</a>
 													</xsl:otherwise>
 												</xsl:choose>
 												<!--&amp;a4={$parentName}-->

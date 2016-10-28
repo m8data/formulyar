@@ -337,8 +337,8 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 				if ( $temp{'format'} eq 'html' ){
 					&setWarn("     Вывод temp-а под аватаром: $temp{'ctrl'}");
 					my $xslFile = $planeDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
-					$temp{'time'} =~/(\d\d)$/;
-					my $trashTempFile = $logPath.'/trash/'.$1.'.xml';
+					my $tempFile = int( rand( 999 ) );
+					my $trashTempFile = $logPath.'/trash/'.$tempFile.'.xml';
 					&setFile( $trashTempFile, $doc );
 					copy( $planeRoot.$logPath.'/out.txt', $planeRoot.$logPath.'/out.txt.txt' ) or die "Copy failed: $!" if -e $log and -e $logPath.'/out.txt' and $dbg;
 					$doc = system ( 'xsltproc '.$planeRoot.$xslFile.' '.$planeRoot.$trashTempFile.' 2>'.$planeRoot.$logPath.'/out.txt' );#
@@ -704,7 +704,7 @@ sub washProc{
 			#}
 			if ( -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0] ){
 				&setWarn("		wP    Проверка трипла $num[$s][0].");	#вероятно всю эту операцию нужно делать в сушке	
-				if ( not $num[$s][5] ){
+				if ( 0 and not $num[$s][5] ){# удалять начальников можно, но в стилях нужно избежать показа их подчиненных
 					my %index = &getJSON( &m8dir( $num[$s][1] ), 'index' ); #Нельзя удалять объект имеющий подчиненных
 					if ( defined $index{'director'} ){
 						$$temp{'povtor'}[$s] = 3;
