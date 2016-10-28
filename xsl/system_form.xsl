@@ -844,6 +844,10 @@
 	-->
 	<xsl:template name="footer">
 		<!--<div style="position: fixed;  bottom: 1px; left: 1px; z-index: 1; color:gray">-</div>-->
+		<xsl:if test="$adminMode and $start/@error">
+			<div style="position: fixed; width:100%; text-align: center; bottom: 80px; z-index: 1; color:red"><xsl:value-of select="$start/@error"/></div>
+		
+		</xsl:if>
 		<xsl:if test="$user != 'guest' or $adminMode">
 			<!-- or $start/@debug-->
 			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray">

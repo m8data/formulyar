@@ -225,7 +225,7 @@
 														<xsl:call-template name="simpleName">
 															<xsl:with-param name="name" select="m8:director( name() )"/>
 														</xsl:call-template>
-														<xsl:text> :: </xsl:text>
+														<xsl:text> > </xsl:text>
 														<xsl:apply-templates select="." mode="simpleName"/>
 													</a>
 												</div>
@@ -255,7 +255,7 @@
 							<xsl:sort select="@time"/>
 							<div>
 								<a href="{m8:action( name(), $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
-									<xsl:apply-templates select="." mode="simpleName"/>
+									<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
 								</a>
 							</div>
 						</xsl:for-each>
@@ -271,7 +271,7 @@
 							<xsl:sort select="@time"/>
 							<div>
 								<a href="{m8:action( $fact, name() )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
-									<xsl:apply-templates select="." mode="simpleName"/>
+									<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
 								</a>
 							</div>
 						</xsl:for-each>

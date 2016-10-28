@@ -251,7 +251,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			&setWarn( "   Формирование pdf-файла запросом $ENV{HTTP_HOST}/$auraDir/$temp{'avatar'}/$temp{'m8path'}" );#
 			my $req = $ENV{HTTP_HOST}.$temp{'prefix'}.$auraDir.'/'.$temp{'avatar'}.'/'.$temp{'m8path'};
 			$req .= '/?'.$temp{'QUERY_STRING'};
-			system ( 'wkhtmltopdf '.$req.' '.$planeRoot.$temp{'m8path'}.'/report.pdf'.' 2>'.$planeRoot.$logPath.'/wkhtmltopdf.txt' );
+			system ( 'wkhtmltopdf '.$req.' '.$planeRoot.$temp{'m8path'}.'/report.pdf'.' 2>'.$planeRoot.$logPath.'/wkhtmltopdf.txt' ); #здесь нужно перевести в папку юзера
 		}
 		elsif ( $temp{'format'} eq 'doc' ){
 			&setWarn( "   Формирование doc-файла" );#
@@ -643,27 +643,12 @@ sub washProc{
 	for my $s ( grep { $num[$_] } 0..$#num ){
 		&setWarn("		wP  Проверка номера $s ");
 		my $miss;
-		for my $key ( 0..5 ){ 
-			if ( $num[$s][$key] ){ 
-				&setWarn("		wP   Элемент $key:  $num[$s][$key]");
-				$$temp{'number'}[$s]{$number[$key]} = $num[$s][$key] 
-			}
-			elsif ( $key != 5 ){ 
-				$miss = $key;
-				&setWarn("		wP   Не найден элемент номера $miss");
-			}	
-		}
-		if ( $miss ){
-			$$temp{'povtor'}[$s] = 4;
-			$$temp{'number'}[$s]{'message'} = "Не найден элемент номера $miss";
-			next
-		}
-		if ( $num[$s][5] != 2 ){
+		if ( $num[$s][5] != 2 and not defined $$temp{'wkhtmltopdf'}  ){#wkhtmltopdf - это костыль, потом нужно убрать инструкции на запись для wkhtmltopdf
 			&setWarn("		wP   Проверка собственности при изменениях");
 			if ( $num[$s][4] eq 'n' or $num[$s][2] eq 'r' ){ #r - нужен для контроля удаления, в обстоятельствах там может быть что угодно и для этого нельзя проверять or not(num[$s][5]) т.к. удаляться может и параметр в обстоятельствах
 				&setWarn("		wP    Проверка подлежащего");
 				my $holder = &m8holder( $num[$s][1] );
-				if ( $holder ne $$temp{'user'} ){
+				if ( $holder ne $$temp{'user'}){
 					&setWarn("		wP     Номер запрашивает действие над  подлежащим пользователя $holder");
 					$$temp{'povtor'}[$s] = 4;
 					$$temp{'number'}[$s]{'message'} = "Номер запрашивает действие над подлежащим пользователя $holder";
@@ -681,7 +666,21 @@ sub washProc{
 				}
 			}
 		}
-			
+		for my $key ( 0..5 ){ 
+			if ( $num[$s][$key] ){ 
+				&setWarn("		wP   Элемент $key:  $num[$s][$key]");
+				$$temp{'number'}[$s]{$number[$key]} = $num[$s][$key] 
+			}
+			elsif ( $key != 5 ){ 
+				$miss = $key;
+				&setWarn("		wP   Не найден элемент номера $miss");
+			}	
+		}
+		if ( $miss ){
+			$$temp{'povtor'}[$s] = 4;
+			$$temp{'number'}[$s]{'message'} = "Не найден элемент номера $miss";
+			next
+		}
 		if ( grep { $s != $_ and $num[$_] and ( $num[$s][0] eq $num[$_][0] ) } 0..$#num ) { 
 			&setWarn("		wP   Номер запрашивает повтор трипла в запросе");
 			$$temp{'povtor'}[$s] = 1;
@@ -693,7 +692,7 @@ sub washProc{
 			$$temp{'povtor'}[$s] = 3;
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает нарушение правила иерархии';
 			next;
-		}		
+		}
 		if ( $num[$s][2]=~/^r/ and -d 'm8/n/'.$num[$s][1] ){
 			&setWarn("		wP   Проверка изменения статуса имеющегося нечто.");
 			#my $holder = &m8holder( $num[$s][1] );
@@ -704,11 +703,24 @@ sub washProc{
 			#	next
 			#}
 			if ( -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0] ){
-				&setWarn("		wP    Проверка трипла $num[$s][0].");		
-				my ( $currentQuest ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0], 1 );
-				if ( $currentQuest ){
+				&setWarn("		wP    Проверка трипла $num[$s][0].");	#вероятно всю эту операцию нужно делать в сушке	
+				if ( not $num[$s][5] ){
+					my %index = &getJSON( &m8dir( $num[$s][1] ), 'index' ); #Нельзя удалять объект имеющий подчиненных
+					if ( defined $index{'director'} ){
+						$$temp{'povtor'}[$s] = 3;
+						$$temp{'number'}[$s]{'message'} = 'Номер запрашивает удаление директора';
+						next
+					}
+					if ( defined $index{'object'} ){
+						$$temp{'povtor'}[$s] = 3;
+						$$temp{'number'}[$s]{'message'} = 'Номер запрашивает удаление лидера';
+						next
+					}
+				}
+				my ( $oldDirector ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0], 1 );
+				if ( $oldDirector ){
 					&setWarn("		wP     Удаление старой связи состава $num[$s][0].");	
-					my @triple = ( $num[$s][0], $num[$s][1], $num[$s][2], $num[$s][3], $currentQuest );
+					my @triple = ( $num[$s][0], $num[$s][1], $num[$s][2], $num[$s][3], $oldDirector );
 					#push @num, \@triple;
 					&spinProc( \@triple, $$temp{'user'}, $$temp{'time'}, 713 );
 					if ( defined $$temp{'object'} ){
@@ -803,14 +815,18 @@ sub spinProc {
 			my $oldTime = $port{$predicate}[0]{$oldObject}[0]{$oldTriple}[0]{'time'};
 			if ( $time < $oldTime ){ 
 				warn " DELETE OLD ( $time < $oldTime ): @{$val} \n";
-				$add = undef; return; $good = 1 } #имеющееся значение новее текущего, индексируем удаление (хотя тут видимо достаточно просто удалить номер)
-			elsif ( $oldObject eq $object or ( 0 and $$val[2] eq 'r' and $$val[5] == 1 ) ){ 
+				$add = undef;
+				$good = 1;
+				#warn " DELETE OLD $planeDir/$user/tsv/$name/$modifier"
+			} #имеющееся значение новее текущего
+			elsif ( $oldObject eq $object ){ 
 				#warn " REPET RECORD ($time): @{$val} \n";
 				$good = 1 } # or $$val[2] = 'r' повтор, пропускаем реиндексацию, но (излишне?) перезаписываем базу
 			else{
 				&setWarn("		sP    Удаление старого значения"  );
-				
-				my @triple = ( $oldTriple, $subject, $predicate, $oldObject, $modifier );
+				my $oldModifier = $modifier;
+				$oldModifier = &m8director( $subject ) if $predicate eq 'r';
+				my @triple = ( $oldTriple, $subject, $predicate, $oldObject, $oldModifier );
 				warn " NEW VALUE ($time): @{$val} \n";
 				&spinProc ( \@triple, $user, $oldTime, 809 );
 			}
@@ -1267,6 +1283,7 @@ sub m8dir {
 sub m8req {
 	my ( $temp ) = @_;
 	my $dir = $auraDir.'/'.$$temp{'ctrl'}.'/m8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/?modifier='.$$temp{'modifier'};
+	$dir .= '&error='.$$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
 	return $dir;
 }
 sub m8holder {
@@ -1274,6 +1291,12 @@ sub m8holder {
 	my ( $fact ) = @_;
 	my %subject = &getJSON( &m8dir( $fact ), 'subject_r' );
 	return $subject{'n'}[0]{'holder'}
+}
+sub m8director {
+	&setWarn( "			m8director @_" );	
+	my ( $fact ) = @_;
+	my %subject = &getJSON( &m8dir( $fact ), 'subject_r' );
+	return $subject{'n'}[0]{'director'}
 }
 
 
