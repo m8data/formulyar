@@ -936,7 +936,7 @@ sub spinProc {
 				&setWarn("		sP    Проверка на идентификатор-тип");
 				my @val = &getFile( $planeDir.'/'.$user.'/tsv/'.$value[3].'/value.tsv' );
 				my %types = &getJSON( $typesDir, 'type' );
-				if ( $val[1]=~/^xsd:/ ){
+				if ( $val[1] and $val[1]=~/^xsd:/ ){
 					delete $types{$val[0]};
 					&setXML( $typesDir, 'type', \%types );
 					&rinseProc3( %types )
