@@ -248,16 +248,16 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		&setWarn( "  Выдача не текстовой информации (pdf, docx)" );#	
 		my $extensiton = $temp{'format'};	
 		if ( $temp{'format'} eq 'pdf' ){
-			&setWarn( "   Формирование pdf-файла запросом $ENV{HTTP_HOST}/$auraDir/$temp{'avatar'}/$temp{'m8path'}" );#
-			my $req = $ENV{HTTP_HOST}.$temp{'prefix'}.$auraDir.'/'.$temp{'avatar'}.'/'.$temp{'m8path'};
+			&setWarn( "   Формирование pdf-файла запросом $ENV{HTTP_HOST}/$auraDir/$temp{'ctrl'}/$temp{'m8path'}" );#
+			my $req = $ENV{HTTP_HOST}.$temp{'prefix'}.$auraDir.'/'.$temp{'ctrl'}.'/'.$temp{'m8path'};
 			$req .= '/?'.$temp{'QUERY_STRING'};
 			system ( 'wkhtmltopdf '.$req.' '.$planeRoot.$temp{'m8path'}.'/report.pdf'.' 2>'.$planeRoot.$logPath.'/wkhtmltopdf.txt' ); #здесь нужно перевести в папку юзера
 		}
 		elsif ( $temp{'format'} eq 'doc' ){
 			&setWarn( "   Формирование doc-файла" );#
 			rmtree $temp{'m8path'}.'/report' if -d $temp{'m8path'}.'/report'; 
-			dircopy $planeDir.'/'.$temp{'avatar'}.'/template/report', $temp{'m8path'}.'/report';
-			-e $temp{'m8path'}.'/report/_rels/.rels' || copy( $planeDir.'/'.$temp{'avatar'}.'/template/report/_rels/.rels', $temp{'m8path'}.'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
+			dircopy $planeDir.'/'.$temp{'ctrl'}.'/template/report', $temp{'m8path'}.'/report';
+			-e $temp{'m8path'}.'/report/_rels/.rels' || copy( $planeDir.'/'.$temp{'ctrl'}.'/template/report/_rels/.rels', $temp{'m8path'}.'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
 			my $xmlFile = $planeRoot.$temp{'m8path'}.'/temp.xml';
 			&setFile( $xmlFile, &getDoc( \%temp ) );
 			my $xslFile = $planeRoot.$planeDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
@@ -272,13 +272,13 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			}
 			$extensiton = 'docx';
 		}
-		if ( $dbg and 0 ){
+		if ( $temp{'format'} eq 'pdf' and 1 ){
 			&setWarn( '   редирект на '.$temp{'prefix'}.$temp{'m8path'}.'/report.'.$extensiton );
 			print $q->header(-location => $temp{'prefix'}.$temp{'m8path'}.'/report.'.$extensiton );
 		}
 		else {
-			&setWarn( '   редирект на '.$ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.$temp{'prefix'}.$auraDir.'/'.$temp{'avatar'}.'/'.$temp{'m8path'}.'/report.'.$extensiton );
-			print $q->header(-location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.$temp{'prefix'}.$auraDir.'/'.$temp{'avatar'}.'/'.$temp{'m8path'}.'/report.'.$extensiton );
+			&setWarn( '   редирект на '.$ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.$temp{'prefix'}.$auraDir.'/'.$temp{'ctrl'}.'/'.$temp{'m8path'}.'/report.'.$extensiton );
+			print $q->header(-location => $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.$temp{'prefix'}.$auraDir.'/'.$temp{'ctrl'}.'/'.$temp{'m8path'}.'/report.'.$extensiton );
 		}
 	}
 	else{
@@ -335,9 +335,18 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 				&setWarn ('    Вывод в xml-варианте');
 				$doc = &getDoc( \%temp );
 				if ( $temp{'format'} eq 'html' ){
-					&setWarn("     Вывод temp-а под аватаром: $temp{'ctrl'}");
+					&setWarn("     Вывод temp-а под аватаром: $temp{'ctrl'}");	
 					my $xslFile = $planeDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
-					my $tempFile = int( rand( 999 ) );
+					my $tempFile = int( rand( 999 ) );						
+					if (0) { 
+						my $stl = '<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:include href="'.$planeRoot.$xslFile.'"/>
+</xsl:stylesheet>';#<xsl:include href="'.$planeRoot.'m8/type.xsl"/>
+						$xslFile = $logPath.'/trash/'.$tempFile.'.xsl';
+						&setFile( $xslFile, $stl );
+						
+					}
 					my $trashTempFile = $logPath.'/trash/'.$tempFile.'.xml';
 					&setFile( $trashTempFile, $doc );
 					copy( $planeRoot.$logPath.'/out.txt', $planeRoot.$logPath.'/out.txt.txt' ) or die "Copy failed: $!" if -e $log and -e $logPath.'/out.txt' and $dbg;
@@ -416,17 +425,17 @@ sub washProc{
 				$$temp{'message'} = 'OK';
 				if ( $$temp{'debug'} ){ $$cookie{'debug'} = '' }
 				else { $$temp{'debug'} = $$cookie{'debug'} = time }
-			}
-			elsif ( $name =~/^\w[\d_\-]*$/ ){
-				&setWarn( "		wP     Детектирован элемент создания номера" );
-				$$temp{'record'} = $$temp{'record'} + 1;
-			}
-			elsif ( $name =~/^\w+$/ ) { 
+			}			
+			elsif ( $name =~/^\w\D+$/ ) { 
 				&setWarn( "		wP     Детектирован простой корневой параметр" );
 				$$temp{$name} = $param{$name} 
 			}
+			elsif ( $name =~/^\w[\d_\w\-]*$/ ){ # здесь должно быть $name =~/^\w[\d_\-]*$/ но пока есть именованные юзеры все сложно
+				&setWarn( "		wP     Детектирован элемент создания номера" );
+				$$temp{'record'} = $$temp{'record'} + 1;
+			}
+
 		}
-		
 		
 		#весь блок работы с матрицей нужно уводить в работу с пустотой, т.к. может быть и не 'а', а 'b' и 'с' и 'd'.
 		#&setWarn( "		wP  Имеется строка запроса $$temp{'QUERY_STRING'}. Идет идет ее парсинг" );
@@ -582,7 +591,7 @@ sub washProc{
 					}
 					else{
 						&setWarn("			wP      $pair: создание новой сущности" );
-						$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$$temp{'user'}.'-'.$s; 
+						$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s; # $$temp{'user'}.'-'.
 						$num[$s][2] = $value;
 						$num[$s][5] = 2;
 						$$temp{'fact'} = $$temp{'quest'} = $num[$s][1] if $name eq 'a'; # подготовка редиректа
@@ -990,15 +999,15 @@ sub dryProc2 {
 			&setLink( $multiRoot.$branch_depend.'/'.$univer_depend, 	$planeRoot.$planeDir.'/'.$univer_depend );
 		}
 	}
-	
-
-	
 	my @ava = &getDir( $planeDir, 1 );
+	my %controller;
 	for my $ava ( @ava ){
+		$controller{$ava} = 1 if -e $planeDir.'/'.$ava.'/xsl/'.$ava.'.xsl';
 		-d $auraDir.'/'.$ava || make_path( $auraDir.'/'.$ava, { chmod => $chmod } );
 		&setLink( $planeRoot.'m8', $planeRoot.$auraDir.'/'.$ava.'/m8' );
 		-e $userDir.'/'.$ava.'/'.$passwordFile || &setFile( $userDir.'/'.$ava.'/'.$passwordFile );
 	}
+	&setXML( $planeDir, 'controller', \%controller );
 	for my $format ( keys %formatDir ){
 		&setLink( $planeRoot.$auraDir, $planeRoot.$format );
 	}

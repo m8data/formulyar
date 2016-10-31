@@ -332,10 +332,10 @@
 	-->
 	<xsl:template name="quest_port">
 		<xsl:variable name="predicatesThisNechto">
-			<xsl:for-each select="m8:path( $startTypeName, 'index' )/object/*">
+			<xsl:for-each select="m8:index( $startTypeName )/object/*">
 				<xsl:variable name="subjectName" select="name()"/>
-				<xsl:for-each select="m8:path( $startTypeName, concat( 'object_', $subjectName ) )/*/*">
-					<xsl:for-each select="m8:path( $subjectName, name(..), name(), 'port' )/*[name() != 'r' ]">
+				<xsl:for-each select="m8:path( $startTypeName, concat( 'object_', $subjectName ) )/*">
+					<xsl:for-each select="m8:port( $subjectName, name() )/*[name() != 'r' ]">
 						<xsl:element name="{name()}">_</xsl:element>
 					</xsl:for-each>
 				</xsl:for-each>
@@ -594,13 +594,14 @@
 						<!--not($modifier) or -->
 						<div style="padding: 1em; ">
 							<xsl:message>!! Правая панель: подсказки значений !!</xsl:message>
+							<div >Добавление свойства:</div>
 							<table cellpadding="3px">
-								<xsl:for-each select="exsl:node-set($final_sort)/*">
+								<xsl:for-each select="exsl:node-set($final_sort)/*[name()!='n' and name()!='d' and name()!='i' ]">
 									<xsl:sort select="@count" order="descending"/>
 									<tr>
 										<xsl:variable name="predicate" select="name()"/>
 										<td valign="top" align="center">
-											<a href="{$startID}/?a2={$predicate}" title="популярность: {@count}">
+											<a href="{m8:action( $fact )}&amp;{$predicate}=" title="популярность: {@count}">
 												<xsl:attribute name="style"><xsl:if test="@count=1"><xsl:text>font-size: .8em</xsl:text></xsl:if></xsl:attribute>
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
@@ -608,7 +609,7 @@
 									</tr>
 								</xsl:for-each>
 							</table>
-							<div style="padding-bottom: .5em">Добавление свойства:</div>
+							<div>------------------------</div>
 							<!--<xsl:if test="not( $startPort/r )"></xsl:if>-->
 							<!--<div style="padding-bottom: .2em">
 								<a href="{m8:action( $fact, $modifier )}&amp;r=">связь</a>
