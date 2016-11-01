@@ -338,7 +338,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 					&setWarn("     Вывод temp-а под аватаром: $temp{'ctrl'}");	
 					my $xslFile = $planeDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
 					my $tempFile = int( rand( 999 ) );						
-					if (0) { 
+					if (1) { 
 						my $stl = '<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:include href="'.$planeRoot.$xslFile.'"/>
@@ -414,6 +414,7 @@ sub washProc{
 		$$temp{'QUERY_STRING'} =~ s/%0D//eg; #Оставляем LA(ака 0A или \n), но убираем CR(0D). Без этой обработки на выходе получаем двойной возврат каретки помимо перевода строки если данные идут из textarea
 		$$temp{'QUERY_STRING'} = &utfText($$temp{'QUERY_STRING'});
 		$$temp{'QUERY_STRING'} = Encode::decode_utf8($$temp{'QUERY_STRING'});
+		my %types = &getJSON( $typesDir, 'type' );		
 		for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
 			&setWarn( "		wP   Прием пары $pair" );	
 			my ($name, $value) = split( /=/, $pair );
@@ -428,7 +429,8 @@ sub washProc{
 			}			
 			elsif ( $name =~/^\w\D+$/ ) { 
 				&setWarn( "		wP     Детектирован простой корневой параметр" );
-				$$temp{$name} = $param{$name} 
+				if ( defined $types{$name} ){ $$temp{'record'} = $$temp{'record'} + 1 }
+				else { $$temp{$name} = $param{$name} } 
 			}
 			elsif ( $name =~/^\w[\d_\w\-]*$/ ){ # здесь должно быть $name =~/^\w[\d_\-]*$/ но пока есть именованные юзеры все сложно
 				&setWarn( "		wP     Детектирован элемент создания номера" );
@@ -532,9 +534,11 @@ sub washProc{
 			&setWarn( "		wP   Поиск и проверка номеров в строке запроса $$temp{'QUERY_STRING'}" );# стирка 
 			my @value; #массив для контроля повторяющихся значений внутри триплов
 			my %table; #таблица перевода с буквы предлложения на номер позиции в процессе
+
 			for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
 				&setWarn('		wP  парсинг пары >'.$pair.'<');
 				my ($name, $value) = split(/=/, $pair);
+				$name = $types{$name} if defined $types{$name};
 				next if $name eq 'user' or defined $$temp{$name};
 				if ( not $value and $value ne '0' ){ 
 					&setWarn('		wP     присвоение пустого значения');
@@ -562,7 +566,7 @@ sub washProc{
 						&setWarn('		wP      запрос создания именнованой карты');
 						#здесь еще нужно исключить указание одному имени разных типов
 					
-						my %types = &getJSON( $typesDir, 'type' );
+						
 						$types{$value[0]} = $$temp{'fact'};
 						#&setXML ( $typesDir, 'type', \%types );
 						&rinseProc3 ( %types )
