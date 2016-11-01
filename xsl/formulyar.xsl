@@ -313,7 +313,7 @@
 }
 #circle a {color: yellow; }
 		</style>
-		<a href="{m8:root( $fact )}/?a=" title="создать новый объект" style="color: white;">
+		<a href="{m8:root( $fact )}?a=" title="создать новый объект" style="color: white;">
 			<span style="bottom: 64px; right: 64px; " id="circle">+</span>
 		</a>
 		<!--<div style="bottom: 70px; right: 165px; " id="circle">
@@ -395,7 +395,7 @@
 												<!--<xsl:if test="name()!='n'">-->
 												<td valign="top">
 													<!--<a href="{$startID}/?a0={name(*/*)}">x</a>-->
-													<a href="{m8:action( $fact, $modifier )}&amp;a0={name(*/*)}" style="font-size: .7em">&#10060;</a>
+													<a href="{m8:action( $fact, $modifier )}&amp;a0={name(*/*)}"><xsl:value-of select="$symbol_del"/></a>
 												</td>
 												<!--</xsl:if>-->
 												<td valign="top">
@@ -449,11 +449,11 @@
 									<xsl:if test="$modifier != 'n' ">
 										<td valign="top">
 											<xsl:text>&#160;</xsl:text>
-											<a href="{m8:action( $fact, m8:director( $modifier ) )}" title="to new Quest - { $newQuestName }">&#11014;</a>
+											<a href="{m8:action( $fact, m8:director( $modifier ) )}" title="to new Quest - { $newQuestName }"><xsl:value-of select="$symbol_up"/></a>
 										</td>
 										<td valign="top">
 											<xsl:text>&#160;</xsl:text>
-											<a style="font-size: .7em" href="{m8:action( $fact )}" title="удаление">&#10060;</a>
+											<a href="{m8:action( $fact )}" title="удаление"><xsl:value-of select="$symbol_del"/></a>
 										</td>
 									</xsl:if>
 								</tr>
@@ -515,7 +515,7 @@
 													<xsl:text>&#160;</xsl:text>
 													<a title="to new Quest - { $newQuestName } COMMON">
 														<xsl:attribute name="href"><xsl:value-of select="concat( m8:action( $fact, $newQuestName ), '&amp;r=', $typeName )"/><xsl:if test="$director = $typeName"><xsl:text>&amp;object=</xsl:text><xsl:value-of select="$newQuestName"/></xsl:if></xsl:attribute>
-														<xsl:text>&#11014;</xsl:text>
+														<xsl:value-of select="$symbol_up"/>
 													</a>
 												</xsl:if>
 											</td>
@@ -523,10 +523,10 @@
 												<xsl:text>&#160;</xsl:text>
 												<xsl:choose>
 													<xsl:when test="$leader = $director">
-														<a style="font-size: .7em" href="{m8:root( $director )}/?a0={m8:triple( $fact )}" title="удаление">&#10060;</a>
+														<a href="{m8:root( $director )}?a0={m8:triple( $fact )}" title="удаление"><xsl:value-of select="$symbol_del"/></a>
 													</xsl:when>
 													<xsl:otherwise>
-														<a href="{m8:action( $fact, $leader )}&amp;r={$director}" title="поменять местами директорию и тип">&#8644;</a>
+														<a href="{m8:action( $fact, $leader )}&amp;r={$director}" title="поменять местами директорию и тип"><xsl:value-of select="$symbol_replace"/></a>
 													</xsl:otherwise>
 												</xsl:choose>
 												<!--&amp;a4={$parentName}-->
@@ -561,13 +561,13 @@
 											<td valign="top">
 												<xsl:text>&#160;</xsl:text>
 												<xsl:if test="$leader != 'n' ">
-													<a href="{m8:action( $fact, $director )}&amp;r={$newTypeName}" title="to new typePosition - {$typePosition} / newTypeName - { $newTypeName }">&#11014;</a>
+													<a href="{m8:action( $fact, $director )}&amp;r={$newTypeName}" title="to new typePosition - {$typePosition} / newTypeName - { $newTypeName }"><xsl:value-of select="$symbol_up"/></a>
 												</xsl:if>
 											</td>
 											<td valign="top">
 												<xsl:text>&#160;</xsl:text>
 												<xsl:if test="$leader != $director">
-													<a style="font-size: .7em" href="{m8:action( $fact, $director )}&amp;r={$director}" title="удаление разъединения">&#10060;</a>
+													<a href="{m8:action( $fact, $director )}&amp;r={$director}" title="удаление разъединения"><xsl:value-of select="$symbol_del"/></a>
 													<!--&amp;a4={$parentName}-->
 												</xsl:if>
 											</td>

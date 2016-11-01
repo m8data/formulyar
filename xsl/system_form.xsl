@@ -74,6 +74,14 @@
 		</xsl:choose>
 	</xsl:variable>-->
 	<xsl:variable name="types" select="document( concat( $start/@planeRoot, 'm8/type.xml' ) )/*"/>
+	<!-- ####  ЗНАКИ  ####
+			&#215; - ×
+			&#10060; - ❌
+-->
+	<xsl:param name="symbol_replace" select="'&#8644;'"/>
+	<xsl:param name="symbol_up" select="'&#11014;'"/>
+	<xsl:param name="symbol_del" select="'&#215;'"/>
+	<!-- ####  ЗНАКИ (END)  ####-->
 	<!-- 
 
 -->
@@ -201,7 +209,7 @@
 		<!--<xsl:param name="modifier"/>-->
 		<xsl:choose>
 			<xsl:when test="$fact">
-				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ) )"/>
+				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ), '/' )"/><!-- без '/' не работает отсылка файлов в спец-инпуте -->
 			</xsl:when>
 			<xsl:otherwise>
 				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir() )"/>
@@ -213,13 +221,13 @@
 		<xsl:param name="modifier"/>
 		<xsl:choose>
 			<xsl:when test="$modifier">
-				<func:result select="concat( m8:root( $fact), '/?modifier=', $modifier )"/>
+				<func:result select="concat( m8:root( $fact), '?modifier=', $modifier )"/>
 			</xsl:when>
 			<xsl:when test="$fact">
-				<func:result select="concat( m8:root( $fact ), '/?modifier=n' )"/>
+				<func:result select="concat( m8:root( $fact ), '?modifier=n' )"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="concat( m8:root(), '/?modifier=n' )"/>
+				<func:result select="concat( m8:root(), '?modifier=n' )"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
@@ -249,7 +257,9 @@
 			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
 		</xsl:if>
 		<form id="editParamOfPort" selectedValue="{name($selectedValue)}">
-			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose></xsl:attribute>
+			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose>
+<!--<xsl:if test="$predicateName = 'n' ">/</xsl:if>			-->
+			</xsl:attribute>
 			<xsl:if test="$predicateName = 'n' ">
 				<xsl:attribute name="ENCTYPE">multipart/form-data</xsl:attribute>
 				<xsl:attribute name="method">POST</xsl:attribute>
@@ -423,7 +433,7 @@
 		<xsl:param name="ajaxMethod"/>
 		<xsl:param name="option"/>
 		<xsl:param name="method"/>
-		<xsl:variable name="params_of_quest" select="m8:path( $fact, $quest, 'port' )/*"/>
+		<xsl:variable name="params_of_quest" select="m8:port( $fact, $quest )/*"/>
 		<xsl:message>		inputParamOfPort :: sourceValue: <xsl:copy-of select="count(exsl:node-set($sourceValue)/*)"/>
 		</xsl:message>
 		<xsl:choose>
@@ -437,7 +447,7 @@
 					</xsl:if>
 				</input>
 				<xsl:if test="name($selectedValue) != 'r'">
-					<a href="{$start/@prefix}base/{name($selectedValue)}/value.tsv">text</a>|<a href="/{m8:dir( $selectedValue )}/value.xml">xml</a>
+					<!--<a href="{$start/@prefix}p/{ /{name($selectedValue)}/value.tsv">text</a>|--><a href="/{m8:dir( name( $selectedValue ) )}/value.xml">xml</a>
 				</xsl:if>
 			</xsl:when>
 			<!--
@@ -560,7 +570,7 @@
 							<xsl:sort select="@sort"/>
 							<!--<xsl:value-of select="name($selectedValue)"/> = <xsl:value-of select="name()"/>-->
 							<input class="input-radio" type="{$inputType}" name="{$predicateName}" value="{name()}" id="{name()}">
-								<xsl:if test="not($ajaxMethod)">
+								<xsl:if test="not( $ajaxMethod )">
 									<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
 								</xsl:if>
 								<xsl:if test="@description">
@@ -595,9 +605,9 @@
 							<xsl:for-each select="exsl:node-set($sourceValue)/*">
 								<xsl:sort select="@sort"/>
 								<xsl:variable name="valueName" select="name()"/>
-								<xsl:if test="not($params_of_quest[name()=$predicateName]/*[name()=$valueName]) or name()=name($selectedValue)">
+								<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or name() = name( $selectedValue )">
 									<option value="{$valueName}">
-										<xsl:if test="$valueName=name($selectedValue)">
+										<xsl:if test="$valueName=name( $selectedValue )">
 											<xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
 										</xsl:if>
 										<xsl:variable name="title">
@@ -637,7 +647,7 @@
 					<xsl:if test="$selectedValue/@invalid or $selectedValue/../../@invalid">
 						<xsl:attribute name="invalid">invalid</xsl:attribute>
 					</xsl:if>
-					<xsl:attribute name="value"><xsl:choose><xsl:when test="starts-with( name($selectedValue), 'r' )"><xsl:value-of select="translate( $title, '.', ',' )"/></xsl:when><xsl:otherwise><xsl:value-of select="$title"/></xsl:otherwise></xsl:choose></xsl:attribute>
+					<xsl:attribute name="value"><xsl:choose><xsl:when test="starts-with( name( $selectedValue ), 'r' )"><xsl:value-of select="translate( $title, '.', ',' )"/></xsl:when><xsl:otherwise><xsl:value-of select="$title"/></xsl:otherwise></xsl:choose></xsl:attribute>
 				</input>
 				<xsl:if test="starts-with( $title, 'http' )">
 					<xsl:text> </xsl:text>
@@ -701,7 +711,7 @@
 								<!---->
 								<br/>(без пробелов латиницей)                                        <br/>
 								<br/>
-								<xsl:if test="@history and (@history='bad_retype' or @history='no_password')">
+								<xsl:if test="@history and ( @history='bad_retype' or @history='no_password' )">
 									<div style="color: red">
 										<xsl:choose>
 											<xsl:when test="@history='bad_retype'">Повторение пароля не совпало. Введите заново.</xsl:when>
