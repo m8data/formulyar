@@ -429,6 +429,7 @@
 		<xsl:param name="option"/>
 		<xsl:param name="method"/>
 		<xsl:variable name="params_of_quest" select="m8:port( $fact, $quest )/*"/>
+		<xsl:variable name="predicateParam" select="m8:value( name( m8:port( $predicateName )/d/* ) )"/>
 		<xsl:message>		inputParamOfPort :: sourceValue: <xsl:copy-of select="count(exsl:node-set($sourceValue)/*)"/>
 		</xsl:message>
 		<xsl:choose>
@@ -449,7 +450,8 @@
 			<!--
 							ВЫВОД TEXTAREA
 -->
-			<xsl:when test="$predicateName = 'd' ">
+
+			<xsl:when test="$predicateName = 'd' or $predicateParam/div[3]/span='textarea' ">
 				<xsl:variable name="name">
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
 				</xsl:variable>
@@ -458,8 +460,9 @@
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
 					</xsl:if>
 					<xsl:if test="$name=''">
-						<xsl:attribute name="onfocus"><xsl:text>$(this).val('')</xsl:text></xsl:attribute>
-						<xsl:text> </xsl:text>
+						<!--<xsl:attribute name="onfocus"><xsl:text>$(this).val('')</xsl:text></xsl:attribute>-->		
+						<xsl:text>	</xsl:text>
+						<!--<xsl:comment>антидыра</xsl:comment>-->
 					</xsl:if>
 					<xsl:value-of select="$name"/>
 				</textarea>

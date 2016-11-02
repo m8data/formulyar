@@ -395,12 +395,17 @@ sub washProc{
 		&setWarn( "		wP  Запись файла" );# 
 		my $req = new CGI; 
 		my $DownFile = $req->param('file'); 
-		$DownFile =~/tsv$/ || $DownFile =~/txt$/ || $DownFile =~/csv$/ || return;
+		$DownFile =~/tsv$/ || $DownFile =~/txt$/ || $DownFile =~/csv$/ || $DownFile =~/svg$/ || return;
 		my @text;			
 		while ( <$DownFile> ) { 
 			s/\s+\z//;
-			push @text, Encode::decode_utf8( $_ )
+			if ( $DownFile =~/svg$/ ){
+				s/\t/ /g;
+				$text[0] .= $_;
+			}
+			else { push @text, Encode::decode_utf8( $_ ) }
 		}
+		$text[0] =~ s/^.*(<svg .+)$/$1/ if $DownFile =~/svg$/;
 		$$temp{'fact'} = $defaultFact if not defined $$temp{'fact'};
 		$$temp{'quest'} = $defaultQuest if not defined $$temp{'quest'};
 		my $iName = &setName( 'i', $$temp{'user'}, @text );
@@ -762,18 +767,26 @@ sub washProc{
 sub rinseProc {
 	my ( $name, @div )=@_;
 	&setWarn("		rP @_"  );
-	my %value;
-	if ( ( $div[0] and $div[0] ne '' ) or $div[1]  ){ 
-		&setWarn("		rP  Раскладка @div по строкам"  );
-		for my $s (0..$#div){
-			&setWarn("		rP   Строка $s: $div[$s]"  );
-			#$div[$s] = Encode::decode_utf8($div[$s]) if $div[$s];
-			my @span = split "\t", $div[$s];
-			for my $m (0..$#span){ $value{'div'}[$s]{'span'}[$m]{$tNode} = $span[$m] } 
-		}
+	if ($div[0]=~/^\<svg/){
+		&setWarn("		rP  запись xml-файла напрямую"  );
+		&setFile( &m8dir( $name ).'/value.xml', '<?xml version="1.0" encoding="UTF-8"?><value id="'.$name.'">'.$div[0].'</value>' );
 	}
-	else { $value{'div'}[0]{'span'}[0]{$tNode} = undef }
-	&setXML ( &m8dir( $name ), 'value', \%value );		
+	else{
+		&setWarn("		rP  формировани xml-файла"  );
+		my %value;
+		if ( ( $div[0] and $div[0] ne '' ) or $div[1]  ){ 
+			&setWarn("		rP  Раскладка @div по строкам"  );
+			for my $s (0..$#div){
+				&setWarn("		rP   Строка $s: $div[$s]"  );
+				#$div[$s] = Encode::decode_utf8($div[$s]) if $div[$s];
+				my @span = split "\t", $div[$s];
+				for my $m (0..$#span){ $value{'div'}[$s]{'span'}[$m]{$tNode} = $span[$m] } 
+			}
+		}
+		else { $value{'div'}[0]{'span'}[0]{$tNode} = undef }
+		&setXML ( &m8dir( $name ), 'value', \%value );			
+	}
+
 }
 
 sub rinseProc3 {

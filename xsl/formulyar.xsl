@@ -343,14 +343,17 @@
 		</xsl:variable>
 		<xsl:variable name="sorted_predicates">
 			<xsl:for-each select="exsl:node-set($predicatesThisNechto)/*">
-				<xsl:sort select="name()"/>
+				<xsl:sort select="m8:title( name() )"/>
+				<!--<xsl:sort select="name()"/>-->
 				<xsl:copy-of select="."/>
 			</xsl:for-each>
 		</xsl:variable>
 		<xsl:variable name="final_sort">
 			<xsl:apply-templates select="exsl:node-set($sorted_predicates)/*[1]" mode="predicate_grouping_new"/>
 		</xsl:variable>
-		<table width="100%" style="font-size: 1em">
+		<xsl:variable name="fact_n" select="m8:value( name( $factPort/n/* ) )"/>
+		<xsl:if test="$fact_n/*[name()='svg']"><div style="float: left"><xsl:copy-of select="$fact_n/*"/></div></xsl:if>
+		<table width="92%" style="font-size: 1em">
 			<tr>
 				<td align="center" valign="top">
 					<xsl:message>!! Левая панель: значения порта !!</xsl:message>
@@ -434,7 +437,7 @@
 										<form action="{m8:root( $fact )}" id="editParamOfPort">
 											<select name="modifier" onchange="this.form.submit()">
 												<option/>
-												<xsl:for-each select="m8:path( $modifier, 'index' )/director/*[name()!=$fact]">
+												<xsl:for-each select="m8:index( $modifier )/director/*[name()!=$fact]">
 													<xsl:sort select="m8:title( name() )"/>
 													<!--m8:director(  )-->
 													<option value="{name()}">
@@ -598,7 +601,7 @@
 							<div >Добавление свойства:</div>
 							<table cellpadding="3px">
 								<xsl:for-each select="exsl:node-set($final_sort)/*[name()!='n' and name()!='d' and name()!='i' ]">
-									<xsl:sort select="@count" order="descending"/>
+									<xsl:sort select="m8:title( name() )"/>
 									<tr>
 										<xsl:variable name="predicate" select="name()"/>
 										<td valign="top" align="center">
@@ -654,7 +657,7 @@
 										<option value="{$fact}">начало</option>
 									</xsl:if>
 									<xsl:for-each select="$types/@*">
-										<xsl:sort select="name(.)"/>
+										<xsl:sort select="m8:title( . )"/>
 										<!--<xsl:variable name="typeName">
 										<xsl:value-of select="name( m8:path( name(), $avatar, 'terminal' )/* )"/>
 									</xsl:variable>-->
