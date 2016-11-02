@@ -209,7 +209,8 @@
 		<!--<xsl:param name="modifier"/>-->
 		<xsl:choose>
 			<xsl:when test="$fact">
-				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ), '/' )"/><!-- без '/' не работает отсылка файлов в спец-инпуте -->
+				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ), '/' )"/>
+				<!-- без '/' не работает отсылка файлов в спец-инпуте -->
 			</xsl:when>
 			<xsl:otherwise>
 				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir() )"/>
@@ -231,6 +232,14 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
+	<func:function name="m8:title">
+		<xsl:param name="fact"/>
+		<func:result>
+		<xsl:call-template name="simpleName">
+			<xsl:with-param name="name" select="$fact"/>
+		</xsl:call-template>		
+		</func:result>
+	</func:function>	
 	<!--
 
 //-->
@@ -257,9 +266,7 @@
 			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
 		</xsl:if>
 		<form id="editParamOfPort" selectedValue="{name($selectedValue)}">
-			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose>
-<!--<xsl:if test="$predicateName = 'n' ">/</xsl:if>			-->
-			</xsl:attribute>
+			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose><!--<xsl:if test="$predicateName = 'n' ">/</xsl:if>			--></xsl:attribute>
 			<xsl:if test="$predicateName = 'n' ">
 				<xsl:attribute name="ENCTYPE">multipart/form-data</xsl:attribute>
 				<xsl:attribute name="method">POST</xsl:attribute>
@@ -282,20 +289,8 @@
 				</xsl:for-each>
 			</xsl:if>
 			<xsl:if test="$predicateName != 'n' ">
-			<input type="hidden" name="modifier">
-				<xsl:attribute name="value">
-				<xsl:choose>
-					<xsl:when test="$questName">
-						<xsl:value-of select="$questName"/>
-					</xsl:when>
-					<xsl:when test="$modifierName">
-						<xsl:value-of select="$modifierName"/>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:value-of select="$modifier"/>
-					</xsl:otherwise>
-				</xsl:choose>
-				</xsl:attribute>
+				<input type="hidden" name="modifier">
+					<xsl:attribute name="value"><xsl:choose><xsl:when test="$questName"><xsl:value-of select="$questName"/></xsl:when><xsl:when test="$modifierName"><xsl:value-of select="$modifierName"/></xsl:when><xsl:otherwise><xsl:value-of select="$modifier"/></xsl:otherwise></xsl:choose></xsl:attribute>
 				</input>
 				<!--<input type="hidden" name="quest" value="{$questName}"/>-->
 			</xsl:if>
@@ -447,7 +442,8 @@
 					</xsl:if>
 				</input>
 				<xsl:if test="name($selectedValue) != 'r'">
-					<!--<a href="{$start/@prefix}p/{ /{name($selectedValue)}/value.tsv">text</a>|--><a href="/{m8:dir( name( $selectedValue ) )}/value.xml">xml</a>
+					<!--<a href="{$start/@prefix}p/{ /{name($selectedValue)}/value.tsv">text</a>|-->
+					<a href="/{m8:dir( name( $selectedValue ) )}/value.xml">xml</a>
 				</xsl:if>
 			</xsl:when>
 			<!--
@@ -829,10 +825,11 @@
 	<xsl:template name="footer">
 		<!--<div style="position: fixed;  bottom: 1px; left: 1px; z-index: 1; color:gray">-</div>-->
 		<xsl:if test="$adminMode and $start/@error">
-			<div style="position: fixed; width:100%; text-align: center; bottom: 80px; z-index: 1; color:red"><xsl:value-of select="$start/@error"/></div>
-		
+			<div style="position: fixed; width:100%; text-align: center; bottom: 80px; z-index: 1; color:red">
+				<xsl:value-of select="$start/@error"/>
+			</div>
 		</xsl:if>
-		<xsl:if test="$user != 'guest' or $adminMode">
+		<xsl:if test="$user != 'guest' or $adminMode or $ctrl='formulyar' ">
 			<!-- or $start/@debug-->
 			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray">
 				<!--<a href="{$start/@prefix}" style="color:gray">START</a>
@@ -884,15 +881,16 @@
 					<!--<xsl:text> &lt;- </xsl:text>-->
 				</xsl:if>
 				<xsl:if test="$start/@debug">
-						<select name="ctrl" onchange="window.location.href=this.options[this.selectedIndex].value">
-							<option/>
-							<xsl:for-each select="document( concat( $start/@planeRoot, $start/@prefix, 'p/controller.xml' ) )/*/@*[name()!='formulyar' and name()!=$avatar]">
-								<option value="{$start/@prefix}a/{name()}/{m8:dir( $fact )}"><xsl:value-of select="name()"/></option>
-							</xsl:for-each>
-						</select>
+					<select name="ctrl" onchange="window.location.href=this.options[this.selectedIndex].value">
+						<option/>
+						<xsl:for-each select="document( concat( $start/@planeRoot, $start/@prefix, 'p/controller.xml' ) )/*/@*[name()!='formulyar' and name()!=$avatar]">
+							<option value="{$start/@prefix}a/{name()}/{m8:dir( $fact )}">
+								<xsl:value-of select="name()"/>
+							</option>
+						</xsl:for-each>
+					</select>
 					<xsl:text> | </xsl:text>
 				</xsl:if>
-				
 				<xsl:choose>
 					<xsl:when test="$start/@debug">
 						<a href="{m8:root( $fact )}/?debug=switch" style="color: purple">debug on</a>

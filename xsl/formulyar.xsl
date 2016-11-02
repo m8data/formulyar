@@ -435,6 +435,7 @@
 											<select name="modifier" onchange="this.form.submit()">
 												<option/>
 												<xsl:for-each select="m8:path( $modifier, 'index' )/director/*[name()!=$fact]">
+													<xsl:sort select="m8:title( name() )"/>
 													<!--m8:director(  )-->
 													<option value="{name()}">
 														<!--<xsl:if test="name() = $modifier">
