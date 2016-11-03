@@ -84,48 +84,7 @@
 	<!-- ####  ЗНАКИ (END)  ####-->
 	<!-- 
 
--->
-	<func:function name="m8:director">
-		<xsl:param name="fact"/>
-		<xsl:message>	--- работа m8:director с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
-		<func:result select="m8:path( $fact, 'subject_r' )/n/@director"/>
-	</func:function>
-	<func:function name="m8:holder">
-		<xsl:param name="fact"/>
-		<xsl:message>	--- работа m8:holder с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
-		<func:result select="m8:path( $fact, 'subject_r' )/n/@holder"/>
-	</func:function>
-	<func:function name="m8:leader">
-		<xsl:param name="fact"/>
-		<func:result select="name( m8:port( $fact )/r/* )"/>
-	</func:function>
-	<func:function name="m8:triple">
-		<xsl:param name="fact"/>
-		<xsl:message>	--- работа m8:holder с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
-		<func:result select="name( m8:port( $fact )/r/*/* )"/>
-	</func:function>
-	<func:function name="m8:color">
-		<xsl:param name="fact"/>
-		<func:result select="m8:fact_color( m8:holder( $fact ) )"/>
-		<!--<func:result select="concat( 'color: #', translate( substring( $fact ), 'qwertyuiopasdfghjklzxcvbnm', '1234567890abc1234567890abc' ) )"/> -->
-	</func:function>
-	<func:function name="m8:fact_color">
-		<xsl:param name="fact"/>
-		<func:result select="concat( 'color: #', translate( substring( $fact, 2, 3 ), '5qwertyuiopasdfghjklzxcvbnm', 'b1234567890abc1234567890abc' ) )"/>
-	</func:function>
-	<func:function name="m8:value">
-		<xsl:param name="fact"/>
-		<!--<xsl:message>	работа m8:value с фактом <xsl:value-of select="$fact"/> </xsl:message>-->
-		<func:result select="m8:path( $fact, 'value' )"/>
-	</func:function>
-	<func:function name="m8:index">
-		<xsl:param name="fact"/>
-		<!--<xsl:message>	работа m8:index с фактом <xsl:value-of select="$fact"/> </xsl:message>-->
-		<func:result select="m8:path( $fact, 'index' )"/>
-	</func:function>
-	<!-- {$start/@prefix}a/{$ctrl}/{m8:dir( name() )}
--->
-	<func:function name="m8:path">
+--><func:function name="m8:path">
 		<xsl:param name="level1"/>
 		<xsl:param name="level2"/>
 		<xsl:param name="level3"/>
@@ -141,10 +100,40 @@
 			</xsl:when>
 			<xsl:otherwise>
 				<func:result select="document( concat( $start/@planeRoot, 'm8/type.xml' ) )/*"/>
-				<!--$author, -->
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
+		<!-- 
+-->
+
+
+	<!-- {$start/@prefix}a/{$ctrl}/{m8:dir( name() )}
+-->
+	
+	<!-- 
+		
+		## файлы корня ##
+	-->
+	<func:function name="m8:value">
+		<xsl:param name="fact"/>
+		<func:result select="m8:path( $fact, 'value' )"/>
+	</func:function>
+	<func:function name="m8:index">
+		<xsl:param name="fact"/>
+		<func:result select="m8:path( $fact, 'index' )"/>
+	</func:function>
+	<func:function name="m8:role1">
+		<xsl:param name="fact"/>
+		<func:result select="m8:path( $fact, 'role1' )"/>
+	</func:function>
+	<func:function name="m8:quest">
+		<xsl:param name="fact"/>
+		<func:result select="m8:path( $fact, 'quest' )"/>
+	</func:function>	
+	<!-- 
+		## файлы корня (end) ##
+
+-->	
 	<func:function name="m8:port">
 		<xsl:param name="cFact"/>
 		<xsl:param name="cQuest"/>
@@ -178,6 +167,36 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
+	
+	<func:function name="m8:director">
+		<xsl:param name="fact"/>
+		<xsl:message>	--- работа m8:director с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
+		<func:result select="m8:path( $fact, 'subject_r' )/n/@director"/>
+	</func:function>
+	<func:function name="m8:holder">
+		<xsl:param name="fact"/>
+		<xsl:message>	--- работа m8:holder с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
+		<func:result select="m8:path( $fact, 'subject_r' )/n/@holder"/>
+	</func:function>
+	<func:function name="m8:leader">
+		<xsl:param name="fact"/>
+		<func:result select="name( m8:port( $fact )/r/* )"/>
+	</func:function>
+	<func:function name="m8:triple">
+		<xsl:param name="fact"/>
+		<xsl:message>	--- работа m8:holder с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
+		<func:result select="name( m8:port( $fact )/r/*/* )"/>
+	</func:function>
+	<func:function name="m8:color">
+		<xsl:param name="fact"/>
+		<func:result select="m8:fact_color( m8:holder( $fact ) )"/>
+		<!--<func:result select="concat( 'color: #', translate( substring( $fact ), 'qwertyuiopasdfghjklzxcvbnm', '1234567890abc1234567890abc' ) )"/> -->
+	</func:function>
+	<func:function name="m8:fact_color">
+		<xsl:param name="fact"/>
+		<func:result select="concat( 'color: #', translate( substring( $fact, 2, 3 ), '5qwertyuiopasdfghjklzxcvbnm', 'b1234567890abc1234567890abc' ) )"/>
+	</func:function>	
+	
 	<func:function name="m8:dir">
 		<xsl:param name="fact"/>
 		<xsl:param name="quest"/>
@@ -239,6 +258,23 @@
 			<xsl:with-param name="name" select="$fact"/>
 		</xsl:call-template>		
 		</func:result>
+	</func:function>	
+	<func:function name="m8:param">
+		<xsl:param name="fact"/>
+		<xsl:param name="param"/>
+		<func:result select="name( m8:port( $fact )/*[name()=$param]/* )"/>
+	</func:function>	
+	<func:function name="m8:i">
+		<xsl:param name="fact"/>
+		<func:result select="m8:value( m8:param( $fact, 'i' ) )"/>
+	</func:function>	
+	<func:function name="m8:d">
+		<xsl:param name="fact"/>
+		<func:result select="m8:value( m8:param( $fact, 'd' ) )"/>
+	</func:function>		
+	<func:function name="m8:n">
+		<xsl:param name="fact"/>
+		<func:result select="m8:value( m8:param( $fact, 'n' ) )"/>
 	</func:function>	
 	<!--
 
