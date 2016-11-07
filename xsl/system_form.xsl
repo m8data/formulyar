@@ -30,27 +30,13 @@
 			<!--<xsl:with-param name="currentQuestName" select="$quest"/>-->
 		</xsl:call-template>
 	</xsl:variable>
-	<xsl:variable name="questAncestors">
-		<xsl:message>	--- questAncestors --- </xsl:message>
-		<xsl:call-template name="getParent">
-			<xsl:with-param name="currentFactName">
-				<xsl:choose>
-					<xsl:when test="$modifier != 'n'">
-						<xsl:value-of select="$modifier"/>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:value-of select="$fact"/>
-					</xsl:otherwise>
-				</xsl:choose>
-			</xsl:with-param>
-		</xsl:call-template>
-	</xsl:variable>
-	<xsl:variable name="rootName">
+
+	<!--<xsl:variable name="rootName">
 		<xsl:choose>
 			<xsl:when test="exsl:node-set($questAncestors)/*[m8:holder( name() )=$user][not( */@type )]"><xsl:value-of select="name( exsl:node-set($questAncestors)/*[m8:holder( name() )=$user][not( */@type )][1] )"/></xsl:when>
 			<xsl:otherwise><xsl:value-of select="$fact"/></xsl:otherwise>
 		</xsl:choose>
-	</xsl:variable>
+	</xsl:variable>-->
 	<xsl:variable name="director" select="m8:director( $fact )"/>
 	<xsl:variable name="directorName" select="$director"/>
 	<xsl:variable name="leader" select="m8:leader( $fact )"/>
@@ -699,7 +685,7 @@
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
 					</xsl:if>
 					<xsl:if test="$selectedValue/@invalid or $selectedValue/../../@invalid">
-						<xsl:attribute name="invalid">invalid</xsl:attribute>
+						<xsl:attribute name="invalid"><xsl:value-of select="$selectedValue/@invalid"/><xsl:value-of select="$selectedValue/../../@invalid"/></xsl:attribute>
 					</xsl:if>
 					<xsl:attribute name="value"><xsl:choose><xsl:when test="starts-with( name( $selectedValue ), 'r' )"><xsl:value-of select="translate( $title, '.', ',' )"/></xsl:when><xsl:otherwise><xsl:value-of select="$title"/></xsl:otherwise></xsl:choose></xsl:attribute>
 				</input>
