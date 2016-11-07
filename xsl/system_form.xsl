@@ -30,7 +30,27 @@
 			<!--<xsl:with-param name="currentQuestName" select="$quest"/>-->
 		</xsl:call-template>
 	</xsl:variable>
-	<xsl:variable name="rootName" select="name( exsl:node-set($parent)/*[3] )"/>
+	<xsl:variable name="questAncestors">
+		<xsl:message>	--- questAncestors --- </xsl:message>
+		<xsl:call-template name="getParent">
+			<xsl:with-param name="currentFactName">
+				<xsl:choose>
+					<xsl:when test="$modifier != 'n'">
+						<xsl:value-of select="$modifier"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="$fact"/>
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:with-param>
+		</xsl:call-template>
+	</xsl:variable>
+	<xsl:variable name="rootName">
+		<xsl:choose>
+			<xsl:when test="exsl:node-set($questAncestors)/*[m8:holder( name() )=$user][not( */@type )]"><xsl:value-of select="name( exsl:node-set($questAncestors)/*[m8:holder( name() )=$user][not( */@type )][1] )"/></xsl:when>
+			<xsl:otherwise><xsl:value-of select="$fact"/></xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<xsl:variable name="director" select="m8:director( $fact )"/>
 	<xsl:variable name="directorName" select="$director"/>
 	<xsl:variable name="leader" select="m8:leader( $fact )"/>
@@ -310,11 +330,11 @@
 			<xsl:if test="$ajaxMethod='load'">
 				<input type="hidden" id="refreshYes"/>
 			</xsl:if>
-			<xsl:if test="$objectElement/@invalid or $selectedValue/@invalid" xml:lang="этот блок вероятно не нужен после добавления страхующего указания шага 2016-11-07 в выводе селекта теплозащиты">
+			<!--<xsl:if test="$objectElement/@invalid or $selectedValue/@invalid" xml:lang="этот блок вероятно не нужен после добавления страхующего указания шага 2016-11-07 в выводе селекта теплозащиты">
 				<input type="hidden" name="b1" value="{$rootName}"/>
 				<input type="hidden" name="b2" value="{$shag}"/>
 				<input type="hidden" name="b3" value="{$selectedValue/@invalid}{$objectElement/@invalid}"/>
-			</xsl:if>
+			</xsl:if>-->
 			<xsl:if test="$hidden">
 				<xsl:for-each select="exsl:node-set($hidden)/*">
 					<input type="hidden">

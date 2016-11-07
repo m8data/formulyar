@@ -209,7 +209,11 @@
 		<xsl:variable name="newResult">
 			<xsl:if test="$currentFactName!='n'">
 				<xsl:element name="{$parentFactName}">
-					<xsl:element name="{$typeName}"/>
+					<xsl:element name="{$typeName}">
+						<xsl:if test="$types/@*[.=$typeName]">
+							<xsl:attribute name="type"><xsl:value-of select="name( $types/@*[.=$typeName] )"/></xsl:attribute>
+						</xsl:if>
+					</xsl:element>
 				</xsl:element>
 			</xsl:if>
 			<xsl:if test="$currentResult">
@@ -221,7 +225,7 @@
 			parentFactName: <xsl:value-of select="$parentFactName"/>
 			<xsl:text>
 			</xsl:text>
-			<!--parentAuthorName: <xsl:value-of select="$parentAuthorName"/>
+			<!-- parentAuthorName: <xsl:value-of select="$parentAuthorName"/>
 			typeName: <xsl:value-of select="$typeName"/>
 			title: <xsl:apply-templates select="exsl:node-set($newResult)/*[1]" mode="simpleName"/>
 			currentDeep: <xsl:value-of select="count( exsl:node-set($newResult)/* )"/>
@@ -229,7 +233,7 @@
 			<xsl:for-each select="exsl:node-set($newResult)/*">
 				<xsl:value-of select="position()"/>
 				<xsl:text>)	</xsl:text>
-				<xsl:value-of select="name()"/> [<xsl:value-of select="name(*)"/>]
+				<xsl:value-of select="name()"/> [<xsl:value-of select="name(*)"/> - <xsl:value-of select="*/@type"/>]
 			</xsl:for-each>
 		</xsl:message>
 		<xsl:choose>
