@@ -408,8 +408,8 @@
 												<td valign="top">
 													<xsl:if test="$adminMode">
 														<sup>
-															<a href="{$start/@prefix}m8/{substring(name(),1,1)}/{name()}/value.xml" style="color:gray; font-size:.6em">
-																<xsl:value-of select="name()"/>
+															<a href="/{m8:dir( name(*) )}/value.xml" style="color:gray; font-size:.6em">
+																<xsl:value-of select="name(*)"/>
 															</a>
 														</sup>
 													</xsl:if>

@@ -294,7 +294,6 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			&setWarn( "   Добавление куки $cookiePrefix.$_: $cookie{$_}");#		
 			push @cookie, $q->cookie( -name => $cookiePrefix.$_, -expires => '+1y', -value => $cookie{$_} ) 
 		}
-	
 		if ( 0 and ( $temp{'mission'} eq $defaultAvatar and $temp{'user'} eq 'guest' ) ){
 			my $location = $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.$temp{'prefix'};
 			if ( defined $temp{'message'} and $temp{'message'} eq 'OK' ){ $location .= &m8req( \%temp ).'/'}
@@ -302,8 +301,10 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			print $q->header( -location => $location, -cookie => [@cookie] )
 		
 		}
-		elsif ( ( $temp{'mission'} ne $defaultAvatar or $temp{'user'} eq 'guest' ) and ( not $temp{'QUERY_STRING'} or ( not $temp{'record'} and not defined $temp{'message'} ) or defined $temp{'ajax'} or defined $temp{'wkhtmltopdf'} ) ) { 	#$temp{'QUERY_STRING'} $temp{'record'} or $temp{'QUERY_STRING'}=~/^n1464273764-4704-1/ $ENV{'HTTP_HOST'} eq 'localhost'$ENV{'REMOTE_ADDR'} eq "127.0.0.1" 
-			&setWarn('   Вывод в web без редиректа '.$temp{'record'});		
+		elsif (1) {
+		#elsif ( ( $temp{'mission'} ne $defaultAvatar or $temp{'user'} eq 'guest' ) and ( not $temp{'QUERY_STRING'} or ( not $temp{'record'} and not defined $temp{'message'} ) or defined $temp{'ajax'} or defined $temp{'wkhtmltopdf'} ) ) { 	#$temp{'QUERY_STRING'} $temp{'record'} or $temp{'QUERY_STRING'}=~/^n1464273764-4704-1/ $ENV{'HTTP_HOST'} eq 'localhost'$ENV{'REMOTE_ADDR'} eq "127.0.0.1" 
+		
+			&setWarn( '   Вывод в web без редиректа (номеров: '.$temp{'record'}.')' );		
 			my $doc;
 			print $q->header( 
 				-type 			=> 'text/'.$temp{'format'}, 
@@ -543,8 +544,11 @@ sub washProc{
 			for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
 				&setWarn('		wP  парсинг пары >'.$pair.'<');
 				my ($name, $value) = split(/=/, $pair);
+				next if $name eq '_'; #пара с именем '_' добавляется только для того что бы избежать кэширования запроса.
 				$name = $types{$name} if defined $types{$name};
 				next if $name eq 'user' or defined $$temp{$name};
+				$value =~ s/^\s+//;
+				$value =~ s/\s+$//;
 				if ( not $value and $value ne '0' ){ 
 					&setWarn('		wP     присвоение пустого значения');
 					$value = 'r' 
@@ -1308,8 +1312,12 @@ sub m8dir {
 }
 sub m8req {
 	my ( $temp ) = @_;
-	my $dir = $auraDir.'/'.$$temp{'ctrl'}.'/m8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/?modifier='.$$temp{'modifier'};
-	$dir .= '&error='.$$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
+	my $dir = $auraDir.'/'.$$temp{'ctrl'}.'/m8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/';
+	if ( defined $$temp{'number'} ){
+		$dir .= '?';
+		$dir .= 'modifier='.$$temp{'modifier'} if $$temp{'modifier'} ne 'n';
+		$dir .= '&error='.$$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
+	}
 	return $dir;
 }
 sub m8holder {

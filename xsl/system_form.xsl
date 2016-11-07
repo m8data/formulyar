@@ -298,7 +298,7 @@
 		<xsl:param name="ajaxMethod"/>
 		<!--<xsl:variable name="selectedValue" select="$objectElement/*[name()=$predicateName]/*"/>-->
 		<xsl:variable name="selectedValue" select="$objectElement/*[name()=$predicateName]/*"/>
-		<xsl:if test="not($sourceValue)" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
+		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message )" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
 			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
 		</xsl:if>
 		<form id="editParamOfPort" selectedValue="{name($selectedValue)}">
@@ -932,10 +932,10 @@
 				</xsl:if>
 				<xsl:choose>
 					<xsl:when test="$start/@debug">
-						<a href="{m8:root( $fact )}/?debug=switch" style="color: purple">debug on</a>
+						<a href="{m8:root( $fact )}?debug=switch" style="color: purple">debug on</a>
 					</xsl:when>
 					<xsl:otherwise>
-						<a href="{m8:root( $fact )}/?debug=switch" style="color: gray">debug off</a>
+						<a href="{m8:root( $fact )}?debug=switch" style="color: gray">debug off</a>
 					</xsl:otherwise>
 				</xsl:choose>
 				<xsl:text> | </xsl:text>
@@ -957,7 +957,7 @@
 				<xsl:text> | </xsl:text>
 				<xsl:choose>
 					<xsl:when test="$user != 'guest' ">
-						<a href="{m8:root( $fact )}/?logout=true" style="color: red">выйти</a>
+						<a href="{m8:root( $fact )}?logout=true" style="color: red">выйти</a>
 					</xsl:when>
 					<xsl:when test="$adminMode">
 						<a href="{$start/@prefix}formulyar" style="color:blue">войти</a>
