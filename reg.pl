@@ -301,9 +301,16 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			print $q->header( -location => $location, -cookie => [@cookie] )
 		
 		}
-		elsif (1) {
-		#elsif ( ( $temp{'mission'} ne $defaultAvatar or $temp{'user'} eq 'guest' ) and ( not $temp{'QUERY_STRING'} or ( not $temp{'record'} and not defined $temp{'message'} ) or defined $temp{'ajax'} or defined $temp{'wkhtmltopdf'} ) ) { 	#$temp{'QUERY_STRING'} $temp{'record'} or $temp{'QUERY_STRING'}=~/^n1464273764-4704-1/ $ENV{'HTTP_HOST'} eq 'localhost'$ENV{'REMOTE_ADDR'} eq "127.0.0.1" 
-		
+		elsif ( 0 ) {
+			&setWarn( '   Вывод в web c редиректом' );
+			#copy( $log, $log.'.txt' ) or die "Copy failed: $!" if $dbg; #копировать лог не ниже, т.е. не после возможного редиректа
+			my $location = $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.$temp{'prefix'};
+			if ( defined $temp{'message'} and $temp{'message'} ne 'OK' ){ $location .= $defaultAvatar.'/?error='.$temp{'message'} }
+			else { $location .= &m8req( \%temp ) }
+			print $q->header( -location => $location, -cookie => [@cookie] )# -status => '201 Created' #куки нужны исключительно для случая указания автора		
+		}		
+		elsif ( ( $temp{'mission'} ne $defaultAvatar or $temp{'user'} eq 'guest' ) and ( not $temp{'QUERY_STRING'} or ( not $temp{'record'} and not defined $temp{'message'} ) or defined $temp{'ajax'} or defined $temp{'wkhtmltopdf'} ) ) { 	#$temp{'QUERY_STRING'} $temp{'record'} or $temp{'QUERY_STRING'}=~/^n1464273764-4704-1/ $ENV{'HTTP_HOST'} eq 'localhost'$ENV{'REMOTE_ADDR'} eq "127.0.0.1" 
+		#elsif (1) {
 			&setWarn( '   Вывод в web без редиректа (номеров: '.$temp{'record'}.')' );		
 			my $doc;
 			print $q->header( 
@@ -365,7 +372,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			if ( defined $temp{'message'} and $temp{'message'} ne 'OK' ){ $location .= $defaultAvatar.'/?error='.$temp{'message'} }
 			else { $location .= &m8req( \%temp ) }
 			print $q->header( -location => $location, -cookie => [@cookie] )# -status => '201 Created' #куки нужны исключительно для случая указания автора		
-		}
+		}			
 	}
 }
 else {
@@ -1189,6 +1196,7 @@ sub dryProc2 {
 					#else{
 						my $good = 1;
 						for my $n ( grep { $val[$_]=~/^n/ and $good } 1..4 ){
+							next if $n == 1 and $questName ne 'n'; #подлежащее имеет право быть удаленным, если оно мульт
 							my $dirr = &m8dir( $val[$n] );
 							print REINDEX "      Исследование роли $n: $val[$n] в папке $dirr \n";
 							my %index = &getJSON( &m8dir( $val[$n] ), 'index' );
