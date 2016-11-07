@@ -310,11 +310,10 @@
 			<xsl:if test="$ajaxMethod='load'">
 				<input type="hidden" id="refreshYes"/>
 			</xsl:if>
-			<xsl:if test="$objectElement/@invalid or $selectedValue/@invalid">
+			<xsl:if test="$objectElement/@invalid or $selectedValue/@invalid" xml:lang="этот блок вероятно не нужен после добавления страхующего указания шага 2016-11-07 в выводе селекта теплозащиты">
 				<input type="hidden" name="b1" value="{$rootName}"/>
 				<input type="hidden" name="b2" value="{$shag}"/>
 				<input type="hidden" name="b3" value="{$selectedValue/@invalid}{$objectElement/@invalid}"/>
-				<input type="hidden" name="b5" value="{$rootName}"/>
 			</xsl:if>
 			<xsl:if test="$hidden">
 				<xsl:for-each select="exsl:node-set($hidden)/*">
