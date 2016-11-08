@@ -244,11 +244,19 @@
 					<b>модификатор</b>
 					<div style="padding: .2em">
 						<xsl:for-each select="m8:path( $fact, 'quest' )/*[name()!=$fact]">
-							<xsl:sort select="@time"/>
+							<xsl:sort select="m8:title( name() )"/><!--="@time-->
 							<div>
-								<a href="{m8:action( name(), $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
-									<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
-								</a>
+								<xsl:choose>
+									<xsl:when test="m8:index( name() )/subject">
+										<a href="{m8:action( name(), $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
+											<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
+										</a>
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:apply-templates select="." mode="simpleName"/>
+									</xsl:otherwise>
+								</xsl:choose>
+								
 							</div>
 						</xsl:for-each>
 					</div>
@@ -260,9 +268,25 @@
 					<b>модификация</b>
 					<div style="padding: .2em">
 						<xsl:for-each select="m8:path( $fact, 'role1' )/*[name()!='n']">
-							<xsl:sort select="@time"/>
+							<xsl:sort select="m8:title( name() )"/>
 							<div>
 								<a href="{m8:action( $fact, name() )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
+									<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
+								</a>
+							</div>
+						</xsl:for-each>
+					</div>
+				</div>
+			</xsl:if>
+			<xsl:if test="m8:path( $fact, 'n', 'terminal' )/*[not(r)] and $modifier = 'n' ">
+				<br/>
+				<div>
+					<b>упоминания</b>
+					<div style="padding: .2em">
+						<xsl:for-each select="m8:path( $fact, 'n', 'terminal' )/*[not(r)] ">
+							<xsl:sort select="m8:title( name() )"/>
+							<div>
+								<a href="{m8:root( name() )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
 									<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
 								</a>
 							</div>
@@ -396,7 +420,7 @@
 													</xsl:if>
 												</td>
 												<td valign="top">
-													<a href="{m8:root( name() )}">q</a>
+													<a href="{m8:root( name(*) )}">q</a>
 												</td>
 												<!--<xsl:if test="name()!='n'">-->
 												<td valign="top">
