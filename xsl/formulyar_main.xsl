@@ -249,7 +249,7 @@
 		</xsl:if>
 		<div style="color: #777">
 			<xsl:message>= = = = = = = - Зона упоминаний - = = = = = =</xsl:message>
-			<xsl:if test="m8:path( $fact, 'quest' )/*[name()!=$fact]">
+			<xsl:if test="m8:path( $fact, 'quest' )/*[name()!=$fact] and $fact!='n' ">
 				<br/>
 				<div>
 					<b>модификатор</b>
@@ -273,7 +273,7 @@
 					</div>
 				</div>
 			</xsl:if>
-			<xsl:if test="m8:path( $fact, 'role1' )/*[name()!='n'] and $modifier = 'n' ">
+			<xsl:if test="m8:path( $fact, 'role1' )/*[name()!='n'] and $fact!='n' and $modifier = 'n' ">
 				<br/>
 				<div>
 					<b>модификация</b>
@@ -665,6 +665,14 @@
 									</tr>
 								</xsl:for-each>
 							</table>
+							<xsl:if test="m8:d( $fact )/div and $modifier != 'n'"><!-- and not( start-with( m8:d( $fact )/div[2]/span, 'xsd:' ) )-->
+								<div>------------------------</div>
+								<xsl:for-each select="m8:d( $fact )/div">
+									<div style="padding-bottom: .5em">
+										<a href="{m8:action( $fact, $modifier )}&amp;{span[1]}="><xsl:value-of select="m8:title( $types/@*[name()=current()/span[1]] )"/> <xsl:value-of select="concat( ' (', span[3], ')' )"/><!--$types/@*[name()=span[1]]  <xsl:value-of select="m8:title( $types/@*[name()=span[1]] )"/>--></a>
+									</div>
+								</xsl:for-each>
+							</xsl:if>
 							<div>------------------------</div>
 							<!--<xsl:if test="not( $startPort/r )"></xsl:if>-->
 							<!--<div style="padding-bottom: .2em">

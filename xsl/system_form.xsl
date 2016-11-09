@@ -30,7 +30,6 @@
 			<!--<xsl:with-param name="currentQuestName" select="$quest"/>-->
 		</xsl:call-template>
 	</xsl:variable>
-
 	<!--<xsl:variable name="rootName">
 		<xsl:choose>
 			<xsl:when test="exsl:node-set($questAncestors)/*[m8:holder( name() )=$user][not( */@type )]"><xsl:value-of select="name( exsl:node-set($questAncestors)/*[m8:holder( name() )=$user][not( */@type )][1] )"/></xsl:when>
@@ -90,7 +89,8 @@
 	<!-- ####  ЗНАКИ (END)  ####-->
 	<!-- 
 
---><func:function name="m8:path">
+-->
+	<func:function name="m8:path">
 		<xsl:param name="level1"/>
 		<xsl:param name="level2"/>
 		<xsl:param name="level3"/>
@@ -109,13 +109,10 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
-		<!-- 
+	<!-- 
 -->
-
-
 	<!-- {$start/@prefix}a/{$ctrl}/{m8:dir( name() )}
 -->
-	
 	<!-- 
 		
 		## файлы корня ##
@@ -135,11 +132,11 @@
 	<func:function name="m8:quest">
 		<xsl:param name="fact"/>
 		<func:result select="m8:path( $fact, 'quest' )"/>
-	</func:function>	
+	</func:function>
 	<!-- 
 		## файлы корня (end) ##
 
--->	
+-->
 	<func:function name="m8:port">
 		<xsl:param name="cFact"/>
 		<xsl:param name="cQuest"/>
@@ -173,7 +170,6 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
-	
 	<func:function name="m8:director">
 		<xsl:param name="fact"/>
 		<xsl:message>	--- работа m8:director с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
@@ -201,8 +197,7 @@
 	<func:function name="m8:fact_color">
 		<xsl:param name="fact"/>
 		<func:result select="concat( 'color: #', translate( substring( $fact, 2, 3 ), '5qwertyuiopasdfghjklzxcvbnm', 'b1234567890abc1234567890abc' ) )"/>
-	</func:function>	
-	
+	</func:function>
 	<func:function name="m8:dir">
 		<xsl:param name="fact"/>
 		<xsl:param name="quest"/>
@@ -260,28 +255,28 @@
 	<func:function name="m8:title">
 		<xsl:param name="fact"/>
 		<func:result>
-		<xsl:call-template name="simpleName">
-			<xsl:with-param name="name" select="$fact"/>
-		</xsl:call-template>		
+			<xsl:call-template name="simpleName">
+				<xsl:with-param name="name" select="$fact"/>
+			</xsl:call-template>
 		</func:result>
-	</func:function>	
+	</func:function>
 	<func:function name="m8:param">
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
 		<func:result select="name( m8:port( $fact )/*[name()=$param]/* )"/>
-	</func:function>	
+	</func:function>
 	<func:function name="m8:i">
 		<xsl:param name="fact"/>
 		<func:result select="m8:value( m8:param( $fact, 'i' ) )"/>
-	</func:function>	
+	</func:function>
 	<func:function name="m8:d">
 		<xsl:param name="fact"/>
 		<func:result select="m8:value( m8:param( $fact, 'd' ) )"/>
-	</func:function>		
+	</func:function>
 	<func:function name="m8:n">
 		<xsl:param name="fact"/>
 		<func:result select="m8:value( m8:param( $fact, 'n' ) )"/>
-	</func:function>	
+	</func:function>
 	<!--
 
 //-->
@@ -381,10 +376,10 @@
 					<xsl:with-param name="ajaxMethod" select="$ajaxMethod"/>
 				</xsl:call-template>
 			</xsl:when>
-			<xsl:when test="m8:port( $predicateName )/n" xml:lang="вывод списка из tsv-файла">
+			<xsl:when test="m8:port( $predicateName )/n and m8:n( $predicateName )/div" xml:lang="вывод списка из tsv-файла. Проверка дива нужна, т.к. файл может быть приложен любой">
 				<!--$parentPredicateName,-->
 				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> списка из tsv-файла</xsl:message>
-				<xsl:variable name="currentListName" select="name( m8:port( $predicateName )/n/*)"/>
+				<!--<xsl:variable name="currentListName" select="name( m8:port( $predicateName )/n/*)"/>-->
 				<!--$parentPredicateName, -->
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>
@@ -392,7 +387,7 @@
 					<xsl:with-param name="questName" select="$questName"/>
 					<xsl:with-param name="predicateName" select="$predicateName"/>
 					<xsl:with-param name="selectedValue" select="$selectedValue"/>
-					<xsl:with-param name="sourceValue" select="m8:value( $currentListName )"/>
+					<xsl:with-param name="sourceValue" select="m8:n( $predicateName )"/><!-- m8:value( $currentListName )-->
 					<xsl:with-param name="sortSelect" select="$sortSelect"/>
 					<xsl:with-param name="titleSelect" select="$titleSelect"/>
 					<xsl:with-param name="ajaxMethod" select="$ajaxMethod"/>
@@ -491,7 +486,6 @@
 			<!--
 							ВЫВОД TEXTAREA
 -->
-
 			<xsl:when test="$predicateName = 'd' or $predicateParam/div[3]/span='textarea' ">
 				<xsl:variable name="name">
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
@@ -501,7 +495,7 @@
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
 					</xsl:if>
 					<xsl:if test="$name=''">
-						<!--<xsl:attribute name="onfocus"><xsl:text>$(this).val('')</xsl:text></xsl:attribute>-->		
+						<!--<xsl:attribute name="onfocus"><xsl:text>$(this).val('')</xsl:text></xsl:attribute>-->
 						<xsl:text>	</xsl:text>
 						<!--<xsl:comment>антидыра</xsl:comment>-->
 					</xsl:if>
@@ -583,7 +577,7 @@
 							</xsl:if>
 							<xsl:copy-of select="$option"/>
 							<xsl:for-each select="exsl:node-set($sourceValue)/*">
-								<xsl:sort select="span[$sortSelect]"/>
+								<xsl:sort select="span[$sortSelect]"/><!--span[$sortSelect]-->
 								<xsl:variable name="currentVal" select="span[1]"/>
 								<xsl:if test="1 or not(exsl:node-set($valueNames)/*[.=$currentVal]) or $currentVal=$objectTitle" xml:lang="требуется проверка необходимости">
 									<option value="{span[1]}">
@@ -643,7 +637,7 @@
 							<xsl:attribute name="class"><xsl:choose><xsl:when test="exsl:node-set($sourceValue)/*[20]" xml:lang="для городов в калькуляторе TN например">custom-</xsl:when><xsl:otherwise>simple-</xsl:otherwise></xsl:choose><xsl:value-of select="$ajaxMethod"/><xsl:text>-select</xsl:text></xsl:attribute>
 							<xsl:copy-of select="$option"/>
 							<xsl:for-each select="exsl:node-set($sourceValue)/*">
-								<xsl:sort select="@sort"/>
+								<xsl:sort select="m8:title( name() )"/><!-- m8:title( name() )-->
 								<xsl:variable name="valueName" select="name()"/>
 								<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or name() = name( $selectedValue )">
 									<option value="{$valueName}">
