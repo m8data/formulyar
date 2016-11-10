@@ -255,16 +255,18 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		}
 		elsif ( $temp{'format'} eq 'doc' ){
 			&setWarn( "   Формирование doc-файла" );#
-			rmtree $temp{'m8path'}.'/report' if -d $temp{'m8path'}.'/report'; 
-			dircopy $planeDir.'/'.$temp{'ctrl'}.'/template/report', $temp{'m8path'}.'/report';
-			-e $temp{'m8path'}.'/report/_rels/.rels' || copy( $planeDir.'/'.$temp{'ctrl'}.'/template/report/_rels/.rels', $temp{'m8path'}.'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
+			$ENV{'QUERY_STRING'} =~ /print=(\d+)/;
+			my $repNum = $1;
+			rmtree $temp{'m8path'}.'/report' if -d $temp{'m8path'}.'/report';
+			unlink $temp{'m8path'}.'/report.docx' if -e $temp{'m8path'}.'/report.docx';
+			dircopy $planeDir.'/'.$temp{'ctrl'}.'/template/'.$repNum.'/report', $temp{'m8path'}.'/report';
+			-e $temp{'m8path'}.'/report/_rels/.rels' || copy( $planeDir.'/'.$temp{'ctrl'}.'/template/'.$repNum.'/report/_rels/.rels', $temp{'m8path'}.'/report/_rels/.rels' ) || die "Copy for Windows failed: $!";
 			my $xmlFile = $planeRoot.$temp{'m8path'}.'/temp.xml';
 			&setFile( $xmlFile, &getDoc( \%temp ) );
 			my $xslFile = $planeRoot.$planeDir.'/'.$temp{'ctrl'}.'/'.$stylesheetDir.'/'.$temp{'ctrl'}.'.xsl';
 			my $documentFile = $planeRoot.$temp{'m8path'}.'/report/word/document.xml';
 			my $status = system ( 'xsltproc -o '.$documentFile.' '.$xslFile.' '.$xmlFile.' 2>'.$planeRoot.$logPath.'/xsltproc_generate_docx.txt' );#
 			&setWarn( "   documntXML: $status" );#
-			unlink $temp{'m8path'}.'/report.docx' if -e $temp{'m8path'}.'/report.docx';
 			my $zip = Archive::Zip->new();
 			$zip->addTree( $temp{'m8path'}.'/report/' );
 			unless ( $zip->writeToFileNamed($temp{'m8path'}.'/report.docx') == AZ_OK ) {
