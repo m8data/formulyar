@@ -197,9 +197,12 @@
 											<a href="{ m8:root( name() )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
-											<sup>
-									<a href="{ m8:root() }?a0={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: #666">удаление</a>
-								</sup>
+											<xsl:if test="m8:holder( name() )=$user">
+												<xsl:text> </xsl:text>
+												<sup>
+													<a href="{ m8:root( $fact ) }?a0={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: #666">del</a>
+												</sup>
+											</xsl:if>
 										</div>
 									</xsl:for-each>
 								</div>
@@ -218,12 +221,12 @@
 										</div>
 									</xsl:for-each>
 								</div>
-							</xsl:if>							
+							</xsl:if>
 						</td>
 						<td align="center" valign="top" width="30%">
 							<xsl:if test="m8:index( $fact )/object/*[m8:director( name() ) != $fact]">
 								<div>
-										<b style="color: #555">Команда</b>
+									<b style="color: #555">Команда</b>
 									<div style="padding: 1em">
 										<xsl:for-each select="m8:index( $fact )/object/*[m8:director( name() ) != $fact]">
 											<xsl:sort select="m8:title( name() )"/>
@@ -258,7 +261,8 @@
 					<b>модификатор</b>
 					<div style="padding: .2em">
 						<xsl:for-each select="m8:path( $fact, 'quest' )/*[name()!=$fact]">
-							<xsl:sort select="m8:title( name() )"/><!--="@time-->
+							<xsl:sort select="m8:title( name() )"/>
+							<!--="@time-->
 							<div>
 								<xsl:choose>
 									<xsl:when test="m8:index( name() )/subject">
@@ -270,7 +274,6 @@
 										<xsl:apply-templates select="." mode="simpleName"/>
 									</xsl:otherwise>
 								</xsl:choose>
-								
 							</div>
 						</xsl:for-each>
 					</div>
@@ -668,11 +671,16 @@
 									</tr>
 								</xsl:for-each>
 							</table>
-							<xsl:if test="m8:d( $fact )/div and $modifier != 'n'"><!-- and not( start-with( m8:d( $fact )/div[2]/span, 'xsd:' ) )-->
+							<xsl:if test="m8:d( $fact )/div and $modifier != 'n'">
+								<!-- and not( start-with( m8:d( $fact )/div[2]/span, 'xsd:' ) )-->
 								<div>------------------------</div>
 								<xsl:for-each select="m8:d( $fact )/div">
 									<div style="padding-bottom: .5em">
-										<a href="{m8:action( $fact, $modifier )}&amp;{span[1]}="><xsl:value-of select="m8:title( $types/@*[name()=current()/span[1]] )"/> <xsl:value-of select="concat( ' (', span[3], ')' )"/><!--$types/@*[name()=span[1]]  <xsl:value-of select="m8:title( $types/@*[name()=span[1]] )"/>--></a>
+										<a href="{m8:action( $fact, $modifier )}&amp;{span[1]}=">
+											<xsl:value-of select="m8:title( $types/@*[name()=current()/span[1]] )"/>
+											<xsl:value-of select="concat( ' (', span[3], ')' )"/>
+											<!--$types/@*[name()=span[1]]  <xsl:value-of select="m8:title( $types/@*[name()=span[1]] )"/>-->
+										</a>
 									</div>
 								</xsl:for-each>
 							</xsl:if>
@@ -685,7 +693,7 @@
 								<div style="padding-bottom: .5em">
 									<a href="{m8:action( $fact, $modifier )}&amp;sort=">сортировка</a>
 								</div>
-							</xsl:if>							
+							</xsl:if>
 							<xsl:if test="not( $startPort/i )">
 								<div style="padding-bottom: .5em">
 									<a href="{m8:action( $fact, $modifier )}&amp;i=">имя</a>
