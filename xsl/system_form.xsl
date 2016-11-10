@@ -387,7 +387,8 @@
 					<xsl:with-param name="questName" select="$questName"/>
 					<xsl:with-param name="predicateName" select="$predicateName"/>
 					<xsl:with-param name="selectedValue" select="$selectedValue"/>
-					<xsl:with-param name="sourceValue" select="m8:n( $predicateName )"/><!-- m8:value( $currentListName )-->
+					<xsl:with-param name="sourceValue" select="m8:n( $predicateName )"/>
+					<!-- m8:value( $currentListName )-->
 					<xsl:with-param name="sortSelect" select="$sortSelect"/>
 					<xsl:with-param name="titleSelect" select="$titleSelect"/>
 					<xsl:with-param name="ajaxMethod" select="$ajaxMethod"/>
@@ -577,7 +578,8 @@
 							</xsl:if>
 							<xsl:copy-of select="$option"/>
 							<xsl:for-each select="exsl:node-set($sourceValue)/*">
-								<xsl:sort select="span[$sortSelect]"/><!--span[$sortSelect]-->
+								<xsl:sort select="span[$sortSelect]"/>
+								<!--span[$sortSelect]-->
 								<xsl:variable name="currentVal" select="span[1]"/>
 								<xsl:if test="1 or not(exsl:node-set($valueNames)/*[.=$currentVal]) or $currentVal=$objectTitle" xml:lang="требуется проверка необходимости">
 									<option value="{span[1]}">
@@ -637,7 +639,8 @@
 							<xsl:attribute name="class"><xsl:choose><xsl:when test="exsl:node-set($sourceValue)/*[20]" xml:lang="для городов в калькуляторе TN например">custom-</xsl:when><xsl:otherwise>simple-</xsl:otherwise></xsl:choose><xsl:value-of select="$ajaxMethod"/><xsl:text>-select</xsl:text></xsl:attribute>
 							<xsl:copy-of select="$option"/>
 							<xsl:for-each select="exsl:node-set($sourceValue)/*">
-								<xsl:sort select="m8:title( name() )"/><!-- m8:title( name() )-->
+								<xsl:sort select="m8:title( name() )"/>
+								<!-- m8:title( name() )-->
 								<xsl:variable name="valueName" select="name()"/>
 								<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or name() = name( $selectedValue )">
 									<option value="{$valueName}">
@@ -867,28 +870,22 @@
 				<xsl:value-of select="$start/@error"/>
 			</div>
 		</xsl:if>
-		<xsl:if test="$user != 'guest' or $adminMode or $ctrl='formulyar' ">
+		<xsl:if test="$user != 'guest' or $adminMode or $ctrl='formulyar'">
 			<!-- or $start/@debug-->
 			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray">
 				<!--<a href="{$start/@prefix}" style="color:gray">START</a>
 					<xsl:text> | </xsl:text>-->
-				<xsl:choose>
-					<xsl:when test="$ctrl = 'formulyar' ">
-						<!--<xsl:for-each select="document( concat( $start/@DOCUMENT_ROOT, '/m8/avatar.xml' ) )/*/*">
-							<a href="{$start/@prefix}a/{@id}/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:gray">
-								<xsl:value-of select="@title"/>
->>>>>>> d547d9c381a0dae64e684b2983354d6e51b2146e
-							</a>
-							<xsl:if test="position()!=last()">
-								<xsl:text> | </xsl:text>
-							</xsl:if>
-						</xsl:for-each>-->
-						<a href="{$start/@prefix}a/{$avatar}/{ m8:dir( $fact, $quest ) }" style="color:orange">публичный раздел</a>
-					</xsl:when>
-					<xsl:otherwise>
-						<a href="{$start/@prefix}a/formulyar/{ m8:dir( $fact, $quest ) }" style="color:brown">aдминистративный раздел</a>
-					</xsl:otherwise>
-				</xsl:choose>
+				<xsl:comment/>
+				<xsl:if test="not( starts-with( $start/@user, 'user' ) )">
+					<xsl:choose>
+						<xsl:when test="$ctrl = 'formulyar' ">
+							<a href="{$start/@prefix}a/{$avatar}/{ m8:dir( $fact, $quest ) }" style="color:orange">публичный раздел</a>
+						</xsl:when>
+						<xsl:otherwise>
+							<a href="{$start/@prefix}a/formulyar/{ m8:dir( $fact, $quest ) }" style="color:brown">aдминистративный раздел</a>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:if>
 				<!--<xsl:text> | </xsl:text>
 					<a href="{$start/@prefix}system/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}" style="color:gray">sys</a>
 					<xsl:text> | </xsl:text>
@@ -929,27 +926,21 @@
 					</select>
 					<xsl:text> | </xsl:text>
 				</xsl:if>
-				<xsl:choose>
-					<xsl:when test="$start/@debug">
-						<a href="{m8:root( $fact )}?debug=switch" style="color: purple">debug on</a>
-					</xsl:when>
-					<xsl:otherwise>
-						<a href="{m8:root( $fact )}?debug=switch" style="color: gray">debug off</a>
-					</xsl:otherwise>
-				</xsl:choose>
-				<xsl:text> | </xsl:text>
-				<!--<xsl:if test="$calcName">
-						<xsl:value-of select="$calcName"/>
-						<xsl:text> | </xsl:text>
-					</xsl:if>-->
-				<a href="/{m8:dir( $fact, $modifier )}/port.xml" style="color:gray">
-					<xsl:value-of select="$localtime"/>
-				</a>
-				<!--					<xsl:text> </xsl:text>
-		<a href="/{m8:dir( $fact, $modifier )}/port.xml" style="color:gray">
-					s
-				</a>-->
-				<xsl:text> |  </xsl:text>
+				<xsl:if test="not( starts-with( $start/@user, 'user' ) )">
+					<xsl:choose>
+						<xsl:when test="$start/@debug">
+							<a href="{m8:root( $fact )}?debug=switch" style="color: purple">debug on</a>
+						</xsl:when>
+						<xsl:otherwise>
+							<a href="{m8:root( $fact )}?debug=switch" style="color: gray">debug off</a>
+						</xsl:otherwise>
+					</xsl:choose>
+					<xsl:text> | </xsl:text>
+					<a href="/{m8:dir( $fact, $modifier )}/port.xml" style="color:gray">
+						<xsl:value-of select="$localtime"/>
+					</a>
+					<xsl:text> |  </xsl:text>
+				</xsl:if>
 				<span style="{ m8:fact_color( $user )}">
 					<xsl:value-of select="$user"/>
 				</span>
