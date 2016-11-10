@@ -1277,9 +1277,9 @@ sub parseNew {
 		if ($$temp{'login'} ne 'guest'){
 			defined $$pass{'password'} and $$pass{'password'} || return 'no_password';
 			my $userPath = $userDir.'/'.$$temp{'login'};
-			-d $userPath && -d $planeDir.'/'.$$temp{'login'} || return 'no_user';
-			my $password = &getFile( $userPath.'/'.$passwordFile );
-			$password = &getSetting('userPassword') if $password eq '';
+			-d $userPath  || return 'no_user'; #&& -d $planeDir.'/'.$$temp{'login'}
+			my $password = &getFile( $userPath.'/'.$passwordFile ) || &getSetting('userPassword');
+			#$password = &getSetting('userPassword') if $password eq '';
 			$password eq $$pass{'password'} || return 'bad_password';
 		}
 	}
