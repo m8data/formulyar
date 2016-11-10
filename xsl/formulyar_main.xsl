@@ -197,6 +197,9 @@
 											<a href="{ m8:root( name() )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
+											<sup>
+									<a href="{ m8:root() }?a0={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: #666">удаление</a>
+								</sup>
 										</div>
 									</xsl:for-each>
 								</div>
