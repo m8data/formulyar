@@ -542,9 +542,6 @@ sub washProc{
 					} 
 				}
 			}
-			elsif ( $$temp{'control'} eq 'start'){
-				&getAvatar(1);
-			}
 		}
 		elsif ( $$temp{'record'} ) {	
 			&setWarn( "		wP   Поиск и проверка номеров в строке запроса $$temp{'QUERY_STRING'}" );# стирка 
@@ -1561,22 +1558,6 @@ sub getDoc {
 	#copy( $tempFile, $tempFile.'.xml' ) if -e $tempFile and $adminMode;
 	&setFile( $tempFile, $doc );
 	return $doc
-}
-sub getAvatar {
-	&setWarn("		gA @_");
-	my $setxml = $_[0];
-	my %avatar;
-	my $count = 0;
-	my $ava;
-	for my $avatarName ( grep { not /^_/ and -e $planeDir.'/'.$_.'/'.$stylesheetDir.'/title.txt' } &getDir( $planeDir, 1 ) ){
-		&setWarn ("		getAvatar   Найден аватар $avatarName");
-		$avatar{'unit'}[$count]{'id'} = $avatarName;
-		$avatar{'unit'}[$count]{'title'} = Encode::decode_utf8( &getFile( $planeDir.'/'.$avatarName.'/'.$stylesheetDir.'/title.txt' ) );
-		$ava = $avatarName if $avatarName ne $startAvatar;
-		$count++;
-	}
-	&setXML ( 'm8', 'avatar', \%avatar ) if $setxml;
-	return $ava;
 }
 sub getTriple {
 	&setWarn("		gT @_");

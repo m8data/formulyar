@@ -233,7 +233,7 @@
 				<!-- без '/' не работает отсылка файлов в спец-инпуте -->
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir() )"/>
+				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/')"/><!--, m8:dir(), '/' -->
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>

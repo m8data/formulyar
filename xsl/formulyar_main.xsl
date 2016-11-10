@@ -197,10 +197,18 @@
 											<a href="{ m8:root( name() )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
-											<xsl:if test="m8:holder( name() )=$user">
+											<xsl:if test="120 > $time - m8:role1( name() )/*/@time">
+												<xsl:text> </xsl:text>
+												<sup style="color: magenta">change</sup>
+											</xsl:if>
+											<xsl:if test="1200 > $time - m8:path( name(), 'role1' )/*/@time">
+												<xsl:text> </xsl:text>
+												<sup style="color: red">new</sup>
+											</xsl:if>
+											<xsl:if test="m8:holder( name() )=$user and $fact != 'n'">
 												<xsl:text> </xsl:text>
 												<sup>
-													<a href="{ m8:root( $fact ) }?a0={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: #666">del</a>
+													<a href="{ m8:root( $fact ) }?a0={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: #bbb" onclick="return confirm('Удаление факта &#171;{m8:title( name() )}&#187;')" title="удалить">del</a>
 												</sup>
 											</xsl:if>
 										</div>
@@ -577,7 +585,7 @@
 												<xsl:text>&#160;</xsl:text>
 												<xsl:choose>
 													<xsl:when test="$leader = $director">
-														<a href="{m8:root( $director )}?a0={m8:triple( $fact )}" title="удаление">
+														<a href="{m8:root( $director )}?a0={m8:triple( $fact )}" title="удаление" onclick="return confirm('Удаление факта &#171;{m8:title($fact)}&#187;')">
 															<xsl:value-of select="$symbol_del"/>
 														</a>
 													</xsl:when>
