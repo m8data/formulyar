@@ -489,6 +489,7 @@ sub washProc{
 					&rinseProc ( 'd', $data)
 				}
 				else { $$temp{'user'} = $$temp{'login'}	}
+				-d '.plane/'.$$temp{'user'} || mkdir '.plane/'.$$temp{'user'};
 				my $sessionListFile = $userDir.'/'.$$temp{'user'}.'/'.$sessionFile;
 				my $tempName = 'u';
 				$tempName .= murmur128_x64(rand(10000000));
