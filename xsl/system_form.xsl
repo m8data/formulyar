@@ -491,7 +491,20 @@
 				<xsl:variable name="name">
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
 				</xsl:variable>
-				<textarea name="{$predicateName}" placeholder="описание объекта" cols="32" rows="3">
+				<textarea name="{$predicateName}" placeholder="описание объекта">
+						<xsl:choose>
+							<xsl:when test="$predicateName = 'd'">
+								<xsl:attribute name="cols">32</xsl:attribute>
+								<xsl:attribute name="rows">3</xsl:attribute>
+								<xsl:attribute name="placeholder">тип факта</xsl:attribute>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:attribute name="cols">80</xsl:attribute>
+								<xsl:attribute name="rows"><xsl:value-of select="count( m8:value( name( $selectedValue ) )/* ) + 4"/></xsl:attribute>
+								<xsl:attribute name="placeholder">описание факта</xsl:attribute>
+							</xsl:otherwise>
+						</xsl:choose>
+				
 					<xsl:if test="not($ajaxMethod)">
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
 					</xsl:if>
@@ -949,9 +962,9 @@
 					<xsl:when test="$user != 'guest' ">
 						<a href="{m8:root( $fact )}?logout=true" style="color: red">выйти</a>
 					</xsl:when>
-					<xsl:when test="$adminMode">
+					<xsl:otherwise><!--<xsl:when test="$adminMode">-->
 						<a href="{$start/@prefix}formulyar" style="color:blue">войти</a>
-					</xsl:when>
+					</xsl:otherwise>
 				</xsl:choose>
 			</div>
 		</xsl:if>

@@ -25,7 +25,7 @@
 				<!--<xsl:variable name="currentAuthor" select="name( m8:path( name(), 'subject_r' )/* )"/>-->
 				<!--<xsl:variable name="currentQuest" select="name( m8:path( name(), 'subject_r' )/*/* )"/>-->
 				<xsl:choose>
-					<xsl:when test="m8:port( name() )/i"><!--m8:path( name(), $avatar, $questName, 'port' )/i-->
+					<xsl:when test="m8:port( name() )/i[not(r)]"><!--m8:path( name(), $avatar, $questName, 'port' )/i-->
 						<xsl:apply-templates select="m8:port( name() )/i/*" mode="simpleName"/>
 					</xsl:when>
 					<!--<xsl:when test="m8:path( name(), $avatar, $questName, 'port' )/i">
