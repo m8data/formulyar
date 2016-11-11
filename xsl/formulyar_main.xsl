@@ -197,14 +197,16 @@
 											<a href="{ m8:root( name() )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
-											<xsl:if test="120 > $time - m8:role1( name() )/*/@time">
-												<xsl:text> </xsl:text>
-												<sup style="color: magenta">change</sup>
-											</xsl:if>
-											<xsl:if test="1200 > $time - m8:path( name(), 'role1' )/*/@time">
-												<xsl:text> </xsl:text>
-												<sup style="color: red">new</sup>
-											</xsl:if>
+											<xsl:choose>
+												<xsl:when test="1200 > $time - m8:path( name(), 'subject_r' )/*/@time">
+													<xsl:text> </xsl:text>
+													<sup style="color: red">new</sup>
+												</xsl:when>
+												<xsl:when test="120 > $time - m8:role1( name() )/*/@time">
+													<xsl:text> </xsl:text>
+													<sup style="color: magenta">change</sup>
+												</xsl:when>
+											</xsl:choose>
 											<xsl:if test="m8:holder( name() )=$user and $fact != 'n'">
 												<xsl:text> </xsl:text>
 												<sup>
