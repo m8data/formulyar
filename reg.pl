@@ -49,6 +49,7 @@ my %setting = (
 	'platformLevel'	=> 3,
 	'tempfsFolder'	=> '/mnt/tmpfs'
 );
+my $reindexDays = 14;
 my $passwordFile = 'password.txt';
 my $sessionFile = 'session.json';
 my $stylesheetDir = 'xsl';
@@ -69,6 +70,7 @@ my @mainTriple = ( 'n', 'r', 'i' );
 my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1, '_xml', 1 );
 my @superrole = ( 'triple', 'role', 'role', 'role', 'quest', 'author', 'subject', 'predicate', 'object', 'director' );
 my @superfile = ( undef, 'port', 'dock', 'terminal' ); 
+
 
 my $type = 'xml';
 
@@ -476,7 +478,6 @@ sub washProc{
 				for my $pass ( grep { defined $param{$_} } ( 'password', 'new_password', 'new_password2' ) ){ $pass{$pass} = $param{$pass} 	}
 				$$temp{'message'} = &parseNew ( $temp, \%pass );
 				return if $$temp{'message'};
-				
 				if ( defined $$temp{'new_author'} ){
 					&setWarn('		wP    фиксация создания автора '); 
 					$$temp{'fact'} = $$temp{'quest'} = $defaultFact;
@@ -519,29 +520,6 @@ sub washProc{
 			my @value = ( 'd' );
 			push @num, \@value;
 			$$cookie{'user'} = $defaultUser
-		}
-		elsif ( defined $$temp{'control'} ){
-			&setWarn ('		wP   Контроль');
-			if ( $$temp{'user'} ne $admin ){
-				$$temp{'message'} = 'Требуются админские полномочия';
-				return
-			}
-			if ( defined $$temp{'del'} ){
-				&setWarn ('		wP    Системное удаление директорий');
-				for my $m8subdir ( &getDir( 'm8', 1 ) ){
-					&setWarn ("		wP     Анализ директории $m8subdir");
-					if ( $$temp{'del'} < 3 ){ 
-						&setWarn ("		wP      Анализ базовых директорий");
-						if ( $$temp{'del'} > 1 ){
-							#for my $dir ( grep { $_ ne 'd' } &getDir ( $tsvPath, 1 ) ){ rmtree( $tsvPath.'/'.$dir ) }
-						}
-					}
-					else { 
-						&setWarn ("		wP      Удаление директории $m8subdir");
-						if ( $$temp{'del'} == 3 ){ $$cookie{'user'} = $defaultUser; $$cookie{'group'} = '' }
-					} 
-				}
-			}
 		}
 		elsif ( $$temp{'record'} ) {	
 			&setWarn( "		wP   Поиск и проверка номеров в строке запроса $$temp{'QUERY_STRING'}" );# стирка 
@@ -761,11 +739,12 @@ sub washProc{
 				}
 			}
 		}
-		if ( &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'}, 723 ) ){
-			&setWarn("		wP   Номер запрашивает повтор трипла в базе.");
-			$$temp{'povtor'}[$s] = 2;
-			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает повтор установления значения';
-		}
+		&spinProc( $num[$s], $$temp{'user'}, $$temp{'time'}, 723 );
+		#if ( 0 and &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'}, 723 ) ){
+		#	&setWarn("		wP   Номер запрашивает повтор трипла в базе.");
+		#	$$temp{'povtor'}[$s] = 2;
+		#	$$temp{'number'}[$s]{'message'} = 'Номер запрашивает повтор установления значения';
+		#}
 	}
 	return if 1 or -e $configPath.'/control' or not grep { $$temp{'number'}[$_] eq 'OK' } @{$$temp{'number'}};
 	
@@ -821,14 +800,16 @@ sub spinProc {
 	my ( $val, $user, $time, $dry )=@_;
 	&setWarn("
 		sP @_"  );
+	my @warn;# = ( "spinProc \n");
 	#if ( $$val[] ){
 	if ( $$val[5] ){
 		for my $key ( 0..5 ){ 
-			&setWarn("		sP  Значение на сушку $key: $$val[$key]"  )
+			&setWarn("		sP  Значение на сушку $key: $$val[$key]"  );
+			#push @warn, "		sP  Значение на сушку $key: $$val[$key]\n"
 			#else { warn "delete $key - $$val[$key]"
 		}	
 	}
-	else{ warn " DEL ($time / $dry): @{$val}" }
+	else{ push @warn, " DEL ($time / $dry): @{$val}\n" }
 	my ( $name, $subject, $predicate, $object, $modifier, $add ) = ( $$val[0], $$val[1], $$val[2], $$val[3], $$val[4], $$val[5] );
 	#$add = 1 if $add;
 	my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
@@ -851,7 +832,7 @@ sub spinProc {
 			my $oldTriple = $oldTriple[0];
 			my $oldTime = $port{$predicate}[0]{$oldObject}[0]{$oldTriple}[0]{'time'};
 			if ( $time < $oldTime ){ 
-				warn " DELETE OLD ( $time < $oldTime ): @{$val} \n";
+				push @warn,  " DELETE OLD ( $time < $oldTime ): @{$val} \n";
 				$add = undef;
 				$good = 1;
 				#warn " DELETE OLD $planeDir/$user/tsv/$name/$modifier"
@@ -864,8 +845,8 @@ sub spinProc {
 				my $oldModifier = $modifier;
 				$oldModifier = &m8director( $subject ) if $predicate eq 'r';
 				my @triple = ( $oldTriple, $subject, $predicate, $oldObject, $oldModifier );
-				warn " NEW VALUE ($time): @{$val} \n";
-				&spinProc ( \@triple, $user, $oldTime, 809 );
+				push @warn, " NEW VALUE ($time): @{$val} \n";
+				push @warn, &spinProc ( \@triple, $user, $oldTime, 809 );
 			}
 		}
 	}
@@ -972,7 +953,7 @@ sub spinProc {
 			}
 		}
 	}
-	return 0;
+	return @warn;
 	&setWarn("		sP @_ (END)
 	"  );	
 }
@@ -981,19 +962,26 @@ sub dryProc2 {
 	my ( $reindex )=@_; #$param
 	#&setWarn("		dP 2 @_" );
 	$dbg = 0;
+	my @warn = ('start', '');
+	my $indexTime = $reindexDays * 60 * 60 * 24;
 	#rmtree $logPath if -d $logPath;
 	#:: емкости и резервуары n1477307416-546366-pgstn-0
 	#:: огнезащита воздуховода n1477308145-515249-pgstn-0
-	-d $logPath || make_path( $logPath, { chmod => $chmod } );
+	-d $logPath.'/reindex' || make_path( $logPath.'/reindex', { chmod => $chmod } );
 	#make_path( $logPath, { chmod => $chmod } );
-	open (REINDEX, '>'.$logPath.'/reindex.txt')|| die "Ошибка при открытии файла $logPath/reindex.txt: $!\n";
+	my $ctime = time;
+	for my $indexLog ( &getDir( $logPath.'/reindex' ) ){
+		my $mtime = (stat $logPath.'/reindex/'.$indexLog)[9]; 
+		unlink $logPath.'/reindex/'.$indexLog if ( $ctime - $mtime ) > $indexTime;
+	}
+	open (REINDEX, '>'.$logPath.'/reindex/'.$ctime.'.txt')|| die "Ошибка при открытии файла $logPath/reindex/$ctime.txt: $!\n";
 	warn '		DRY BEGIN ';	
 	#mode1 - удаляется и переиндексируется все
 	#mode2 - только удаляется мусор (в штатном режиме имеет смысл только для доудаления гостевых триплов)
 	#@user - Если указаны то только они будут сохранены
 	#chdir "W:";
 	if ( -e $platformGit and 0 ){
-		print REINDEX "  Check platform \n";
+		push @warn, "  Check platform \n";
 		copy $platformGit, '/var/www/m8data.com/master';
 	}
 	if ( not -d 'm8' and 0 ){ #опция отключена 2016-10-05
@@ -1071,7 +1059,7 @@ sub dryProc2 {
 	my $DL_cookie = 0;
 
 	for my $sessionName ( &getDir( $sessionPath, 1 ) ){ 
-		print REINDEX "sessionName	$sessionName \n";
+		push @warn, "sessionName	$sessionName \n";
 		warn '		sessionName  '.$sessionName;
 		$cookie++;
 		my $cUser = &getFile( $sessionPath.'/'.$sessionName.'/value.txt' );
@@ -1087,34 +1075,34 @@ sub dryProc2 {
 			rmtree $sessionPath.'/'.$sessionName;
 			$DL_cookie++
 		}		
-	}	
-	print REINDEX "\n Круг1 \n";
+	}
+	my $zip = Archive::Zip->new();
+	push @warn, "\n Круг1 \n";
 	warn "		\n==== Round 1 ====\n  ";
 	my $time1 = time;
 	for my $userName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){  # 
-		print REINDEX "\n userName	$userName \n";
+		push @warn, "\n userName	$userName \n";
 		warn "		\n userName  $userName";
+		my $tsvPath = $planeDir.'/'.$userName.'/tsv';
+		$zip->addTree( $tsvPath, $userName );
 		if ( -e $planeDir.'/'.$userName.'/.git/refs/heads/'.$branche ){
-			print REINDEX "    Копирование указателя состояния ветки $branche";
+			push @warn, "    Копирование указателя состояния ветки $branche";
 			warn '	Copy of branche head  ';
 			copy $planeDir.'/'.$userName.'/.git/refs/heads/'.$branche, $userDir.'/'.$userName.'/'.$branche;
 		}
 		#next if $userName eq $defaultAvatar;
-		
-		my $tsvPath = $planeDir.'/'.$userName.'/tsv';
 		&setFile( $tsvPath.'/d/n/time.txt', '0.1' );
 		&setFile( $tsvPath.'/d/value.tsv', ( join "\t", @mainTriple ) );
 		&setFile( $tsvPath.'/i/value.tsv' );
-		
 		if ( not defined $stat{$userName} ){
 			for ( 'add', 'n_delR', 'n_delN' ){ $stat{$userName}{$_} = 0 }
 		}
 		for my $tsvName ( &getDir( $tsvPath, 1 ) ){
-			print REINDEX "   Исследование tsv-шки $tsvName \n";
+			#push @warn, "   Исследование tsv-шки $tsvName \n";
 			warn '	tsv  '.$tsvName;
 			if ( not -e $tsvPath.'/'.$tsvName.'/value.tsv' ){
 				warn 'Error: no value.tsv file';
-				print REINDEX "   Error: no $tsvPath/$tsvName/value.tsv file \n";
+				push @warn, "   Error: no $tsvPath/$tsvName/value.tsv file \n";
 				rmtree $tsvPath.'/'.$tsvName;
 				next;
 			}
@@ -1133,7 +1121,7 @@ sub dryProc2 {
 			}
 			if (1){
 			for my $questName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
-				print REINDEX "    Исследование квеста $questName \n";
+				#push @warn, "    Исследование квеста $questName \n";
 				$val[4] = $questName;
 				my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$val[4].'/time.txt' );
 				if ( $val[0] ne 'd' and $val[1] eq $val[4] ){
@@ -1145,30 +1133,31 @@ sub dryProc2 {
 					&setFile( $tsvPath.'/'.$tsvName.'/'.$val[4].'/time.txt', $timeProc )
 				}
 				if ( $userName eq 'guest' and $tsvName ne 'd' and $timeProc and $timeProc < $guestTime ){ 
-					print REINDEX "     Удаление старого гостевого трипла '.$div[0].' \n";
+					push @warn, "     Удаление старого гостевого трипла '.$div[0].' \n";
 					$n_delG++
 				}
 				else {
 					$val[5] = 1;
-					print REINDEX "     Реиндексация значений @val \n"; # d1341061753575729161 d14757079324734822550
+					push @warn, "     Реиндексация значений @val \n"; # d1341061753575729161 d14757079324734822550
 					$stat{$userName}{'add'}++;
 				}
-				&spinProc( \@val, $userName, $timeProc, 1094 );
+				push @warn, &spinProc( \@val, $userName, $timeProc, 1094 );
 			}
 			}
 		}
 	}
-	print REINDEX "\n Круг2 \n";
+	push @warn, "\n Круг2 \n";
 	warn "		\n==== Round 2 ====\n  ";
+	unless ( $zip->writeToFileNamed($logPath.'/reindex/'.$ctime.'.zip') == AZ_OK ) { die 'write error'	}
 	my $time2 = time;
 	if (1){
 	for my $userName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){ 
-		print REINDEX "userName2	$userName \n";
+		push @warn, "userName2	$userName \n";
 		warn "\n		userName2  $userName \n";
 		my $tsvPath = $planeDir.'/'.$userName.'/tsv';
 		for my $tsvName ( &getDir( $tsvPath, 1 ) ){ 
 			warn '	tsv2  '.$tsvName;
-			print REINDEX "  tsv2	$tsvName \n";
+			push @warn, "  tsv2	$tsvName \n";
 			if ( $tsvName=~/^i/ ){
 				if ( not -e &m8path( $tsvName, 'index' ) and $tsvName ne 'i' ){
 					rmtree $tsvPath.'/'.$tsvName;
@@ -1177,12 +1166,12 @@ sub dryProc2 {
 				}
 			}
 			elsif ( $tsvName=~/^d/ ){
-				print REINDEX "    Исследование трипла $tsvName \n";			
+				#push @warn, "    Исследование трипла $tsvName \n";			
 				my @val = map{ Encode::decode_utf8($_) } &getTriple( $userName, $tsvName );
 				my $parent = $val[1];
 				#$val[4] = $userName;
 				for my $questName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
-					print REINDEX "     Исследование квеста $questName \n";
+					#push @warn, "     Исследование квеста $questName \n";
 					$val[4] = $questName;
 					#if(0){
 					#	if ( $val[2]=~/^r/ ){
@@ -1198,12 +1187,12 @@ sub dryProc2 {
 						for my $n ( grep { $val[$_]=~/^n/ and $good } 1..4 ){
 							next if $n == 1 and $questName ne 'n'; #подлежащее имеет право быть удаленным, если оно мульт
 							my $dirr = &m8dir( $val[$n] );
-							print REINDEX "      Исследование роли $n: $val[$n] в папке $dirr \n";
+							#push @warn, "      Исследование роли $n: $val[$n] в папке $dirr \n";
 							my %index = &getJSON( &m8dir( $val[$n] ), 'index' );
 							if ( not defined $index{'subject'} ){
 								$good = 0; 
-								print REINDEX "       Cущность удалена. Номер испорчен. \n";
-								warn "  No find $val[$n]. Delete nechto"
+								push @warn, "       Cущность удалена. Номер испорчен. \n";
+								push @warn, "  No find $val[$n]. Delete nechto"
 								#for my $key ( %index ){
 								#	print REINDEX "       key: $key => $index{$key} \n";
 								#}
@@ -1217,19 +1206,24 @@ sub dryProc2 {
 						delete $userType{$userName}{$val[3]} if $map[1]=~/^xsd:\w+$/;
 						delete $types{$map[0]} if $map[1]=~/^xsd:\w+$/;
 					}
-					&spinProc( \@val, $userName, $timeProc, 1156 );
+					push @warn, &spinProc( \@val, $userName, $timeProc, 1156 );
 					if ( $val[2]=~/^r/ ){ $stat{$userName}{'n_delR'}++ }
 					else { $stat{$userName}{'n_delN'}++ }
 				}
 			}
 		}
 
+		
+
 	#}
 	}
 	}
+
 	my $time3 = time+1;
 	&rinseProc3( %types );# if keys %types;
 
+	print REINDEX @warn;
+	
 	my $second1 = int( $time2 - $time1 ) +1;
 	my $second2 = int( $time3 - $time2 ) +1;
 	my $s1 = int( $all / $second1 );
@@ -1319,7 +1313,7 @@ sub m8dir {
 	return $dir
 }
 sub m8req {
-	my ( $temp ) = @_;
+	my $temp = shift;
 	my $dir = $auraDir.'/'.$$temp{'ctrl'}.'/m8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/';
 	if ( defined $$temp{'number'} ){
 		$dir .= '?';
@@ -1330,13 +1324,13 @@ sub m8req {
 }
 sub m8holder {
 	&setWarn( "			m8holder @_" );	
-	my ( $fact ) = @_;
+	my $fact = shift;
 	my %subject = &getJSON( &m8dir( $fact ), 'subject_r' );
 	return $subject{'n'}[0]{'holder'}
 }
 sub m8director {
 	&setWarn( "			m8director @_" );	
-	my ( $fact ) = @_;
+	my $fact = shift;
 	my %subject = &getJSON( &m8dir( $fact ), 'subject_r' );
 	return $subject{'n'}[0]{'director'}
 }
@@ -1466,7 +1460,7 @@ sub setLink {
 
 
 sub getID {
-	my ( $name )=@_;
+	my $name = shift;
 #	&setWarn("						gI  @_" );
 	if ( $name=~m!^/m8/[dirn]/[dirn][\d\w_\-]*$! or $name=~m!^/m8/author/[a-z]{2}[\w\d]*$! ){ $name=~s!^/!!; return $name }
 	elsif( $name=~m!^([dirn])[\w\d_\-]*$! ){ return 'm8/'.$1.'/'.$name }
@@ -1474,7 +1468,7 @@ sub getID {
 }
 sub getFile {
 	&setWarn( "						gF @_" );
-	my $file = $_[0];
+	my $file = shift;
 	-e $file || return;
 	my @text;
 	open (FILE, $file)|| die "Error opening file $file: $!\n"; #'encoding(UTF-8)', "<:utf8", 
@@ -1515,7 +1509,7 @@ sub getJSON {
 	return %{$hash{$root}}
 }
 sub getSetting {
-	my ( $key ) = @_;
+	my $key = shift;
 	&setWarn("						getSetting  @_" );	
 	if ( -e $configPath.'/'.$key.'.txt' ){ $setting{$key} = &getFile( $configPath.'/'.$key.'.txt' ) }
 	else { &setFile( $configPath.'/'.$key.'.txt', $setting{$key} ) }
@@ -1602,7 +1596,7 @@ sub delDir {
 
 
 sub utfText {
-	my ( $value ) = @_;
+	my $value = shift;
 	$value =~ tr/+/ /;
 	$value =~ s/%([a-fA-F0-9]{2})/pack("C", hex($1))/eg;
 	return $value
