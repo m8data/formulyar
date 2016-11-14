@@ -573,24 +573,28 @@ sub washProc{
 					else {
 						&setWarn("			wP      $pair: новый номер $s" );
 						$s = $table{$s} = @num;
+						$num[$s][4] = 'n'; #это что бы можно было копировать параметры
 						$num[$s][5] = 1 
 					}
 					if ( $m ){
-						&setWarn("			wP      $pair: подготовка номера частью $m" );
+						&setWarn("			wP      $pair: подготовка номера $s частью $m" );
 						$value = $num[$s][3]."\n".$value if $m == 3 and $num[$s][3];
 						$num[$s][$m] = $value[$s]{$value} = $value;
+						
 					}
 					elsif ( $m eq '0' ){
-						&setWarn("			wP      $pair: демонтаж" );
+						&setWarn("			wP      $pair: демонтаж номера $s" );
 						next if defined $value[0]{$value};
 						$num[$s][0] = $value;
+						$num[$s][4] = $$temp{'modifier'};
 						$num[$s][5] = undef;
 						$value[0]{$value} = 1;
 					}
 					else{
-						&setWarn("			wP      $pair: создание новой сущности" );
+						&setWarn("			wP      $pair: создание новой сущности в номере $s" );
 						$matrix[1] = $num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s; # $$temp{'user'}.'-'.
 						$num[$s][2] = $value;
+						$num[$s][4] = $$temp{'modifier'};
 						$num[$s][5] = 2;
 						$$temp{'fact'} = $$temp{'quest'} = $num[$s][1] if $name eq 'a'; # подготовка редиректа
 					}
@@ -602,9 +606,11 @@ sub washProc{
 				}
 			}
 			if ( @num and 1 ){
-				&setWarn( "		wP    Найдены номера @num. Идет их обогащение удаление старого." );
+				&setWarn( "		
+				wP    Найдены номера @num. Идет их обогащение удаление старого." );
 				for my $s ( 0..$#num ){
-					&setWarn("		wP     Замена пустого в номере $s");
+					&setWarn("		
+						wP     Замена пустого в номере $s");
 					if ( $num[$s][0] ){			
 						&setWarn("		wP      на удаление");
 						my @span = &getTriple( $$temp{'user'}, $num[$s][0] );
