@@ -589,7 +589,7 @@ sub washProc{
 					}
 					else{
 						&setWarn("			wP      $pair: создание новой сущности" );
-						$num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s; # $$temp{'user'}.'-'.
+						$matrix[1] = $num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s; # $$temp{'user'}.'-'.
 						$num[$s][2] = $value;
 						$num[$s][5] = 2;
 						$$temp{'fact'} = $$temp{'quest'} = $num[$s][1] if $name eq 'a'; # подготовка редиректа
@@ -1084,7 +1084,7 @@ sub dryProc2 {
 		push @warn, "\n userName	$userName \n";
 		warn "		\n userName  $userName";
 		my $tsvPath = $planeDir.'/'.$userName.'/tsv';
-		$zip->addTree( $tsvPath, $userName );
+		$zip->addTree( $tsvPath, $userName ) if $userName ne 'guset' and not $userName =~ /^user/;
 		if ( -e $planeDir.'/'.$userName.'/.git/refs/heads/'.$branche ){
 			push @warn, "    Копирование указателя состояния ветки $branche";
 			warn '	Copy of branche head  ';

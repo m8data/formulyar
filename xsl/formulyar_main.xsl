@@ -196,6 +196,15 @@
 													<a href="{ m8:root( $fact ) }?a0={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: #bbb" onclick="return confirm('Удаление факта &#171;{m8:title( name() )}&#187;')" title="удалить">del</a>
 												</sup>
 											</xsl:if>
+											<xsl:if test="m8:port( name() )/*[name()!='r']">
+												<xsl:text> </xsl:text>
+												<sup>
+													<a href="{ m8:root( $fact ) }?a={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: #888" title="скопировать">
+														<xsl:attribute name="href"><xsl:value-of select="concat( m8:root( $fact ), '?a=' )"/><xsl:for-each select="m8:port( name() )/*[name()!='r']"><xsl:text>&amp;</xsl:text><xsl:value-of select="name()"/>=<xsl:value-of select="name(*)"/></xsl:for-each></xsl:attribute>
+														<xsl:text>copy</xsl:text>
+													</a>
+												</sup>
+											</xsl:if>
 										</div>
 									</xsl:for-each>
 								</div>
@@ -663,7 +672,7 @@
 									</tr>
 								</xsl:for-each>
 							</table>
-							<xsl:if test="m8:d( $fact )/div and $modifier != 'n'">
+							<xsl:if test="m8:d( $fact )/div and $modifier != 'n' and not( starts-with( m8:d( $fact )/div[2]/span, 'xsd:' ) )">
 								<!-- and not( start-with( m8:d( $fact )/div[2]/span, 'xsd:' ) )-->
 								<div>------------------------</div>
 								<xsl:for-each select="m8:d( $fact )/div">
