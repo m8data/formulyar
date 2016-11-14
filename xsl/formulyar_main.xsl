@@ -176,6 +176,7 @@
 								<div style="padding: 1em">
 									<xsl:for-each select="m8:index( $fact )/object/*[m8:director( name() ) = $fact]">
 										<xsl:sort select="m8:title( name() )"/>
+										
 										<div style="font-size: 1.4em; padding: .1em">
 											<a href="{ m8:root( name() )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
 												<xsl:apply-templates select="." mode="simpleName"/>
@@ -200,7 +201,9 @@
 												<xsl:text> </xsl:text>
 												<sup>
 													<a href="{ m8:root( $fact ) }?a={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: #888" title="скопировать">
-														<xsl:attribute name="href"><xsl:value-of select="concat( m8:root( $fact ), '?a=' )"/><xsl:for-each select="m8:port( name() )/*[name()!='r']"><xsl:text>&amp;</xsl:text><xsl:value-of select="name()"/>=<xsl:value-of select="name(*)"/></xsl:for-each></xsl:attribute>
+														<xsl:attribute name="href"><xsl:value-of select="concat( m8:root( $fact ), '?a=' )"/><xsl:for-each select="m8:port( name() )/*[name()!='r']"><xsl:variable name="cName" select="name()"/><xsl:text>&amp;</xsl:text><xsl:choose>
+															<xsl:when test="$types/@*[.=$cName]"><xsl:value-of select="name( $types/@*[.=$cName] )"/></xsl:when><xsl:otherwise><xsl:value-of select="$cName"/></xsl:otherwise>
+														</xsl:choose>=<xsl:value-of select="name(*)"/></xsl:for-each></xsl:attribute>
 														<xsl:text>copy</xsl:text>
 													</a>
 												</sup>
