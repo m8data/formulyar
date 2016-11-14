@@ -227,6 +227,7 @@
 	<func:function name="m8:root">
 		<xsl:param name="fact"/>
 		<!--<xsl:param name="modifier"/>-->
+		<xsl:message>### функция m8:root (cFact: <xsl:value-of select="$fact"/>) ###</xsl:message>
 		<xsl:choose>
 			<xsl:when test="$fact">
 				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ), '/' )"/>
@@ -889,7 +890,7 @@
 				<!--<a href="{$start/@prefix}" style="color:gray">START</a>
 					<xsl:text> | </xsl:text>-->
 				<xsl:comment/>
-				<xsl:if test="not( starts-with( $start/@user, 'user' ) )">
+				<xsl:if test="1 or not( starts-with( $start/@user, 'user' ) )">
 					<xsl:choose>
 						<xsl:when test="$ctrl = 'formulyar' ">
 							<a href="{$start/@prefix}a/{$avatar}/{ m8:dir( $fact, $quest ) }" style="color:orange">публичный раздел</a>
