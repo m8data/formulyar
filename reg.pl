@@ -289,7 +289,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 		&setWarn( "  Выдача текстовой информации" );
 		my %cookie;
 		$temp{'user'} = $cookie{'user'} = $defaultUser if not -d $planeDir.'/'.$temp{'user'}; 
-		&washProc( \%temp, \%cookie ) if $temp{'REQUEST_METHOD'} eq 'POST' or $temp{'QUERY_STRING'};# and $temp{'QUERY_STRING'}=~/&/ or {'QUERY_STRING'} eq 'a=');
+		&washProc( \%temp, \%cookie ) if $temp{'REQUEST_METHOD'} eq 'POST' or $temp{'QUERY_STRING'};# || return 'user for server';# and $temp{'QUERY_STRING'}=~/&/ or {'QUERY_STRING'} eq 'a=');
 		$temp{'modifier'} = 'n' if not defined $temp{'modifier'};	
 		$temp{'fact'} = $temp{'quest'} = $defaultFact if not defined $temp{'fact'};	
 		$temp{'ctrl'} = $defaultAvatar if $temp{'mission'} eq $defaultAvatar;	
@@ -521,7 +521,7 @@ sub washProc{
 			push @num, \@value;
 			$$cookie{'user'} = $defaultUser
 		}
-		elsif ( $$temp{'record'} ) {	
+		elsif ( $$temp{'record'} and ( $^O ne 'MSWin32' or $$temp{'user'} =~/^user/ or $$temp{'user'} eq 'guest' ) ) {	
 			&setWarn( "		wP   Поиск и проверка номеров в строке запроса $$temp{'QUERY_STRING'}" );# стирка 
 			my @value; #массив для контроля повторяющихся значений внутри триплов
 			my %table; #таблица перевода с буквы предлложения на номер позиции в процессе
@@ -965,10 +965,10 @@ sub spinProc {
 }
 
 sub dryProc2 {
-	my ( $reindex )=@_; #$param
+	my ( $clean, $clear )=@_; #$param
 	#&setWarn("		dP 2 @_" );
 	$dbg = 0;
-	my @warn = ('start', '');
+	my @warn = ("dryProc2 @_ \n");
 	my $indexTime = $reindexDays * 60 * 60 * 24;
 	#rmtree $logPath if -d $logPath;
 	#:: емкости и резервуары n1477307416-546366-pgstn-0
@@ -1033,18 +1033,17 @@ sub dryProc2 {
 	for my $format ( keys %formatDir ){
 		&setLink( $planeRoot.$auraDir, $planeRoot.$format );
 	}
-	$reindex || return;
+	$clean || return;
 	my %stat;
 
 	my $guestDays = &getSetting('guestDays');
 	my $userDays = &getSetting('userDays');
 	my $guestTime = time - $guestDays * 24 * 60 * 60;
 	my $userTime = time - $userDays * 24 * 60 * 60;
-	if ( $reindex == 2 or 0 ){
+	if ( $clear ){
 		warn '		delete all index';
 		for my $d ( &getDir( 'm8' ) ){
 			if ( -d 'm8/'.$d ){ 
-				
 				rmtree 'm8/'.$d 
 			}
 			else { unlink 'm8/'.$d }
@@ -1059,7 +1058,7 @@ sub dryProc2 {
 	my $n_delN = 0;
 	my $all = 0;
 	my $triple = 0;
-	my $clean = 0; 
+	#my $clean = 0; 
 	my $DL_map = 0;
 	my $cookie = 0;
 	my $DL_cookie = 0;
@@ -1082,7 +1081,7 @@ sub dryProc2 {
 			$DL_cookie++
 		}		
 	}
-	my $zip = Archive::Zip->new();
+
 	push @warn, "\n Круг1 \n";
 	warn "		\n==== Round 1 ====\n  ";
 	my $time1 = time;
@@ -1090,7 +1089,6 @@ sub dryProc2 {
 		push @warn, "\n userName	$userName \n";
 		warn "		\n userName  $userName";
 		my $tsvPath = $planeDir.'/'.$userName.'/tsv';
-		$zip->addTree( $tsvPath, $userName ) if $userName ne 'guset' and not $userName =~ /^user/;
 		if ( -e $planeDir.'/'.$userName.'/.git/refs/heads/'.$branche ){
 			push @warn, "    Копирование указателя состояния ветки $branche";
 			warn '	Copy of branche head  ';
@@ -1152,43 +1150,34 @@ sub dryProc2 {
 			}
 		}
 	}
-	push @warn, "\n Круг2 \n";
-	warn "		\n==== Round 2 ====\n  ";
-	unless ( $zip->writeToFileNamed($logPath.'/reindex/'.$ctime.'.zip') == AZ_OK ) { die 'write error'	}
 	my $time2 = time;
-	if (1){
-	for my $userName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){ 
-		push @warn, "userName2	$userName \n";
-		warn "\n		userName2  $userName \n";
-		my $tsvPath = $planeDir.'/'.$userName.'/tsv';
-		for my $tsvName ( &getDir( $tsvPath, 1 ) ){ 
-			warn '	tsv2  '.$tsvName;
-			push @warn, "  tsv2	$tsvName \n";
-			if ( $tsvName=~/^i/ ){
-				if ( not -e &m8path( $tsvName, 'index' ) and $tsvName ne 'i' ){
-					rmtree $tsvPath.'/'.$tsvName;
-					rmtree &m8dir( $tsvName );
-					$DL_map++
+	if ( $clean == 2 ){	
+		push @warn, "\n Круг2 \n";
+		warn "		\n==== Round 2 ====\n  ";
+		my $zip = Archive::Zip->new();
+		for my $userName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){ 
+			push @warn, "userName2	$userName \n";
+			warn "\n		userName2  $userName \n";		
+			my $tsvPath = $planeDir.'/'.$userName.'/tsv';
+			$zip->addTree( $tsvPath, $userName ) if $userName ne 'guset' and not $userName =~ /^user/;		
+			for my $tsvName ( &getDir( $tsvPath, 1 ) ){ 
+				warn '	tsv2  '.$tsvName;
+				push @warn, "  tsv2	$tsvName \n";
+				if ( $tsvName=~/^i/ ){
+					if ( not -e &m8path( $tsvName, 'index' ) and $tsvName ne 'i' ){
+						rmtree $tsvPath.'/'.$tsvName;
+						rmtree &m8dir( $tsvName );
+						$DL_map++
+					}
 				}
-			}
-			elsif ( $tsvName=~/^d/ ){
-				#push @warn, "    Исследование трипла $tsvName \n";			
-				my @val = map{ Encode::decode_utf8($_) } &getTriple( $userName, $tsvName );
-				my $parent = $val[1];
-				#$val[4] = $userName;
-				for my $questName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
-					#push @warn, "     Исследование квеста $questName \n";
-					$val[4] = $questName;
-					#if(0){
-					#	if ( $val[2]=~/^r/ ){
-					#		next if $val[1] eq $val[5];
-					#		$parent = $val[5];
-					#	}
-					#	my %indexParent = &getJSON( &m8dir( $parent ), 'index' );
-					#	my %indexQuest = &getJSON( &m8dir( $questName ), 'index' );
-					#	next if defined $indexParent{'subject'} and defined $indexQuest{'subject'};
-					#}
-					#else{
+				elsif ( $tsvName=~/^d/ ){
+					#push @warn, "    Исследование трипла $tsvName \n";			
+					my @val = map{ Encode::decode_utf8($_) } &getTriple( $userName, $tsvName );
+					my $parent = $val[1];
+					#$val[4] = $userName;
+					for my $questName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
+						#push @warn, "     Исследование квеста $questName \n";
+						$val[4] = $questName;
 						my $good = 1;
 						for my $n ( grep { $val[$_]=~/^n/ and $good } 1..4 ){
 							next if $n == 1 and $questName ne 'n'; #подлежащее имеет право быть удаленным, если оно мульт
@@ -1205,35 +1194,31 @@ sub dryProc2 {
 							}
 						}
 						next if $good;
-					#}
-					my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$val[4].'/time.txt' );
-					if ( $val[3] =~/^i\d+$/ ){
-						my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$val[3].'/value.tsv' );
-						delete $userType{$userName}{$val[3]} if $map[1]=~/^xsd:\w+$/;
-						delete $types{$map[0]} if $map[1]=~/^xsd:\w+$/;
+						my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$val[4].'/time.txt' );
+						if ( $val[3] =~/^i\d+$/ ){
+							my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$val[3].'/value.tsv' );
+							delete $userType{$userName}{$val[3]} if $map[1]=~/^xsd:\w+$/;
+							delete $types{$map[0]} if $map[1]=~/^xsd:\w+$/;
+						}
+						push @warn, &spinProc( \@val, $userName, $timeProc, 1156 );
+						if ( $val[2]=~/^r/ ){ $stat{$userName}{'n_delR'}++ }
+						else { $stat{$userName}{'n_delN'}++ }
 					}
-					push @warn, &spinProc( \@val, $userName, $timeProc, 1156 );
-					if ( $val[2]=~/^r/ ){ $stat{$userName}{'n_delR'}++ }
-					else { $stat{$userName}{'n_delN'}++ }
 				}
 			}
 		}
-
-		
-
-	#}
-	}
+		my $time3 = time+1;
+		unless ( $zip->writeToFileNamed($logPath.'/reindex/'.$ctime.'.zip') == AZ_OK ) { die 'write error'	}
 	}
 
-	my $time3 = time+1;
 	&rinseProc3( %types );# if keys %types;
 
 	print REINDEX @warn;
 	
 	my $second1 = int( $time2 - $time1 ) +1;
-	my $second2 = int( $time3 - $time2 ) +1;
+	#my $second2 = int( $time3 - $time2 ) +1;
 	my $s1 = int( $all / $second1 );
-	my $s2 = int( $all / $second2 );
+	#my $s2 = int( $all / $second2 );
 	my $map = $all - $triple;
 	my $list = '
 	guestDays: 	'.$guestDays.'
@@ -1256,8 +1241,6 @@ sub dryProc2 {
 	DL_cookie:	'.$DL_cookie.'
 	
 	TIME1:		'.$second1.'	/	'.$s1.'
-	TIME2:		'.$second2.'	/	'.$s2.'
-	
 	';
 	warn $list;
 	print REINDEX $list;
@@ -1273,6 +1256,7 @@ sub parseNew {
 	if ( defined $$temp{'login'} ){ 
 		&setWarn('			pN   Вход ранее созданного пользователя');
 		if ($$temp{'login'} ne 'guest'){
+			#$^O ne 'MSWin32' || $$temp{'login'} =~/^user/ || return 'user for server'; #здесь нужно фильтровать не windows, но пока так - 2016-11-15
 			defined $$pass{'password'} and $$pass{'password'} || return 'no_password';
 			my $userPath = $userDir.'/'.$$temp{'login'};
 			-d $userPath  || return 'no_user'; #&& -d $planeDir.'/'.$$temp{'login'}
