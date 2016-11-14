@@ -205,13 +205,7 @@
 															<xsl:for-each select="m8:port( name() )/*[name()!='r']">
 															<xsl:variable name="sentN" select="translate( position(), '123456789', 'bcdefghkl' )"/>
 															<xsl:value-of select="concat( '&amp;', $sentN, '2=', name(),   '&amp;', $sentN, '3=', name(*) )"/>
-														
-														<!--<xsl:text>&amp;</xsl:text>
-														
-														
-														<xsl:choose>
-															<xsl:when test="$types/@*[.=$cName]"><xsl:value-of select="name( $types/@*[.=$cName] )"/></xsl:when><xsl:otherwise><xsl:value-of select="$cName"/></xsl:otherwise>
-														</xsl:choose>=<xsl:value-of select="name(*)"/>--></xsl:for-each></xsl:attribute>
+														</xsl:for-each></xsl:attribute>
 														<xsl:text>copy</xsl:text>
 													</a>
 												</sup>
