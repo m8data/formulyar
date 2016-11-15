@@ -521,7 +521,7 @@ sub washProc{
 			push @num, \@value;
 			$$cookie{'user'} = $defaultUser
 		}
-		elsif ( $$temp{'record'} and ( $^O ne 'MSWin32' or $$temp{'user'} =~/^user/ or $$temp{'user'} eq 'guest' ) ) {	
+		elsif ( $$temp{'record'} and ( 1 or $^O ne 'MSWin32' or $$temp{'user'} =~/^user/ or $$temp{'user'} eq 'guest' ) ) {	
 			&setWarn( "		wP   Поиск и проверка номеров в строке запроса $$temp{'QUERY_STRING'}" );# стирка 
 			my @value; #массив для контроля повторяющихся значений внутри триплов
 			my %table; #таблица перевода с буквы предлложения на номер позиции в процессе
@@ -573,7 +573,7 @@ sub washProc{
 					else {
 						&setWarn("			wP      $pair: новый номер $s" );
 						$s = $table{$s} = @num;
-						$num[$s][4] = 'n'; #это что бы можно было копировать параметры
+						#$num[$s][4] = 'n'; #это что бы можно было копировать параметры
 						$num[$s][5] = 1 
 					}
 					if ( $m ){
@@ -586,7 +586,7 @@ sub washProc{
 						&setWarn("			wP      $pair: демонтаж номера $s" );
 						next if defined $value[0]{$value};
 						$num[$s][0] = $value;
-						$num[$s][4] = $$temp{'modifier'};
+						#$num[$s][4] = $$temp{'modifier'};
 						$num[$s][5] = undef;
 						$value[0]{$value} = 1;
 					}
@@ -594,7 +594,7 @@ sub washProc{
 						&setWarn("			wP      $pair: создание новой сущности в номере $s" );
 						$matrix[1] = $num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s; # $$temp{'user'}.'-'.
 						$num[$s][2] = $value;
-						$num[$s][4] = $$temp{'modifier'};
+						#$num[$s][4] = $$temp{'modifier'};
 						$num[$s][5] = 2;
 						$$temp{'fact'} = $$temp{'quest'} = $num[$s][1] if $name eq 'a'; # подготовка редиректа
 					}
@@ -653,6 +653,7 @@ sub washProc{
 	@num || return;
 	
 	&setWarn( "		wP ## Имеются номера. Идет запись." );
+	my @warn = ("washProc @_ \n");
 	for my $s ( grep { $num[$_] } 0..$#num ){
 		&setWarn("		wP  Проверка номера $s ");
 		my $miss;
@@ -735,7 +736,7 @@ sub washProc{
 					&setWarn("		wP     Удаление старой связи состава $num[$s][0].");	
 					my @triple = ( $num[$s][0], $num[$s][1], $num[$s][2], $num[$s][3], $oldDirector );
 					#push @num, \@triple;
-					&spinProc( \@triple, $$temp{'user'}, $$temp{'time'}, 713 );
+					push @warn, &spinProc( \@triple, $$temp{'user'}, $$temp{'time'}, 713 );
 					if ( defined $$temp{'object'} ){
 						&setWarn("		wP      Добавление к новой связи состава указания такого же типа.");
 						$num[$s][3] = $num[$s][4];#$$temp{'object'};
@@ -745,13 +746,15 @@ sub washProc{
 				}
 			}
 		}
-		&spinProc( $num[$s], $$temp{'user'}, $$temp{'time'}, 723 );
+		push @warn, &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'}, 723 );
 		#if ( 0 and &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'}, 723 ) ){
 		#	&setWarn("		wP   Номер запрашивает повтор трипла в базе.");
 		#	$$temp{'povtor'}[$s] = 2;
 		#	$$temp{'number'}[$s]{'message'} = 'Номер запрашивает повтор установления значения';
 		#}
 	}
+	my $warn = join '', @warn;
+	&setFile( $logPath.'/reindex/'.$$temp{'time'}.'_wash.txt', $warn );# if $$temp{'user'} ne 'guest' and not $$temp{'user'}=~/^user/;
 	return if 1 or -e $configPath.'/control' or not grep { $$temp{'number'}[$_] eq 'OK' } @{$$temp{'number'}};
 	
 	&setWarn('   Обнаружены физические записи. Запуск процесса сушки');

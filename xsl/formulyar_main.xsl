@@ -181,6 +181,19 @@
 											<a href="{ m8:root( name() )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
+											<xsl:if test="m8:port( name() )/*[name()!='r']">
+												<xsl:text> </xsl:text>
+												<sup>
+													<a href="{ m8:root( $fact ) }?a={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: green" title="копировать">
+														<xsl:attribute name="href"><xsl:value-of select="concat( m8:root( $fact ), '?a=' )"/>
+															<xsl:for-each select="m8:port( name() )/*[name()!='r']">
+															<xsl:variable name="sentN" select="translate( position(), '123456789', 'bcdefghkl' )"/>
+															<xsl:value-of select="concat( '&amp;', $sentN, '2=', name(),   '&amp;', $sentN, '3=', name(*) )"/>
+														</xsl:for-each></xsl:attribute>
+														<xsl:text>⸗</xsl:text>
+													</a>
+												</sup>
+											</xsl:if>
 											<xsl:choose>
 												<xsl:when test="1200 > $time - m8:path( name(), 'subject_r' )/*/@time">
 													<xsl:text> </xsl:text>
@@ -197,19 +210,7 @@
 													<a href="{ m8:root( $fact ) }?a0={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: #bbb" onclick="return confirm('Удаление факта &#171;{m8:title( name() )}&#187;')" title="удалить">del</a>
 												</sup>
 											</xsl:if>
-											<xsl:if test="m8:port( name() )/*[name()!='r']">
-												<xsl:text> </xsl:text>
-												<sup>
-													<a href="{ m8:root( $fact ) }?a={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: green" title="копировать">
-														<xsl:attribute name="href"><xsl:value-of select="concat( m8:root( $fact ), '?a=' )"/>
-															<xsl:for-each select="m8:port( name() )/*[name()!='r']">
-															<xsl:variable name="sentN" select="translate( position(), '123456789', 'bcdefghkl' )"/>
-															<xsl:value-of select="concat( '&amp;', $sentN, '2=', name(),   '&amp;', $sentN, '3=', name(*) )"/>
-														</xsl:for-each></xsl:attribute>
-														<xsl:text>к</xsl:text>
-													</a>
-												</sup>
-											</xsl:if>
+											
 										</div>
 									</xsl:for-each>
 								</div>
