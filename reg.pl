@@ -49,7 +49,7 @@ my %setting = (
 	'platformLevel'	=> 3,
 	'tempfsFolder'	=> '/mnt/tmpfs'
 );
-my $reindexDays = 14;
+my $reindexDays = 5;
 my $passwordFile = 'password.txt';
 my $sessionFile = 'session.json';
 my $stylesheetDir = 'xsl';
