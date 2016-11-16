@@ -66,6 +66,15 @@
 	<xsl:variable name="startPort" select="m8:port( $fact, $modifier )"/>
 	<xsl:variable name="factPort" select="m8:port( $fact )"/>
 	<xsl:param name="startTypeName" select="name( $startPort/r/* )"/>
+	<xsl:param name="ancestor-or-self">
+		<xsl:message>	--- getAncestor --- </xsl:message>
+		<xsl:call-template name="getAncestor">
+			<xsl:with-param name="currentFactName" select="$fact"/>
+		</xsl:call-template>
+	</xsl:param>
+	<xsl:param name="chief" select="name( exsl:node-set($ancestor-or-self)/*[*][last()] )"/>
+		
+	<!--<xsl:param name="chiefName" select="name( $superType )"/>-->
 	<!--<xsl:variable name="factType" select="m8:path( $fact, $avatar, $parentName, 'port' )/r/*"/>-->
 	<!--<xsl:variable name="factTypeName">
 		<xsl:choose>
@@ -184,6 +193,29 @@
 		<xsl:param name="fact"/>
 		<func:result select="name( m8:port( $fact )/r/* )"/>
 	</func:function>
+	<func:function name="m8:ancestor-or-self">
+		<xsl:param name="fact"/>
+		<xsl:variable name="ss">
+			<xsl:call-template name="getAncestor">
+				<xsl:with-param name="currentFactName" select="$fact"/>
+			</xsl:call-template>
+		</xsl:variable>
+		<func:result select="exsl:node-set( $ss )"/>
+	</func:function>	
+	<func:function name="m8:chief">
+		<xsl:param name="fact"/>
+		<func:result select="name( m8:ancestor-or-self( $fact )/*[*][last()] )"/>
+	</func:function>
+<!--	<func:function name="m8:chiefGroup">
+		<xsl:param name="fact"/>
+		<xsl:variable name="ancestor">
+			<xsl:call-template name="getAncestor">
+				<xsl:with-param name="currentFactName" select="$fact/following-sibling::"/>
+			</xsl:call-template>
+		</xsl:variable>
+		<func:result select="exsl:node-set($ancestor)/*[*][last()]/following-sibling::*"/>
+	</func:function>	-->
+
 	<func:function name="m8:triple">
 		<xsl:param name="fact"/>
 		<xsl:message>	--- работа m8:holder с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
@@ -278,6 +310,22 @@
 		<xsl:param name="fact"/>
 		<func:result select="m8:value( m8:param( $fact, 'n' ) )"/>
 	</func:function>
+	<func:function name="m8:capital">
+		<xsl:param name="fact"/>
+		<func:result>
+			<xsl:call-template name="capitalLetter">
+				<xsl:with-param name="input" select="$fact"/>
+			</xsl:call-template>
+		</func:result>
+	</func:function>
+		<func:function name="m8:sort">
+		<xsl:param name="fact"/>
+		<xsl:param name="quest"/>
+		<func:result select="name( m8:port( $fact, $quest )/*[name()=$sort]/* )"/>
+	</func:function>
+	
+	
+
 	<!--
 
 //-->

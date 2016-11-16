@@ -369,7 +369,7 @@
 		<xsl:if test="$fact_n/*[name()='svg']">
 			<style type="text/css">
 				.svg_formulyar svg {
-					background-color: white;
+					background-color: #ccc;
 					max-width: 350px !important;
 					max-height: 200px !important;
 				}
