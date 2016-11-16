@@ -180,6 +180,7 @@
 											<a href="{ m8:root( name() )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
+											<!-- функционал копирования был подгототовлен 2016-11-15, но провалился на отладке
 											<xsl:if test="m8:port( name() )/*[name()!='r']">
 												<xsl:text> </xsl:text>
 												<sup>
@@ -188,7 +189,7 @@
 														<xsl:text>⸗</xsl:text>
 													</a>
 												</sup>
-											</xsl:if>
+											</xsl:if>-->
 											<xsl:choose>
 												<xsl:when test="1200 > $time - m8:path( name(), 'subject_r' )/*/@time">
 													<xsl:text> </xsl:text>

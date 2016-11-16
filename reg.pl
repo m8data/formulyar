@@ -49,7 +49,9 @@ my %setting = (
 	'platformLevel'	=> 3,
 	'tempfsFolder'	=> '/mnt/tmpfs'
 );
-my $reindexDays = 5;
+my $localForce = 0; #разрешение делать записи любым юзерам на любой стороне (и сервере и из среды разаработчика)
+
+my $reindexDays = 7;
 my $passwordFile = 'password.txt';
 my $sessionFile = 'session.json';
 my $stylesheetDir = 'xsl';
@@ -521,7 +523,7 @@ sub washProc{
 			push @num, \@value;
 			$$cookie{'user'} = $defaultUser
 		}
-		elsif ( $$temp{'record'} and ( 1 or $^O ne 'MSWin32' or $$temp{'user'} =~/^user/ or $$temp{'user'} eq 'guest' ) ) {	
+		elsif ( $$temp{'record'} and ( $localForce or $^O ne 'MSWin32' or $$temp{'user'} =~/^user/ or $$temp{'user'} eq 'guest' ) ) {	
 			&setWarn( "		wP   Поиск и проверка номеров в строке запроса $$temp{'QUERY_STRING'}" );# стирка 
 			my @value; #массив для контроля повторяющихся значений внутри триплов
 			my %table; #таблица перевода с буквы предлложения на номер позиции в процессе
