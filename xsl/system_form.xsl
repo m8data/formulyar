@@ -73,7 +73,6 @@
 		</xsl:call-template>
 	</xsl:param>
 	<xsl:param name="chief" select="name( exsl:node-set($ancestor-or-self)/*[*][last()] )"/>
-		
 	<!--<xsl:param name="chiefName" select="name( $superType )"/>-->
 	<!--<xsl:variable name="factType" select="m8:path( $fact, $avatar, $parentName, 'port' )/r/*"/>-->
 	<!--<xsl:variable name="factTypeName">
@@ -201,7 +200,7 @@
 			</xsl:call-template>
 		</xsl:variable>
 		<func:result select="exsl:node-set( $ss )"/>
-	</func:function>	
+	</func:function>
 	<func:function name="m8:chief">
 		<xsl:param name="fact"/>
 		<xsl:variable name="ss">
@@ -212,7 +211,7 @@
 		</xsl:variable>
 		<func:result select="name( exsl:node-set( $ss )/*[1] )"/>
 	</func:function>
-<!--	<func:function name="m8:chiefGroup">
+	<!--	<func:function name="m8:chiefGroup">
 		<xsl:param name="fact"/>
 		<xsl:variable name="ancestor">
 			<xsl:call-template name="getAncestor">
@@ -221,7 +220,6 @@
 		</xsl:variable>
 		<func:result select="exsl:node-set($ancestor)/*[*][last()]/following-sibling::*"/>
 	</func:function>	-->
-
 	<func:function name="m8:triple">
 		<xsl:param name="fact"/>
 		<xsl:message>	--- работа m8:holder с фактом <xsl:value-of select="$fact"/> --- </xsl:message>
@@ -272,7 +270,8 @@
 				<!-- без '/' не работает отсылка файлов в спец-инпуте -->
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/')"/><!--, m8:dir(), '/' -->
+				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/')"/>
+				<!--, m8:dir(), '/' -->
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
@@ -324,14 +323,17 @@
 			</xsl:call-template>
 		</func:result>
 	</func:function>
-		<func:function name="m8:sort">
+	<func:function name="m8:sort">
 		<xsl:param name="fact"/>
 		<xsl:param name="quest"/>
 		<func:result select="name( m8:port( $fact, $quest )/*[name()=$sort]/* )"/>
 	</func:function>
-	
-	
-
+	<func:function name="m8:sеrialize">
+		<xsl:param name="tree"/>
+		<func:result>
+			<xsl:apply-templates select="exsl:node-set($tree)" mode="serialize"/>
+		</func:result>
+	</func:function>
 	<!--
 
 //-->
@@ -547,19 +549,18 @@
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
 				</xsl:variable>
 				<textarea name="{$predicateName}" placeholder="описание объекта">
-						<xsl:choose>
-							<xsl:when test="$predicateName = 'd'">
-								<xsl:attribute name="cols">32</xsl:attribute>
-								<xsl:attribute name="rows">3</xsl:attribute>
-								<xsl:attribute name="placeholder">тип факта</xsl:attribute>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:attribute name="cols">80</xsl:attribute>
-								<xsl:attribute name="rows"><xsl:value-of select="count( m8:value( name( $selectedValue ) )/* ) + 4"/></xsl:attribute>
-								<xsl:attribute name="placeholder">описание факта</xsl:attribute>
-							</xsl:otherwise>
-						</xsl:choose>
-				
+					<xsl:choose>
+						<xsl:when test="$predicateName = 'd'">
+							<xsl:attribute name="cols">32</xsl:attribute>
+							<xsl:attribute name="rows">3</xsl:attribute>
+							<xsl:attribute name="placeholder">тип факта</xsl:attribute>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:attribute name="cols">80</xsl:attribute>
+							<xsl:attribute name="rows"><xsl:value-of select="count( m8:value( name( $selectedValue ) )/* ) + 4"/></xsl:attribute>
+							<xsl:attribute name="placeholder">описание факта</xsl:attribute>
+						</xsl:otherwise>
+					</xsl:choose>
 					<xsl:if test="not($ajaxMethod)">
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
 					</xsl:if>
@@ -1017,7 +1018,8 @@
 					<xsl:when test="$user != 'guest' ">
 						<a href="{m8:root( $fact )}?logout=true" style="color: red">выйти</a>
 					</xsl:when>
-					<xsl:otherwise><!--<xsl:when test="$adminMode">-->
+					<xsl:otherwise>
+						<!--<xsl:when test="$adminMode">-->
 						<a href="{$start/@prefix}formulyar" style="color:blue">войти</a>
 					</xsl:otherwise>
 				</xsl:choose>
