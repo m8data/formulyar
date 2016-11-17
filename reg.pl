@@ -1165,7 +1165,7 @@ sub dryProc2 {
 			warn "\n		userName2  $userName \n";		
 			my $tsvPath = $planeDir.'/'.$userName.'/tsv';
 			if ( $userName ne 'guset' and not $userName =~ /^user/ ){
-				eval { $zip->addTree( $tsvPath ) } 
+				$zip->addTree( $tsvPath );
 				unless ( $zip->writeToFileNamed($logPath.'/reindex/'.$ctime.'_'.$userName.'.zip') == AZ_OK ) { die 'write error'	}
 			}
 			push @warn, $@ if $@;
