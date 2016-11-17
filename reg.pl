@@ -1159,12 +1159,13 @@ sub dryProc2 {
 	if ( $clean == 2 ){	
 		push @warn, "\n Круг2 \n";
 		warn "		\n==== Round 2 ====\n  ";
-		my $zip = Archive::Zip->new();
+		
 		for my $userName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){ 
 			push @warn, "userName2	$userName \n";
 			warn "\n		userName2  $userName \n";		
 			my $tsvPath = $planeDir.'/'.$userName.'/tsv';
-			if ( $userName ne 'guset' and not $userName =~ /^user/ ){
+			if ( $userName ne 'guest' and not $userName =~ /^user/ and not $userName =~ /^test/ ){
+				my $zip = Archive::Zip->new();
 				$zip->addTree( $tsvPath );
 				unless ( $zip->writeToFileNamed($logPath.'/reindex/'.$ctime.'_'.$userName.'.zip') == AZ_OK ) { die 'write error'	}
 			}
