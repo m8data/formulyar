@@ -237,72 +237,75 @@
 				<xsl:message> v v v v v - Зона ссылок вниз (END) - v v v v v </xsl:message>
 			</div>
 		</xsl:if>
-		<div style="color: #777; padding: 4em">
-			<xsl:message>= = = = = = = - Зона упоминаний - = = = = = =</xsl:message>
-			<xsl:if test="m8:quest( $fact )/*[name()!=$fact] and $fact!='n' ">
-				<br/>
-				<div>
-					<b>модификатор для</b>
-					<div style="padding: .2em">
-						<xsl:for-each select="m8:quest( $fact )/*[name()!=$fact]">
-							<xsl:sort select="m8:title( name() )"/>
-							<!--="@time-->
-							<div>
-								<xsl:choose>
-									<xsl:when test="m8:index( name() )/subject">
-										<a href="{m8:action( name(), $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
-											<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
-										</a>
-									</xsl:when>
-									<xsl:otherwise>
-										<xsl:apply-templates select="." mode="simpleName"/>
-									</xsl:otherwise>
-								</xsl:choose>
-							</div>
-						</xsl:for-each>
+		<xsl:if test="$modifier='n'">
+			<div style="color: #777; padding: 4em">
+				<xsl:message>= = = = = = = - Зона упоминаний - = = = = = =</xsl:message>
+				<xsl:if test="m8:quest( $fact )/*[name()!=$fact] and $fact!='n' ">
+					<br/>
+					<div>
+						<b>модификатор для</b>
+						<div style="padding: .2em">
+							<xsl:for-each select="m8:quest( $fact )/*[name()!=$fact]">
+								<xsl:sort select="m8:title( name() )"/>
+								<!--="@time-->
+								<div>
+									<xsl:choose>
+										<xsl:when test="m8:index( name() )/subject">
+											<a href="{m8:action( name(), $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
+												<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
+											</a>
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:apply-templates select="." mode="simpleName"/>
+										</xsl:otherwise>
+									</xsl:choose>
+								</div>
+							</xsl:for-each>
+						</div>
 					</div>
-				</div>
-			</xsl:if>
-			<xsl:if test="m8:role1( $fact )/*[name()!='n'] and $fact!='n' and $modifier = 'n' ">
-				<br/>
-				<div>
-					<b>модификация из</b>
-					<div style="padding: .2em">
-						<xsl:for-each select="m8:role1( $fact )/*[name()!='n']">
-							<xsl:sort select="m8:title( name() )"/>
-							<div>
-								<a href="{m8:action( $fact, name() )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
-									<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
-								</a>
-							</div>
-						</xsl:for-each>
+				</xsl:if>
+				<xsl:if test="m8:role1( $fact )/*[name()!='n'] and $fact!='n' and $modifier = 'n' ">
+					<br/>
+					<div>
+						<b>модификация из</b>
+						<div style="padding: .2em">
+							<xsl:for-each select="m8:role1( $fact )/*[name()!='n']">
+								<xsl:sort select="m8:title( name() )"/>
+								<div>
+									<a href="{m8:action( $fact, name() )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
+										<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
+									</a>
+								</div>
+							</xsl:for-each>
+						</div>
 					</div>
-				</div>
-			</xsl:if>
-			<xsl:if test="m8:path( $fact, 'n', 'terminal' )/*[not(r)][name()!=$director] and $modifier = 'n' ">
-				<br/>
-				<div>
-					<b>
-						<a href="/{m8:dir( $fact, 'n' )}/terminal.xml" style="color: gray">упоминания</a>
-					</b>
-					<div style="padding: .2em">
-						<xsl:for-each select="m8:path( $fact, 'n', 'terminal' )/*[not(r)][name()!=$director]">
-							<xsl:sort select="m8:title( name() )"/>
-							<div>
-								<a href="{m8:action( name(), $modifier ) }" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
-									<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
-								</a>
-							</div>
-						</xsl:for-each>
+				</xsl:if>
+				<xsl:if test="m8:path( $fact, 'n', 'terminal' )/*[not(r)][name()!=$director] and $modifier = 'n' ">
+					<br/>
+					<div>
+						<b>
+							<a href="/{m8:dir( $fact, 'n' )}/terminal.xml" style="color: gray">упоминания</a>
+						</b>
+						<div style="padding: .2em">
+							<xsl:for-each select="m8:path( $fact, 'n', 'terminal' )/*[not(r)][name()!=$director]">
+								<xsl:sort select="m8:title( name() )"/>
+								<div>
+									<a href="{m8:action( name(), $modifier ) }" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
+										<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
+									</a>
+								</div>
+							</xsl:for-each>
+						</div>
 					</div>
-				</div>
-			</xsl:if>
-			<xsl:message>= = = = = = = - Зона упоминаний (END) - = = = = = =</xsl:message>
-		</div>
+				</xsl:if>
+				<xsl:message>= = = = = = = - Зона упоминаний (END) - = = = = = =</xsl:message>
+			</div>
+		</xsl:if>
 		<xsl:message> 
 									@@@@@ - Блоки действий - @@@@@
 				</xsl:message>
-		<div style="background: #ddd; padding: .5em; opacity: 0.75; position: fixed; left:0; bottom: 4em"><!--background: #ded; -->
+		<div style="background: #ddd; padding: .5em; opacity: 0.75; position: fixed; left:0; bottom: 4em">
+			<!--background: #ded; -->
 			<xsl:message>				-- Вывод пульта навигации --</xsl:message>
 			<xsl:variable name="newQuestName">
 				<xsl:choose>
