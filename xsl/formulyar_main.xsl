@@ -420,7 +420,7 @@
 								<form action="{m8:root( $fact )}/" id="editParamOfPort" style="margin: .5em">
 									<input type="hidden" name="d" value="r"/>
 									<input type="hidden" name="quest" value="{$modifier}"/>
-									<select name="modifier" onchange="this.form.submit()" multiple="multiple" size="5">
+									<select name="modifier" onchange="this.form.submit()" multiple="multiple" size="12">
 										<option/>
 										<xsl:for-each select="m8:index( $modifier )/director/*[name()!=$fact]">
 											<xsl:sort select="m8:title( name() )"/>
