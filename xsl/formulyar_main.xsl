@@ -63,7 +63,7 @@
 									<xsl:text>padding: 1em; background: </xsl:text>
 									<xsl:choose>
 										<xsl:when test="$modifier='n'">#EFD</xsl:when>
-										<xsl:otherwise>#FFF9C9</xsl:otherwise>
+										<xsl:otherwise>#FFF9B9</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
 								
