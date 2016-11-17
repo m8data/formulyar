@@ -49,7 +49,7 @@ my %setting = (
 	'platformLevel'	=> 3,
 	'tempfsFolder'	=> '/mnt/tmpfs'
 );
-my $localForce = 0; #разрешение делать записи любым юзерам на любой стороне (и сервере и из среды разаработчика)
+my $localForce = 1; #разрешение делать записи любым юзерам на любой стороне, в противном случае это будет разрешено лишь на сервере
 
 my $reindexDays = 7;
 my $passwordFile = 'password.txt';
@@ -1164,7 +1164,8 @@ sub dryProc2 {
 			push @warn, "userName2	$userName \n";
 			warn "\n		userName2  $userName \n";		
 			my $tsvPath = $planeDir.'/'.$userName.'/tsv';
-			$zip->addTree( $tsvPath, $userName ) if $userName ne 'guset' and not $userName =~ /^user/;		
+			eval { $zip->addTree( $tsvPath, $userName ) } if $userName ne 'guset' and not $userName =~ /^user/;
+			push @warn, $@ if $@;
 			for my $tsvName ( &getDir( $tsvPath, 1 ) ){ 
 				warn '	tsv2  '.$tsvName;
 				push @warn, "  tsv2	$tsvName \n";
