@@ -417,8 +417,9 @@
 								<span style="font-size: .8em; color: black">связывание</span>
 							</td>
 							<td valign="middle">
-								<form action="{m8:root( $fact )}{$modifier}/" id="editParamOfPort" style="margin: .5em">
+								<form action="{m8:root( $fact )}/" id="editParamOfPort" style="margin: .5em">
 									<input type="hidden" name="d" value="r"/>
+									<input type="hidden" name="quest" value="{$modifier}"/>
 									<select name="modifier" onchange="this.form.submit()">
 										<option/>
 										<xsl:for-each select="m8:index( $modifier )/director/*[name()!=$fact]">
