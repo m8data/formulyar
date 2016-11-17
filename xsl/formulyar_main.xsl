@@ -322,20 +322,28 @@
 						<span style="font-size: .8em; color: brown">модификация</span>
 					</td>
 					<td valign="middle">
-						<form action="{m8:root( $fact )}" id="editParamOfPort" style="margin: .5em">
-							<select name="modifier" onchange="this.form.submit()">
-								<option/>
-								<xsl:for-each select="m8:index( $modifier )/director/*[name()!=$fact]">
-									<xsl:sort select="m8:title( name() )"/>
-									<option value="{name()}">
-										<xsl:apply-templates select="." mode="simpleName"/>
-											<xsl:if test="m8:port( $fact, name() )/d">
+						<xsl:choose>
+							<xsl:when test="m8:index( $modifier )/director/*[name()!=$fact]">
+								<form action="{m8:root( $fact )}" id="editParamOfPort" style="margin: .5em">
+									<select name="modifier" onchange="this.form.submit()">
+										<option/>
+										<xsl:for-each select="m8:index( $modifier )/director/*[name()!=$fact]">
+											<xsl:sort select="m8:title( name() )"/>
+											<option value="{name()}">
+												<xsl:attribute name="style"><xsl:choose><xsl:when test="m8:port( $fact, name() )/d">background: #99c</xsl:when><xsl:otherwise>background: #ffd</xsl:otherwise></xsl:choose></xsl:attribute>
+												<xsl:apply-templates select="." mode="simpleName"/>
+												<xsl:if test="m8:port( $fact, name() )/d">
 													- связано
 												</xsl:if>
-									</option>
-								</xsl:for-each>
-							</select>
-						</form>
+											</option>
+										</xsl:for-each>
+									</select>
+								</form>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:comment/>
+							</xsl:otherwise>
+						</xsl:choose>
 					</td>
 					<xsl:if test="$modifier != 'n' ">
 						<xsl:if test="$fact != 'n' ">
@@ -412,7 +420,7 @@
 								</xsl:otherwise>
 							</xsl:choose>
 						</xsl:when>
-						<xsl:otherwise>
+						<xsl:when test="m8:index( $modifier )/director/*[name()!=$fact]">
 							<td valign="middle">
 								<span style="font-size: .8em; color: black">связывание</span>
 							</td>
@@ -421,10 +429,15 @@
 									<input type="hidden" name="d" value="r"/>
 									<input type="hidden" name="quest" value="{$modifier}"/>
 									<select name="modifier" onchange="this.form.submit()" multiple="multiple" size="12">
-										<option/>
+										<xsl:variable name="count" select="count( m8:index( $modifier )/director/*[name()!=$fact] )"/>
+										<xsl:attribute name="size"><xsl:choose><xsl:when test="$count > 12">12</xsl:when><xsl:otherwise><xsl:value-of select="$count"/></xsl:otherwise></xsl:choose></xsl:attribute>
 										<xsl:for-each select="m8:index( $modifier )/director/*[name()!=$fact]">
 											<xsl:sort select="m8:title( name() )"/>
 											<option value="{name()}">
+												<xsl:if test="m8:port( $fact, name() )/d">
+													<xsl:attribute name="onclick">return false;</xsl:attribute>
+													<xsl:attribute name="style">background: #aaa</xsl:attribute>
+												</xsl:if>
 												<xsl:apply-templates select="." mode="simpleName"/>
 												<xsl:if test="m8:port( $fact, name() )/d">
 													- связано
@@ -433,6 +446,11 @@
 										</xsl:for-each>
 									</select>
 								</form>
+							</td>
+						</xsl:when>
+						<xsl:otherwise>
+							<td>
+								<xsl:comment/>
 							</td>
 						</xsl:otherwise>
 					</xsl:choose>
@@ -547,7 +565,7 @@
 															<xsl:value-of select="$symbol_replace"/>
 														</xsl:when>
 														<xsl:when test="$pName = 'd' and $modifier!='n'">
-															<a href="{m8:action( $modifier, $fact )}&amp;d=0">
+															<a href="{m8:action( $modifier, $fact )}&amp;d=0&amp;quest={$modifier}&amp;fact={$fact}">
 																<xsl:value-of select="$symbol_replace"/>
 															</a>
 														</xsl:when>
