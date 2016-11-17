@@ -264,6 +264,11 @@
 	<xsl:template name="getAncestor">
 		<xsl:param name="currentFactName"/>
 		<xsl:param name="currentResult"/>
+		<xsl:param name="chiefOnly"/>
+		<xsl:if test="not($currentResult)">
+		<xsl:message>		=== getAncestor ===
+			chiefOnly: <xsl:value-of select="$chiefOnly"/>
+		</xsl:message></xsl:if>
 		<xsl:variable name="newResult">
 			<xsl:element name="{$currentFactName}">
 				<xsl:choose>
@@ -289,8 +294,7 @@
 				<xsl:copy-of select="$currentResult/*"/>
 			</xsl:if>
 		</xsl:variable>
-		<xsl:message>			= getAncestor =
-			currentFactName: <xsl:value-of select="$currentFactName"/>
+		<xsl:message>			- currentFactName: <xsl:value-of select="$currentFactName"/>
 			<xsl:text>
 			</xsl:text>
 			<!-- parentAuthorName: <xsl:value-of select="$parentAuthorName"/>
@@ -306,7 +310,7 @@
 			</xsl:for-each>
 		</xsl:message>
 		<xsl:choose>
-			<xsl:when test="$currentFactName = 'n' ">
+			<xsl:when test="$currentFactName = 'n' or ( $chiefOnly and $types/@*[.=$currentFactName])">
 				<xsl:message>		=== getAncestor (end) === 
 				</xsl:message>
 				<xsl:copy-of select="exsl:node-set($newResult)/*"/>
@@ -315,6 +319,7 @@
 				<xsl:call-template name="getAncestor">
 					<xsl:with-param name="currentFactName" select="m8:leader( $currentFactName )"/>
 					<xsl:with-param name="currentResult" select="exsl:node-set($newResult)"/>
+					<xsl:with-param name="chiefOnly" select="$chiefOnly"/>
 				</xsl:call-template>
 			</xsl:otherwise>
 		</xsl:choose>

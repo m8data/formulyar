@@ -204,7 +204,13 @@
 	</func:function>	
 	<func:function name="m8:chief">
 		<xsl:param name="fact"/>
-		<func:result select="name( m8:ancestor-or-self( $fact )/*[*][last()] )"/>
+		<xsl:variable name="ss">
+			<xsl:call-template name="getAncestor">
+				<xsl:with-param name="currentFactName" select="$fact"/>
+				<xsl:with-param name="chiefOnly" select="1"/>
+			</xsl:call-template>
+		</xsl:variable>
+		<func:result select="name( exsl:node-set( $ss )/*[1] )"/>
 	</func:function>
 <!--	<func:function name="m8:chiefGroup">
 		<xsl:param name="fact"/>
