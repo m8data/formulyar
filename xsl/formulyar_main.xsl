@@ -329,6 +329,9 @@
 									<xsl:sort select="m8:title( name() )"/>
 									<option value="{name()}">
 										<xsl:apply-templates select="." mode="simpleName"/>
+											<xsl:if test="m8:port( $fact, name() )/d">
+													- связано
+												</xsl:if>
 									</option>
 								</xsl:for-each>
 							</select>
@@ -351,64 +354,88 @@
 						</td>
 					</xsl:if>
 				</tr>
-				<xsl:if test="$fact != 'n' ">
-					<tr>
-						<xsl:choose>
-							<xsl:when test="$holder = $user">
-								<td valign="middle">
-									<span style="font-size: .8em; color: black">перемещение</span>
-								</td>
-								<td valign="middle">
-									<form action="{m8:root( $fact )}" id="editParamOfPort" style="margin: .5em">
-										<input type="hidden" name="r" value="n"/>
-										<select name="modifier" onchange="this.form.submit()">
-											<option/>
-											<xsl:for-each select="m8:index( $director )/director/*[name()!=$fact and name()!='n']" xml:lang="n фильтровать, т.к. он почему-то есть в индексе самого n">
-												<xsl:sort select="m8:title( name() )"/>
-												<option value="{name()}">
-													<!--<xsl:if test="name() = $modifier">
+				<tr>
+					<xsl:choose>
+						<xsl:when test="$modifier = 'n'">
+							<xsl:choose>
+								<xsl:when test="$holder = $user">
+									<td valign="middle">
+										<span style="font-size: .8em; color: black">перемещение</span>
+									</td>
+									<td valign="middle">
+										<form action="{m8:root( $fact )}" id="editParamOfPort" style="margin: .5em">
+											<input type="hidden" name="r" value="n"/>
+											<select name="modifier" onchange="this.form.submit()">
+												<option/>
+												<xsl:for-each select="m8:index( $director )/director/*[name()!=$fact and name()!='n']" xml:lang="n фильтровать, т.к. он почему-то есть в индексе самого n">
+													<xsl:sort select="m8:title( name() )"/>
+													<option value="{name()}">
+														<!--<xsl:if test="name() = $modifier">
 																	<xsl:attribute name="selected">selected</xsl:attribute>
 																</xsl:if>-->
-													<xsl:apply-templates select="." mode="simpleName"/>
-												</option>
-											</xsl:for-each>
-										</select>
-									</form>
-								</td>
-								<td valign="middle">
-									<xsl:if test="$director != 'n' ">
+														<xsl:apply-templates select="." mode="simpleName"/>
+													</option>
+												</xsl:for-each>
+											</select>
+										</form>
+									</td>
+									<td valign="middle">
+										<xsl:if test="$director != 'n' ">
+											<xsl:text>&#160;</xsl:text>
+											<a title="to new Quest - { $newQuestName } COMMON">
+												<xsl:attribute name="href"><xsl:value-of select="concat( m8:action( $fact, $newQuestName ), '&amp;r=', $newQuestName )"/><!--<xsl:if test="$director = $typeName"><xsl:text>&amp;object=</xsl:text><xsl:value-of select="$newQuestName"/></xsl:if>--></xsl:attribute>
+												<xsl:value-of select="$symbol_up"/>
+											</a>
+										</xsl:if>
+									</td>
+									<td valign="middle">
 										<xsl:text>&#160;</xsl:text>
-										<a title="to new Quest - { $newQuestName } COMMON">
-											<xsl:attribute name="href"><xsl:value-of select="concat( m8:action( $fact, $newQuestName ), '&amp;r=', $newQuestName )"/><!--<xsl:if test="$director = $typeName"><xsl:text>&amp;object=</xsl:text><xsl:value-of select="$newQuestName"/></xsl:if>--></xsl:attribute>
-											<xsl:value-of select="$symbol_up"/>
-										</a>
-									</xsl:if>
-								</td>
-								<td valign="middle">
-									<xsl:text>&#160;</xsl:text>
-									<xsl:choose>
-										<xsl:when test="$leader = $director">
-											<a href="{m8:root( $director )}?a0={m8:triple( $fact )}" title="удаление" onclick="return confirm('Удаление факта &#171;{m8:title($fact)}&#187;')">
-												<xsl:value-of select="$symbol_del"/>
-											</a>
-										</xsl:when>
-										<xsl:otherwise>
-											<a href="{m8:action( $fact, $director )}&amp;r={$director}" title="сделать тип таким же">
-												<xsl:value-of select="$symbol_replace"/>
-											</a>
-										</xsl:otherwise>
-									</xsl:choose>
-								</td>
-							</xsl:when>
-							<xsl:otherwise>
-								<td colspan="2">Владелец - <span style="{m8:fact_color( $holder )}">
-										<xsl:value-of select="$holder"/>
-									</span>
-								</td>
-							</xsl:otherwise>
-						</xsl:choose>
-					</tr>
-				</xsl:if>
+										<xsl:choose>
+											<xsl:when test="$leader = $director">
+												<a href="{m8:root( $director )}?a0={m8:triple( $fact )}" title="удаление" onclick="return confirm('Удаление факта &#171;{m8:title($fact)}&#187;')">
+													<xsl:value-of select="$symbol_del"/>
+												</a>
+											</xsl:when>
+											<xsl:otherwise>
+												<a href="{m8:action( $fact, $director )}&amp;r={$director}" title="сделать тип таким же">
+													<xsl:value-of select="$symbol_replace"/>
+												</a>
+											</xsl:otherwise>
+										</xsl:choose>
+									</td>
+								</xsl:when>
+								<xsl:otherwise>
+									<td colspan="2">Владелец - <span style="{m8:fact_color( $holder )}">
+											<xsl:value-of select="$holder"/>
+										</span>
+									</td>
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:when>
+						<xsl:otherwise>
+							<td valign="middle">
+								<span style="font-size: .8em; color: black">связывание</span>
+							</td>
+							<td valign="middle">
+								<form action="{m8:root( $fact )}{$modifier}/" id="editParamOfPort" style="margin: .5em">
+									<input type="hidden" name="d" value="r"/>
+									<select name="modifier" onchange="this.form.submit()">
+										<option/>
+										<xsl:for-each select="m8:index( $modifier )/director/*[name()!=$fact]">
+											<xsl:sort select="m8:title( name() )"/>
+											<option value="{name()}">
+												<xsl:apply-templates select="." mode="simpleName"/>
+												<xsl:if test="m8:port( $fact, name() )/d">
+													- связано
+												</xsl:if>
+											</option>
+										</xsl:for-each>
+									</select>
+								</form>
+							</td>
+						</xsl:otherwise>
+					</xsl:choose>
+				</tr>
 			</table>
 			<xsl:message>				-- Вывод пульта навигации (END) --
 											</xsl:message>

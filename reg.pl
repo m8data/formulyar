@@ -49,7 +49,7 @@ my %setting = (
 	'platformLevel'	=> 3,
 	'tempfsFolder'	=> '/mnt/tmpfs'
 );
-my $localForce = 0; #разрешение делать записи любым юзерам на любой стороне, в противном случае это будет разрешено лишь на сервере
+my $localForce = 1; #разрешение делать записи любым юзерам на любой стороне, в противном случае это будет разрешено лишь на сервере
 
 my $reindexDays = 7;
 my $passwordFile = 'password.txt';
@@ -648,6 +648,7 @@ sub washProc{
 					}
 				}
 				$$temp{'modifier'} = 'n' if $num[0][2] eq 'r';
+				$$temp{'modifier'} = $$temp{'quest'} if defined $$temp{'quest'};
 			}
 			
 		}
