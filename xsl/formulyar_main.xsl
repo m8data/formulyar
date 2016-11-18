@@ -693,7 +693,7 @@
 							</xsl:if>
 							<xsl:if test="not( $startPort/d )">
 								<div style="padding-bottom: .5em">
-									<a href="{m8:action( $fact, $modifier )}&amp;d=">связь</a>
+									<a href="{m8:action( $fact, $modifier )}&amp;d=&amp;quest={$modifier}">связь</a><!-- модификатор не срабатывает, т.к. для d модификатор берется принудительно из квеста, а там по умолчанию 'n'-->
 								</div>
 							</xsl:if>
 							<xsl:if test="not( $startPort/n ) and $modifier = 'n'">

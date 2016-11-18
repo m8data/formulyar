@@ -424,7 +424,7 @@ sub washProc{
 		$$temp{'quest'} = $defaultQuest if not defined $$temp{'quest'};
 		my $iName = &setName( 'i', $$temp{'user'}, @text );
 		my $trName =  &setName( 'd', $$temp{'user'}, $$temp{'fact'}, 'n', $iName );
-		my @val = ( $trName, $$temp{'fact'}, 'n', $iName, $$temp{'quest'}, 1 );
+		my @val = ( $trName, $$temp{'fact'}, 'n', $iName, 'n', 1 );#$$temp{'quest'}, 1 
 		push @num, \@val;
 	}
 	else {
@@ -523,7 +523,7 @@ sub washProc{
 			push @num, \@value;
 			$$cookie{'user'} = $defaultUser
 		}
-		elsif ( $$temp{'record'} and ( $localForce or $^O ne 'MSWin32' or $$temp{'user'} =~/^user/ or $$temp{'user'} eq 'guest' ) ) {	
+		elsif ( $$temp{'record'} and ( $localForce or $^O ne 'MSWin32' or $$temp{'user'} =~/^user/ or $$temp{'user'} eq 'guest' ) ) {	#and ( $localForce or $^O ne 'MSWin32' or $$temp{'user'} =~/^user/ or $$temp{'user'} eq 'guest' ) 
 			&setWarn( "		wP   Поиск и проверка номеров в строке запроса $$temp{'QUERY_STRING'}" );# стирка 
 			my @value; #массив для контроля повторяющихся значений внутри триплов
 			my %table; #таблица перевода с буквы предлложения на номер позиции в процессе
@@ -598,7 +598,7 @@ sub washProc{
 						$num[$s][2] = $value;
 						#$num[$s][4] = $$temp{'modifier'};
 						$num[$s][5] = 2;
-						$$temp{'fact'} = $$temp{'quest'} = $num[$s][1] if $name eq 'a'; # подготовка редиректа
+						$$temp{'fact'} = $num[$s][1] if $name eq 'a'; # подготовка редиректа # $$temp{'quest'} = -2016-11-18
 					}
 				}
 				else{ 
@@ -648,7 +648,10 @@ sub washProc{
 					}
 				}
 				$$temp{'modifier'} = 'n' if $num[0][2] eq 'r';
-				$$temp{'modifier'} = $$temp{'quest'} if defined $$temp{'quest'} and $$temp{'quest'} and $num[0][2] eq 'd'; #для того что бы можно было вывести элемент быстрого связывания - 2016-11-17
+				if ( defined $$temp{'quest'} and $$temp{'quest'} and $num[0][2] eq 'd' ){
+					&setWarn("	wP     Замена модификатора квестом $$temp{'quest'}");
+					$$temp{'modifier'} = $$temp{'quest'} ; #для того что бы можно было вывести элемент быстрого связывания - 2016-11-17
+				}
 			}
 			
 		}
@@ -1317,8 +1320,9 @@ sub m8dir {
 }
 sub m8req {
 	my $temp = shift;
+	#&setWarn( "			m8req @_" );		
 	my $dir = $auraDir.'/'.$$temp{'ctrl'}.'/m8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/';
-	if ( defined $$temp{'number'} ){
+	if ( defined $$temp{'number'} and ( ( $$temp{'modifier'} ne 'n' ) or defined $$temp{'number'}[0]{'message'} ) ){
 		$dir .= '?';
 		$dir .= 'modifier='.$$temp{'modifier'} if $$temp{'modifier'} ne 'n';
 		$dir .= '&error='.$$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
