@@ -648,7 +648,7 @@ sub washProc{
 					}
 				}
 				$$temp{'modifier'} = 'n' if $num[0][2] eq 'r';
-				$$temp{'modifier'} = $$temp{'quest'} if defined $$temp{'quest'}; #для того что бы можно было вывести элемент быстрого связывания - 2016-11-17
+				$$temp{'modifier'} = $$temp{'quest'} if defined $$temp{'quest'} and $num[0][2] eq 'd'; #для того что бы можно было вывести элемент быстрого связывания - 2016-11-17
 			}
 			
 		}
