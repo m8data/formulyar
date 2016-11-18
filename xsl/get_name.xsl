@@ -268,6 +268,8 @@
 		<xsl:if test="not($currentResult)">
 		<xsl:message>		=== getAncestor ===
 			chiefOnly: <xsl:value-of select="$chiefOnly"/>
+			<xsl:if test="not(m8:index($currentFactName)/subject)">
+			ФАКТ УДАЛЕН!!!!</xsl:if>
 		</xsl:message></xsl:if>
 		<xsl:variable name="newResult">
 			<xsl:element name="{$currentFactName}">
@@ -315,12 +317,15 @@
 				</xsl:message>
 				<xsl:copy-of select="exsl:node-set($newResult)/*"/>
 			</xsl:when>
-			<xsl:otherwise>
+			<xsl:when test="m8:index($currentFactName)/subject">
 				<xsl:call-template name="getAncestor">
 					<xsl:with-param name="currentFactName" select="m8:leader( $currentFactName )"/>
 					<xsl:with-param name="currentResult" select="exsl:node-set($newResult)"/>
 					<xsl:with-param name="chiefOnly" select="$chiefOnly"/>
 				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<bad>_</bad>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>

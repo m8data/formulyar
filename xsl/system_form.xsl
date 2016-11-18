@@ -263,18 +263,17 @@
 	</func:function>
 	<func:function name="m8:root">
 		<xsl:param name="fact"/>
-		<!--<xsl:param name="modifier"/>-->
-		<xsl:message>### функция m8:root (cFact: <xsl:value-of select="$fact"/>) ###</xsl:message>
-		<xsl:choose>
-			<xsl:when test="$fact">
-				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/', m8:dir( $fact ), '/' )"/>
-				<!-- без '/' не работает отсылка файлов в спец-инпуте -->
-			</xsl:when>
-			<xsl:otherwise>
-				<func:result select="concat( $start/@prefix, 'a/', $ctrl, '/')"/>
-				<!--, m8:dir(), '/' -->
-			</xsl:otherwise>
-		</xsl:choose>
+		<xsl:param name="modifier"/>
+		<xsl:message>### функция m8:root (cFact: <xsl:value-of select="$fact"/>; modifier: <xsl:value-of select="$modifier"/>) ###</xsl:message>
+		<func:result>
+			<xsl:value-of select="concat( $start/@prefix, 'a/', $ctrl, '/' )"/>
+			<xsl:if test="$fact">
+				<xsl:value-of select="concat( m8:dir( $fact ), '/' )"/>
+			</xsl:if>
+			<xsl:if test="$modifier">
+				<xsl:value-of select="concat(  '?modifier=', $modifier )"/>
+			</xsl:if>
+		</func:result>
 	</func:function>
 	<func:function name="m8:action">
 		<xsl:param name="fact"/>
@@ -293,16 +292,24 @@
 	</func:function>
 	<func:function name="m8:title">
 		<xsl:param name="fact"/>
+		<xsl:param name="param"/>
+		<xsl:param name="modifier"/>
 		<func:result>
-			<xsl:call-template name="simpleName">
-				<xsl:with-param name="name" select="$fact"/>
-			</xsl:call-template>
+			<xsl:choose>
+				<xsl:when test="$param"><xsl:value-of select="m8:title( m8:param( $fact, $param, $modifier ) )"/></xsl:when>
+				<xsl:otherwise>
+					<xsl:call-template name="simpleName">
+						<xsl:with-param name="name" select="$fact"/>
+					</xsl:call-template>				
+				</xsl:otherwise>
+			</xsl:choose>
 		</func:result>
 	</func:function>
 	<func:function name="m8:param">
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
-		<func:result select="name( m8:port( $fact )/*[name()=$param]/* )"/>
+		<xsl:param name="modifier"/>
+		<func:result select="name( m8:port( $fact, $modifier )/*[name()=$param]/* )"/>
 	</func:function>
 	<func:function name="m8:i">
 		<xsl:param name="fact"/>
@@ -335,6 +342,20 @@
 			<xsl:apply-templates select="exsl:node-set($tree)" mode="serialize"/>
 		</func:result>
 	</func:function>
+	<func:function name="m8:class">
+		<xsl:param name="type"/>
+		<func:result select="$types/@*[name()=$type]"/>
+	</func:function>
+	<func:function name="m8:type">
+		<xsl:param name="class"/>
+		<func:result select="name( $types/@*[.=$class] )"/>
+	</func:function>
+	<func:function name="m8:img">
+		<xsl:param name="fact"/>
+		<xsl:param name="modifier"/>
+		<xsl:variable name="chief" select="m8:chief( $fact )"/>
+		<func:result select="concat( $start/@prefix, 'p/', m8:holder( $fact ), '/img/', m8:type( $chief ), '/', m8:title( $fact, $code, $modifier ) )"/>
+	</func:function>			
 	<!--
 
 //-->
@@ -949,10 +970,10 @@
 				<xsl:if test="1 or not( starts-with( $start/@user, 'user' ) )">
 					<xsl:choose>
 						<xsl:when test="$ctrl = 'formulyar' ">
-							<a href="{$start/@prefix}a/{$avatar}/{ m8:dir( $fact, $quest ) }" style="color:orange">публичный раздел</a>
-						</xsl:when>
+							<a href="{$start/@prefix}a/{$avatar}/{ m8:dir( $fact ) }" style="color:orange">публичный раздел</a>
+						</xsl:when><!--, $quest-->
 						<xsl:otherwise>
-							<a href="{$start/@prefix}a/formulyar/{ m8:dir( $fact, $quest ) }" style="color:brown">aдминистративный раздел</a>
+							<a href="{$start/@prefix}a/formulyar/{ m8:dir( $fact ) }" style="color:brown">aдминистративный раздел</a><!--, $quest-->
 						</xsl:otherwise>
 					</xsl:choose>
 				</xsl:if>
