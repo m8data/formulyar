@@ -87,6 +87,7 @@
 		</xsl:choose>
 	</xsl:variable>-->
 	<xsl:variable name="types" select="document( concat( $start/@planeRoot, 'm8/type.xml' ) )/*"/>
+	<xsl:variable name="class" select="document( concat( $start/@planeRoot, 'm8/class.xml' ) )/*"/>
 	<!-- ####  ЗНАКИ  ####
 			&#215; - ×
 			&#10060; - ❌

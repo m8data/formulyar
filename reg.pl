@@ -49,7 +49,7 @@ my %setting = (
 	'platformLevel'	=> 3,
 	'tempfsFolder'	=> '/mnt/tmpfs'
 );
-my $localForce = 0; #разрешение делать записи любым юзерам на любой стороне, в противном случае это будет разрешено лишь на сервере
+my $localForce = 1; #разрешение делать записи любым юзерам на любой стороне, в противном случае это будет разрешено лишь на сервере
 
 my $reindexDays = 7;
 my $passwordFile = 'password.txt';
@@ -565,7 +565,7 @@ sub washProc{
 						
 						$types{$value[0]} = $$temp{'fact'};
 						#&setXML ( $typesDir, 'type', \%types );
-						&rinseProc3 ( %types )
+						&rinseProc3 ( 'type', %types )
 					}
 				} 
 				if ( $name =~/^([a-z]+)([0-5]*)$/ and not $name =~/^[dirn]/ ){
@@ -792,8 +792,8 @@ sub rinseProc {
 }
 
 sub rinseProc3 {
-	my ( %type )=@_;
-	&setWarn("		rP2 @_"  );
+	my ( $root, %type )=@_;
+	&setWarn("		rP3 @_"  );
 	my %xsl_stylesheet;
 	$xsl_stylesheet{'xsl:stylesheet'}{'version'} = '1.0';
 	$xsl_stylesheet{'xsl:stylesheet'}{'xmlns:xsl'} = 'http://www.w3.org/1999/XSL/Transform';
@@ -804,8 +804,10 @@ sub rinseProc3 {
 		$x++
 	}
 	my $XML = $XML2JSON->json2xml( $JSON->encode(\%xsl_stylesheet) );
-	&setFile( $typesDir.'/type.xsl', $XML );
-	&setXML( $typesDir, 'type', \%type );
+	&setFile( $typesDir.'/'.$root.'.xsl', $XML );
+	&rinseProc3( 'class', reverse %type ) if $root eq 'type';
+	&setXML( $typesDir, $root, \%type );
+	
 }
 
 sub spinProc {
@@ -960,7 +962,7 @@ sub spinProc {
 				if ( $val[1] and $val[1]=~/^xsd:/ ){
 					delete $types{$val[0]};
 					&setXML( $typesDir, 'type', \%types );
-					&rinseProc3( %types )
+					&rinseProc3( 'type', %types )
 				}
 			}
 		}
@@ -1222,7 +1224,7 @@ sub dryProc2 {
 		
 	}
 
-	&rinseProc3( %types );# if keys %types;
+	&rinseProc3( 'type', %types );# if keys %types;
 
 	print REINDEX @warn;
 	
