@@ -508,7 +508,7 @@
 			<xsl:apply-templates select="exsl:node-set($sorted_predicates)/*[1]" mode="predicate_grouping_new"/>
 		</xsl:variable>
 		<xsl:variable name="fact_n" select="m8:value( name( $factPort/n/* ) )"/>
-		<xsl:if test="$fact_n/*[name()='svg']">
+		<xsl:if test="$fact_n/*[name()='svg'] or $factPort/*[name()=$code]">
 			<style type="text/css">
 				.svg_formulyar svg {
 					background-color: #ccc;
@@ -517,7 +517,17 @@
 				}
 			</style>
 			<div class="svg_formulyar" style="float: left">
-				<xsl:copy-of select="$fact_n/*"/>
+				<xsl:choose>
+					<xsl:when test="$fact_n/*[name()='svg']"><xsl:copy-of select="$fact_n/*"/></xsl:when>
+					<xsl:otherwise>
+						<xsl:variable name="path" select="m8:img( $fact )"/>
+						<xsl:choose>
+							<xsl:when test="contains( $path, '.jpg' ) or contains( $path, '.png' )"><img src="{$path}" style="max-width: 350px"/></xsl:when>
+							<xsl:otherwise><a href="{$path}" target="_blank">файл <xsl:value-of select="substring-after( $path, '.' )"/></a></xsl:otherwise>
+						</xsl:choose>
+					</xsl:otherwise>
+				</xsl:choose>
+				
 			</div>
 		</xsl:if>
 		<table width="92%" style="font-size: 1em">

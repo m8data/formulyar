@@ -266,11 +266,12 @@
 		<xsl:param name="currentResult"/>
 		<xsl:param name="chiefOnly"/>
 		<xsl:if test="not($currentResult)">
-		<xsl:message>		=== getAncestor ===
+			<xsl:message>		=== getAncestor (<xsl:value-of select="m8:title($currentFactName)"/>) ===
 			chiefOnly: <xsl:value-of select="$chiefOnly"/>
-			<xsl:if test="not(m8:index($currentFactName)/subject)">
+				<xsl:if test="not(m8:index($currentFactName)/subject)">
 			ФАКТ УДАЛЕН!!!!</xsl:if>
-		</xsl:message></xsl:if>
+			</xsl:message>
+		</xsl:if>
 		<xsl:variable name="newResult">
 			<xsl:element name="{$currentFactName}">
 				<xsl:choose>
@@ -296,23 +297,13 @@
 				<xsl:copy-of select="$currentResult/*"/>
 			</xsl:if>
 		</xsl:variable>
-		<xsl:message>			- currentFactName: <xsl:value-of select="$currentFactName"/>
-			<xsl:text>
-			</xsl:text>
-			<!-- parentAuthorName: <xsl:value-of select="$parentAuthorName"/>
-			typeName: <xsl:value-of select="$typeName"/>
-			title: <xsl:apply-templates select="exsl:node-set($newResult)/*[1]" mode="simpleName"/>
-			currentDeep: <xsl:value-of select="count( exsl:node-set($newResult)/* )"/>
-			newResult: -->
-			<xsl:for-each select="exsl:node-set($newResult)/*">
-				<xsl:value-of select="concat( position(), ') ', name(), ' - ', @type )"/>
-				<xsl:if test="position()!=last()"><xsl:text>	
-				</xsl:text>
-				</xsl:if>
-			</xsl:for-each>
-		</xsl:message>
+		<xsl:message>			- currentFactName: <xsl:value-of select="$currentFactName"/></xsl:message>
+		<xsl:if test="position()!=last()"><xsl:message>
+		</xsl:message></xsl:if>
 		<xsl:choose>
-			<xsl:when test="$currentFactName = 'n' or ( $chiefOnly and $types/@*[.=$currentFactName])">
+			<xsl:when test="$currentFactName = 'n' or ( $chiefOnly and $types/@*[.=$currentFactName])"><!--<xsl:for-each select="exsl:node-set($newResult)/*">
+						<xsl:value-of select="concat( '                    ', position(), ') ', name(), ' - ', @type )"/>
+					</xsl:for-each>-->
 				<xsl:message>		=== getAncestor (end) === 
 				</xsl:message>
 				<xsl:copy-of select="exsl:node-set($newResult)/*"/>
