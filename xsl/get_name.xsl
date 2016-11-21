@@ -297,9 +297,9 @@
 				<xsl:copy-of select="$currentResult/*"/>
 			</xsl:if>
 		</xsl:variable>
-		<xsl:message>			- currentFactName: <xsl:value-of select="$currentFactName"/></xsl:message>
-		<xsl:if test="position()!=last()"><xsl:message>
-		</xsl:message></xsl:if>
+		<xsl:message>			- currentFactName2: <xsl:value-of select="$currentFactName"/></xsl:message>
+		<!--<xsl:if test="position()!=last() or 1"><xsl:message>**
+		</xsl:message></xsl:if>-->
 		<xsl:choose>
 			<xsl:when test="$currentFactName = 'n' or ( $chiefOnly and $types/@*[.=$currentFactName])"><!--<xsl:for-each select="exsl:node-set($newResult)/*">
 						<xsl:value-of select="concat( '                    ', position(), ') ', name(), ' - ', @type )"/>
@@ -309,6 +309,8 @@
 				<xsl:copy-of select="exsl:node-set($newResult)/*"/>
 			</xsl:when>
 			<xsl:when test="m8:index($currentFactName)/subject">
+				<xsl:message>		= переход на следующий шаг = 
+				</xsl:message>
 				<xsl:call-template name="getAncestor">
 					<xsl:with-param name="currentFactName" select="m8:leader( $currentFactName )"/>
 					<xsl:with-param name="currentResult" select="exsl:node-set($newResult)"/>
@@ -316,6 +318,8 @@
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:otherwise>
+				<xsl:message>		= BAD_NAME = 
+				</xsl:message>
 				<bad>_</bad>
 			</xsl:otherwise>
 		</xsl:choose>

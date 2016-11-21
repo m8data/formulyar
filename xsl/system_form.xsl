@@ -62,9 +62,9 @@
 	<xsl:param name="vf" select="'/value.xml'"/>
 	<xsl:param name="if" select="'/index.xml'"/>
 	<xsl:param name="ind" select="'/m8'"/>
-	<xsl:variable name="startIndex" select="m8:path( $fact, 'index' )"/>
-	<xsl:variable name="startPort" select="m8:port( $fact, $modifier )"/>
-	<xsl:variable name="factPort" select="m8:port( $fact )"/>
+	<xsl:param name="startIndex" select="m8:path( $fact, 'index' )"/>
+	<xsl:param name="startPort" select="m8:port( $fact, $modifier )"/>
+	<xsl:param name="factPort" select="m8:port( $fact )"/>
 	<xsl:param name="startTypeName" select="name( $startPort/r/* )"/>
 	<xsl:param name="ancestor-or-self">
 		<xsl:message>	--- getAncestor --- </xsl:message>
