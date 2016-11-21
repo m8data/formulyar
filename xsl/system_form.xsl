@@ -307,11 +307,14 @@
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
 		<xsl:param name="modifier"/>
-		<xsl:message>								== m8:title (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>
+		<xsl:message>								== m8:title (fact: <xsl:value-of select="$fact"/>; param: <xsl:value-of select="$param"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
 		<func:result>
 			<xsl:choose>
 				<xsl:when test="$param">
-					<xsl:value-of select="m8:title( m8:param( $fact, $param, $modifier ) )"/>
+					<!--<xsl:value-of select="m8:title( m8:param( $fact, $param, $modifier ) )"/>-->
+					<xsl:call-template name="simpleName">
+						<xsl:with-param name="name" select="m8:param( $fact, $param, $modifier )"/>
+					</xsl:call-template>
 				</xsl:when>
 				<xsl:when test="$fact">
 					<xsl:call-template name="simpleName">
