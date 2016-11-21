@@ -56,10 +56,16 @@
 	</xsl:template>-->
 	<xsl:template name="simpleName">
 		<xsl:param name="name"/>
-		<xsl:variable name="element">
-			<xsl:element name="{$name}">_</xsl:element>
-		</xsl:variable>
-		<xsl:apply-templates select="exsl:node-set($element)/*" mode="simpleName"/>
+		<xsl:choose>
+			<xsl:when test="$name">
+				<xsl:variable name="element">
+					<xsl:element name="{$name}">_</xsl:element>
+				</xsl:variable>
+				<xsl:apply-templates select="exsl:node-set($element)/*" mode="simpleName"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:message>BAD_NAME!!!!!!!!!!</xsl:message>BAD_NAME</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	<!--
 ##################### simpleName (end) #####################
@@ -297,11 +303,13 @@
 				<xsl:copy-of select="$currentResult/*"/>
 			</xsl:if>
 		</xsl:variable>
-		<xsl:message>			- currentFactName2: <xsl:value-of select="$currentFactName"/></xsl:message>
+		<xsl:message>			- currentFactName2: <xsl:value-of select="$currentFactName"/>
+		</xsl:message>
 		<!--<xsl:if test="position()!=last() or 1"><xsl:message>**
 		</xsl:message></xsl:if>-->
 		<xsl:choose>
-			<xsl:when test="$currentFactName = 'n' or ( $chiefOnly and $types/@*[.=$currentFactName])"><!--<xsl:for-each select="exsl:node-set($newResult)/*">
+			<xsl:when test="$currentFactName = 'n' or ( $chiefOnly and $types/@*[.=$currentFactName])">
+				<!--<xsl:for-each select="exsl:node-set($newResult)/*">
 						<xsl:value-of select="concat( '                    ', position(), ') ', name(), ' - ', @type )"/>
 					</xsl:for-each>-->
 				<xsl:message>		=== getAncestor (end) === 
