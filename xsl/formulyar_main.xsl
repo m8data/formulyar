@@ -508,7 +508,7 @@
 			<xsl:apply-templates select="exsl:node-set($sorted_predicates)/*[1]" mode="predicate_grouping_new"/>
 		</xsl:variable>
 		<xsl:variable name="fact_n" select="m8:value( name( $factPort/n/* ) )"/>
-		<xsl:if test="$fact_n/*[name()='svg'] or $factPort/*[name()=$code]">
+		<xsl:if test="$fact_n/*[name()='svg'] or $factPort/n1459505450-5328-1"><!-- n1459505450-5328-1 = $code -->
 			<style type="text/css">
 				.svg_formulyar svg {
 					background-color: #ccc;

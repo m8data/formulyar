@@ -431,6 +431,11 @@ sub washProc{
 		&setWarn( "		wP  Имеется строка запроса $$temp{'QUERY_STRING'}. Идет идет ее парсинг" );# 
 		my %param;
 		$$temp{'QUERY_STRING'} =~ s/%0D//eg; #Оставляем LA(ака 0A или \n), но убираем CR(0D). Без этой обработки на выходе получаем двойной возврат каретки помимо перевода строки если данные идут из textarea
+		#my $shy = '&shy;';
+		#		$$temp{'QUERY_STRING'} =~ s/\&#//;
+		#		$$temp{'QUERY_STRING'} =~ s/$shy//;
+		#		$$temp{'QUERY_STRING'} =~ s/\&\w\w\w\;//; #убить символы типа &shy;
+				
 		$$temp{'QUERY_STRING'} = &utfText($$temp{'QUERY_STRING'});
 		$$temp{'QUERY_STRING'} = Encode::decode_utf8($$temp{'QUERY_STRING'});
 		my %types = &getJSON( $typesDir, 'type' );		
@@ -536,6 +541,10 @@ sub washProc{
 				next if $name eq 'user' or defined $$temp{$name};
 				$value =~ s/^\s+//;
 				$value =~ s/\s+$//;
+				$value =~ s/\&#//;
+				my $shy = '&shy;';
+				$value =~ s/$shy//;
+				$value =~ s/\&\w\w\w\;//; #убить символы типа &shy;
 				if ( not $value and $value ne '0' ){ 
 					&setWarn('		wP     присвоение пустого значения');
 					$value = 'r' 

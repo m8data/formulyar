@@ -128,7 +128,15 @@
 	-->
 	<func:function name="m8:value">
 		<xsl:param name="fact"/>
+		<xsl:param name="param"/>
+		<xsl:param name="modifier"/>
 		<func:result select="m8:path( $fact, 'value' )"/>
+	<!--	<func:result>
+			<xsl:choose>
+				<xsl:when test="$param and 0"><xsl:value-of select="m8:path( m8:param( $fact, $param, $modifier ), 'value' )"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="m8:path( $fact, 'value' )"/></xsl:otherwise>
+			</xsl:choose>
+		</func:result>-->
 	</func:function>
 	<func:function name="m8:index">
 		<xsl:param name="fact"/>
