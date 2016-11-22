@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:math="http://exslt.org/math"  xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
 	<xsl:include href="get_name.xsl"/>
 	<!--<xsl:include href="../../../m8/type.xsl"/>-->
 	<!--
@@ -342,8 +342,13 @@
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
 		<xsl:param name="modifier"/>
-		<func:result select="name( m8:port( $fact, $modifier )/*[name()=$param]/* )"/>
+		<func:result select="name( m8:unic( m8:port( $fact, $modifier ), $param ) )"/>
 	</func:function>
+	<func:function name="m8:unic">
+		<xsl:param name="node"/>
+		<xsl:param name="param"/>
+		<func:result select="$node/*[name()=$param]/*[count(../*)=1 or */@time=math:max( ../*/*/@time )]" xml:lang="проверка функцией max на случай ошибочного указания нескольких значений"/>
+	</func:function>	
 	<func:function name="m8:i">
 		<xsl:param name="fact"/>
 		<func:result select="m8:value( m8:param( $fact, 'i' ) )"/>
@@ -426,8 +431,8 @@
 		<xsl:param name="sortSelect"/>
 		<xsl:param name="titleSelect"/>
 		<xsl:param name="ajaxMethod"/>
-		<!--<xsl:variable name="selectedValue" select="$objectElement/*[name()=$predicateName]/*"/>-->
-		<xsl:variable name="selectedValue" select="$objectElement/*[name()=$predicateName]/*"/>
+		<!--<xsl:variable name="selectedValue" select="$objectElement/*[name()=$predicateName]/*"/> or */@time = math:max( ../*/*/@time )  -->
+		<xsl:variable name="selectedValue" select="m8:unic( $objectElement, $predicateName )"/>
 		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message )" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
 			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
 		</xsl:if>
