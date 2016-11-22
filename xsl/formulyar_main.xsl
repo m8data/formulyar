@@ -304,7 +304,7 @@
 		<xsl:message> 
 									@@@@@ - Блоки действий - @@@@@
 				</xsl:message>
-		<div style="background: #ddd; padding: .5em; opacity: 0.75; position: fixed; left:0; bottom: 4em">
+		<div style="background: #ddd; padding: .5em; opacity: 0.75; position: fixed; left:0; bottom: 62px">
 			<!--background: #ded; -->
 			<xsl:message>				-- Вывод пульта навигации --</xsl:message>
 			<xsl:variable name="newQuestName">
@@ -575,7 +575,7 @@
 															<xsl:value-of select="$symbol_replace"/>
 														</xsl:when>
 														<xsl:when test="$pName = 'd' and $modifier!='n'">
-															<a href="{m8:action( $modifier, $fact )}&amp;d=0&amp;quest={$modifier}&amp;fact={$fact}">
+															<a href="{m8:root( $modifier, $fact )}&amp;d=0&amp;quest={$modifier}&amp;fact={$fact}">
 																<xsl:value-of select="$symbol_replace"/>
 															</a>
 														</xsl:when>
@@ -587,7 +587,7 @@
 												<!--<xsl:if test="name()!='n'">-->
 												<td valign="top">
 													<!--<a href="{$startID}/?a0={name(*/*)}">x</a>-->
-													<a href="{m8:action( $fact, $modifier )}&amp;a0={name(*/*)}">
+													<a href="{m8:root( $fact, $modifier )}&amp;a0={name(*/*)}" title="удаление данного параметра">
 														<xsl:value-of select="$symbol_del"/>
 													</a>
 												</td>
@@ -646,45 +646,6 @@
 										</div>
 									</xsl:if>
 								</xsl:for-each>
-								<!--<xsl:choose>
-									<xsl:when test="m8:d( $fact )/div  and not( starts-with( m8:d( $fact )/div[2]/span, 'xsd:' ) )">
-										<div style="padding: .4em"> из мульта </div>
-										<xsl:for-each select="m8:d( $fact )/div">
-											<div style="padding-bottom: .5em">
-												<a href="{m8:action( $fact, $modifier )}&amp;{span[1]}=">
-													<xsl:value-of select="m8:title( $types/@*[name()=current()/span[1]] )"/>
-													<xsl:value-of select="concat( ' (', span[3], ')' )"/>
-												</a>
-											</div>
-										</xsl:for-each>
-									</xsl:when>
-									<xsl:when test="m8:d( $director )/div and not( starts-with( m8:d( $director )/div[2]/span, 'xsd:' ) )">
-										<div style="padding: .4em"> из мульта*</div>
-										<xsl:for-each select="m8:d( $director )/div">
-											<div style="padding-bottom: .5em">
-												<a href="{m8:action( $fact, $modifier )}&amp;{span[1]}=">
-													<xsl:value-of select="m8:title( $types/@*[name()=current()/span[1]] )"/>
-													<xsl:if test="span[3]">
-														<xsl:value-of select="concat( ' (', span[3], ')' )"/>
-													</xsl:if>
-												</a>
-											</div>
-										</xsl:for-each>
-									</xsl:when>
-									<xsl:when test="m8:d( m8:director( $director ) )/div and not( starts-with( m8:d( m8:director( $director ) )/div[2]/span, 'xsd:' ) )">
-										<div style="padding: .4em">из мульта** </div>
-										<xsl:for-each select="m8:d( m8:director( $director ) )/div">
-											<div style="padding-bottom: .5em">
-												<a href="{m8:action( $fact, $modifier )}&amp;{span[1]}=">
-													<xsl:value-of select="m8:title( $types/@*[name()=current()/span[1]] )"/>
-													<xsl:if test="span[3]">
-														<xsl:value-of select="concat( ' (', span[3], ')' )"/>
-													</xsl:if>
-												</a>
-											</div>
-										</xsl:for-each>
-									</xsl:when>
-								</xsl:choose>-->
 							</xsl:if>
 							<div>------------------------</div>
 							<!--<xsl:if test="not( $startPort/r )"></xsl:if>-->
@@ -693,22 +654,22 @@
 							</div>-->
 							<xsl:if test="$modifier != 'n' ">
 								<div style="padding-bottom: .5em">
-									<a href="{m8:action( $fact, $modifier )}&amp;sort=">сортировка</a>
+									<a href="{m8:root( $fact, $modifier )}&amp;sort=">сортировка</a>
 								</div>
 							</xsl:if>
 							<xsl:if test="not( $startPort/i )">
 								<div style="padding-bottom: .5em">
-									<a href="{m8:action( $fact, $modifier )}&amp;i=">имя</a>
+									<a href="{m8:root( $fact, $modifier )}&amp;i=">имя</a>
 								</div>
 							</xsl:if>
 							<xsl:if test="not( $startPort/d )">
 								<div style="padding-bottom: .5em">
-									<a href="{m8:action( $fact, $modifier )}&amp;d=&amp;quest={$modifier}">связь</a><!-- модификатор не срабатывает, т.к. для d модификатор берется принудительно из квеста, а там по умолчанию 'n'-->
+									<a href="{m8:root( $fact, $modifier )}&amp;d=&amp;quest={$modifier}">связь</a><!-- модификатор не срабатывает, т.к. для d модификатор берется принудительно из квеста, а там по умолчанию 'n'-->
 								</div>
 							</xsl:if>
 							<xsl:if test="not( $startPort/n ) and $modifier = 'n'">
 								<div style="padding-bottom: .5em">
-									<a href="{m8:action( $fact, $modifier )}&amp;n=">структура</a>
+									<a href="{m8:root( $fact, $modifier )}&amp;n=">структура</a>
 								</div>
 							</xsl:if>
 							<xsl:message>

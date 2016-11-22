@@ -131,7 +131,7 @@
 		<xsl:param name="param"/>
 		<xsl:param name="modifier"/>
 		<func:result select="m8:path( $fact, 'value' )"/>
-	<!--	<func:result>
+		<!--	<func:result>
 			<xsl:choose>
 				<xsl:when test="$param and 0"><xsl:value-of select="m8:path( m8:param( $fact, $param, $modifier ), 'value' )"/></xsl:when>
 				<xsl:otherwise><xsl:value-of select="m8:path( $fact, 'value' )"/></xsl:otherwise>
@@ -234,19 +234,21 @@
 		<xsl:message>								== m8:triple (fact <xsl:value-of select="$fact"/>) ==</xsl:message>
 		<func:result select="name( m8:port( $fact )/r/*/* )"/>
 	</func:function>-->
-	
 	<func:function name="m8:triple">
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
 		<xsl:param name="modifier"/>
 		<func:result>
 			<xsl:choose>
-				<xsl:when test="$param"><xsl:value-of select="name( m8:port( $fact, $modifier )/*[name()=$param]/*/* )"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="name( m8:port( $fact )/r/*/* )"/></xsl:otherwise>
+				<xsl:when test="$param">
+					<xsl:value-of select="name( m8:port( $fact, $modifier )/*[name()=$param]/*/* )"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="name( m8:port( $fact )/r/*/* )"/>
+				</xsl:otherwise>
 			</xsl:choose>
 		</func:result>
 	</func:function>
-	
 	<func:function name="m8:color">
 		<xsl:param name="fact"/>
 		<func:result select="m8:fact_color( m8:holder( $fact ) )"/>
@@ -329,7 +331,10 @@
 						<xsl:with-param name="name" select="$fact"/>
 					</xsl:call-template>
 				</xsl:when>
-				<xsl:otherwise><xsl:comment/></xsl:otherwise><!--NULL_NAME-->
+				<xsl:otherwise>
+					<xsl:comment/>
+				</xsl:otherwise>
+				<!--NULL_NAME-->
 			</xsl:choose>
 		</func:result>
 	</func:function>
@@ -353,10 +358,20 @@
 	</func:function>
 	<func:function name="m8:capital">
 		<xsl:param name="fact"/>
+		<xsl:param name="all"/>
 		<func:result>
-			<xsl:call-template name="capitalLetter">
-				<xsl:with-param name="input" select="$fact"/>
-			</xsl:call-template>
+			<xsl:choose>
+				<xsl:when test="$all">
+					<xsl:call-template name="uppercase">
+						<xsl:with-param name="input" select="$fact"/>
+					</xsl:call-template>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:call-template name="capitalLetter">
+						<xsl:with-param name="input" select="$fact"/>
+					</xsl:call-template>
+				</xsl:otherwise>
+			</xsl:choose>
 		</func:result>
 	</func:function>
 	<func:function name="m8:sort">
@@ -387,7 +402,7 @@
 	<func:function name="m8:img">
 		<xsl:param name="fact"/>
 		<xsl:param name="modifier"/>
-		<xsl:message>								== m8:img (fact: <xsl:value-of select="$fact"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>		
+		<xsl:message>								== m8:img (fact: <xsl:value-of select="$fact"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
 		<xsl:variable name="chief" select="m8:chief( $fact )"/>
 		<func:result select="concat( $start/@prefix, 'p/', m8:holder( $fact ), '/img/', m8:type( $chief ), '/', m8:title( $fact, $code, $modifier ) )"/>
 	</func:function>
