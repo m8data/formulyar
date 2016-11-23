@@ -386,9 +386,11 @@
 	</func:function>
 	<func:function name="m8:sеrialize">
 		<xsl:param name="tree"/>
+		<xsl:param name="title"/>
 		<xsl:param name="size"/>
 		<func:result>
 			<code>
+				<div><xsl:value-of select="$title"/></div>
 				<xsl:if test="$size">
 					<xsl:attribute name="style"><xsl:value-of select="concat( 'font-size: ', $size )"/></xsl:attribute>
 				</xsl:if>
