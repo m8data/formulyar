@@ -317,8 +317,8 @@
 				<xsl:copy-of select="exsl:node-set($newResult)/*"/>
 			</xsl:when>
 			<xsl:when test="m8:index($currentFactName)/subject">
-				<xsl:message>		= переход на следующий шаг = 
-				</xsl:message>
+				<!--<xsl:message>		= переход на следующий шаг = 
+				</xsl:message>-->
 				<xsl:call-template name="getAncestor">
 					<xsl:with-param name="currentFactName" select="m8:leader( $currentFactName )"/>
 					<xsl:with-param name="currentResult" select="exsl:node-set($newResult)"/>

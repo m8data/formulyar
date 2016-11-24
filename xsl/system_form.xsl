@@ -1014,13 +1014,13 @@
 	<xsl:template name="footer">
 		<!--<div style="position: fixed;  bottom: 1px; left: 1px; z-index: 1; color:gray">-</div>-->
 		<xsl:if test="$adminMode and $start/@error">
-			<div style="position: fixed; width:100%; text-align: center; bottom: 80px; z-index: 1; color:red">
+			<div style="position: fixed; width:100%; text-align: center; bottom: 80px; z-index: 1; color:red" class="adminPanel">
 				<xsl:value-of select="$start/@error"/>
 			</div>
 		</xsl:if>
 		<xsl:if test="$user != 'guest' or $adminMode or $ctrl='formulyar'">
 			<!-- or $start/@debug-->
-			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray">
+			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray" class="adminPanel">
 				<!--<a href="{$start/@prefix}" style="color:gray">START</a>
 					<xsl:text> | </xsl:text>-->
 				<xsl:comment/>
@@ -1043,7 +1043,7 @@
 					<xsl:text> | </xsl:text>
 					<a href="{$start/@prefix}m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}/port.xml" style="color:gray">xml</a>-->
 			</div>
-			<div style="position: fixed; bottom: 5px; right: 10px; color: gray; z-index: 1">
+			<div style="position: fixed; bottom: 5px; right: 10px; color: gray; z-index: 1" class="adminPanel">
 				<xsl:if test="$user = $avatar">
 					<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray; display: none">
 						<xsl:value-of select="$avatar"/>
