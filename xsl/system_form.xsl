@@ -625,7 +625,7 @@
 			<!--
 							ВЫВОД TEXTAREA
 -->
-			<xsl:when test="$predicateName = 'd' or $predicateParam/div[3]/span='textarea' ">
+			<xsl:when test="( $predicateName = 'd' and $modifier = 'n' ) or $predicateParam/div[3]/span='textarea' ">
 				<xsl:variable name="name">
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
 				</xsl:variable>

@@ -333,7 +333,8 @@
 												<xsl:attribute name="style"><xsl:choose><xsl:when test="m8:port( $fact, name() )/d">background: #99c</xsl:when><xsl:otherwise>background: #ffd</xsl:otherwise></xsl:choose></xsl:attribute>
 												<xsl:apply-templates select="." mode="simpleName"/>
 												<xsl:if test="m8:port( $fact, name() )/d">
-													- связано
+													<xsl:text> - связано</xsl:text>
+													<xsl:if test="m8:port( $fact, name() )/d[not(r)]"><xsl:value-of select="concat( ' [', m8:title( m8:param( $fact, 'd', name() ) ), ']' )"/></xsl:if>
 												</xsl:if>
 											</option>
 										</xsl:for-each>
@@ -440,7 +441,8 @@
 												</xsl:if>
 												<xsl:apply-templates select="." mode="simpleName"/>
 												<xsl:if test="m8:port( $fact, name() )/d">
-													- связано
+													<xsl:text> - связано</xsl:text>
+													<xsl:if test="m8:port( $fact, name() )/d[not(r)]"><xsl:value-of select="concat( ' [', m8:title( m8:param( $fact, 'd', name() ) ), ']' )"/></xsl:if>
 												</xsl:if>
 											</option>
 										</xsl:for-each>
@@ -562,7 +564,7 @@
 										<table>
 											<tr>
 												<td>
-													<xsl:if test="$pName != 'd' or $modifier='n'">
+													<xsl:if test="1"><!--$pName != 'd' or $modifier='n'-->
 														<xsl:call-template name="editParamOfPort">
 															<xsl:with-param name="predicateName" select="$pName"/>
 															<xsl:with-param name="objectElement" select="$startPort"/>
