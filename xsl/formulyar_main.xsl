@@ -253,6 +253,7 @@
 										<xsl:when test="m8:index( name() )/subject">
 											<a href="{m8:action( name(), $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
 												<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
+												<xsl:if test="m8:param( name(), 'd', $fact ) != 'r' "> [<xsl:value-of select="m8:title( m8:param( name(), 'd', $fact ) )"/>]</xsl:if>
 											</a>
 										</xsl:when>
 										<xsl:otherwise>
