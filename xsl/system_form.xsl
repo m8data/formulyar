@@ -203,22 +203,24 @@
 	</func:function>
 	<func:function name="m8:ancestor-or-self">
 		<xsl:param name="fact"/>
-		<xsl:variable name="ss">
-			<xsl:call-template name="getAncestor">
-				<xsl:with-param name="currentFactName" select="$fact"/>
-			</xsl:call-template>
-		</xsl:variable>
-		<func:result select="exsl:node-set( $ss )"/>
-	</func:function>
-	<func:function name="m8:chief">
-		<xsl:param name="fact"/>
+		<xsl:param name="chiefOnly"/>
 		<xsl:variable name="ss">
 			<xsl:call-template name="getAncestor">
 				<xsl:with-param name="currentFactName" select="$fact"/>
 				<xsl:with-param name="chiefOnly" select="1"/>
 			</xsl:call-template>
 		</xsl:variable>
-		<func:result select="name( exsl:node-set( $ss )/*[1] )"/>
+		<func:result select="exsl:node-set( $ss )"/>
+	</func:function>
+	<func:function name="m8:chief">
+		<xsl:param name="fact"/>
+		<!--<xsl:variable name="ss">
+			<xsl:call-template name="getAncestor">
+				<xsl:with-param name="currentFactName" select="$fact"/>
+				<xsl:with-param name="chiefOnly" select="1"/>
+			</xsl:call-template>
+		</xsl:variable>-->
+		<func:result select="name( m8:ancestor-or-self( $fact, 1 )/*[1] )"/>
 	</func:function>
 	<!--	<func:function name="m8:chiefGroup">
 		<xsl:param name="fact"/>
