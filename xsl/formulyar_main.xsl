@@ -599,7 +599,7 @@
 															<xsl:value-of select="$symbol_replace"/>
 														</xsl:when>
 														<xsl:when test="$pName = 'd' and $modifier!='n'">
-															<a href="{m8:root( $modifier, $fact )}&amp;d={name( m8:port( $modifier, $fact )/d/* )}&amp;quest={$modifier}&amp;fact={$fact}">
+															<a href="{m8:root( $modifier, $fact )}&amp;d={name( m8:port( $fact, $modifier )/d/* )}&amp;quest={$modifier}&amp;fact={$fact}">
 																<xsl:value-of select="$symbol_replace"/>
 															</a>
 														</xsl:when>
