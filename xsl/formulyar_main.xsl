@@ -88,7 +88,7 @@
 																<xsl:text>&#160;</xsl:text>
 																<xsl:choose>
 																	<xsl:when test="$modifier='n'">
-																		<a href="{m8:root( $fact, $fact )}">M</a>
+																		<a href="{m8:root( 'n', $fact )}">M</a>
 																	</xsl:when>
 																	<xsl:otherwise>
 																		<a href="{m8:root( $modifier, $fact )}">
