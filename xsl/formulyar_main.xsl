@@ -85,9 +85,9 @@
 															<xsl:text>&#160;</xsl:text>
 															<sup style="font-size: .5em; color: #777" title="{$fact}">
 																<xsl:value-of select="substring-before( substring-after( $fact, '-' ), '-' )"/>
-																<xsl:text> </xsl:text>
+																<xsl:text>&#160;</xsl:text>
 																<xsl:choose>
-																	<xsl:when test="$modifier='n'"><a href="{m8:root( $fact, $fact )}">L</a></xsl:when>
+																	<xsl:when test="$modifier='n'"><a href="{m8:root( $fact, $fact )}">M</a></xsl:when>
 																	<xsl:otherwise><a href="{m8:root( $modifier, $fact )}"><xsl:value-of select="$symbol_replace"/></a></xsl:otherwise>
 																</xsl:choose>
 															</sup>
