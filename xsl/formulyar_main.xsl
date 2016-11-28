@@ -652,7 +652,8 @@
 					</div>
 				</td>
 				<td align="center" valign="top">
-					<xsl:if test=" m8:holder( $fact )=$user or m8:holder( $modifier )=$user ">
+					<xsl:variable name="chiefName" select="m8:chief( $fact )"/>
+					<xsl:if test="( m8:holder( $fact )=$user or m8:holder( $modifier )=$user ) and $chiefName != 'n' ">
 						<!--not($modifier) or -->
 						<div style="padding: 1em; ">
 							<xsl:message>!! Правая панель: подсказки значений !!</xsl:message>
@@ -671,8 +672,8 @@
 									</tr>
 								</xsl:for-each>
 							</table>
-							<xsl:variable name="chiefName" select="m8:chief( $fact )"/>
-							<xsl:if test="$modifier != 'n' and $chiefName != 'n' and m8:index( $chiefName )/quest">
+							
+							<xsl:if test="$modifier != 'n' and m8:index( $chiefName )/quest">
 								<div style="padding: .4em">------ из мульта -------</div>
 								<xsl:for-each select="m8:quest( $chiefName )/*">
 									<xsl:variable name="linkName" select="name()"/>
