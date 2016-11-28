@@ -882,10 +882,12 @@ sub spinProc {
 	#my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
 	if (not $good){
 	#push @value, ( $subject, $predicate, $object ) if $predicate=~/^r\d*$/;
+	my $superAddC; #добавлено 2016-11-28 что бы не удалялось упоминание в квест-индексе при любом удалении в квесте
 	for my $mN ( grep { $value[$_] } 0..$#value ){
 		&setWarn("		
 		sP  Обработка упоминания cущности $mN: $value[$mN] (user: $user)"  );
 		my $addC = $add || 0; #заводим отдельный регистр, т.к. $add должен оставаться с значением до цикла
+		$addC = $superAddC if $mN == 4 or $mN == 5 ;
 		my $metter = &getID($value[$mN]);
 		#&setLink( $planeRoot.'m8',	$planeRoot.$auraDir.'/m8'			);
 		#&setLink( $planeRoot.'m8/n', 	$metter.'/q' ) if $value[$mN]=~/^n/ and $add;
@@ -918,6 +920,7 @@ sub spinProc {
 				$addC = 1 if keys %role; 
 			} 
 			&setXML ( $metter.'/'.$quest, $superfile[$mN], \%role );
+			$superAddC = $addC if $mN == 1;
 		}
 		my %role1 = &getJSON( $metter, $file );
 		if ( $addC ) {#==1
@@ -936,8 +939,7 @@ sub spinProc {
 			#	delete $role1{$first};		
 			#}			
 		}
-		&setXML ( $metter, $file, \%role1 ); 	
-
+		&setXML ( $metter, $file, \%role1 );
 		my %index = &getJSON( $metter, 'index' );
 		if (keys %role1){
 			&setWarn("		sP    Добавление/обновление упоминания роли"  );
