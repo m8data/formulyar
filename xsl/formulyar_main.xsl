@@ -200,9 +200,6 @@
 											<a href="{ m8:root( name(), $modifier )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
-											<xsl:if test="m8:index( name() )/object">
-												<sup style="color: gray"><xsl:value-of select="concat( ' (', count( m8:index( name() )/object/* ), ')' )"/></sup>
-											</xsl:if>
 											<!-- функционал копирования был подгототовлен 2016-11-15, но провалился на отладке
 											<xsl:if test="m8:port( name() )/*[name()!='r']">
 												<xsl:text> </xsl:text>
@@ -223,13 +220,17 @@
 													<sup style="color: magenta">change</sup>
 												</xsl:when>
 											</xsl:choose>
-											<xsl:if test="m8:holder( name() )=$user">
+											<xsl:choose>
+												<xsl:when test="m8:index( name() )/object"><sup style="color: gray; font-size: .9em"><xsl:value-of select="concat( ' (', count( m8:index( name() )/object/* ), ')' )"/></sup></xsl:when>
+												<xsl:when test="m8:holder( name() )=$user">
 												<!-- and $fact != 'n'-->
 												<xsl:text> </xsl:text>
 												<sup>
 													<a href="{ m8:root( $fact ) }?a0={ m8:path( name(), 'subject_r' )/*/@triple }" style="color: #bbb" onclick="return confirm('Удаление факта &#171;{m8:title( name() )}&#187;')" title="удалить">del</a>
 												</sup>
-											</xsl:if>
+											</xsl:when>
+											</xsl:choose>
+											
 										</div>
 									</xsl:for-each>
 								</div>
