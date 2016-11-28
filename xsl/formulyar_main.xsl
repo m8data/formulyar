@@ -523,7 +523,7 @@
 }
 #circle a {color: yellow; }
 		</style>
-		<a href="{m8:root( $fact )}?a=" title="создать новый объект" style="color: white;">
+		<a href="{m8:root( $fact, $modifier )}&amp;a=" title="создать новый объект" style="color: white;">
 			<span style="bottom: 64px; right: 64px; " id="circle">+</span>
 		</a>
 		<xsl:message> newQuestName
@@ -669,7 +669,7 @@
 				</td>
 				<td align="center" valign="top">
 					<xsl:variable name="chiefName" select="m8:chief( $fact )"/>
-					<xsl:if test="( m8:holder( $fact )=$user or m8:holder( $modifier )=$user ) and $chiefName != 'n' ">
+					<xsl:if test="( m8:holder( $fact )=$user or m8:holder( $modifier )=$user ) and ( $chiefName != 'n' or $modifier = 'n' ) ">
 						<!--not($modifier) or -->
 						<div style="padding: 1em; ">
 							<xsl:message>!! Правая панель: подсказки значений !!</xsl:message>
@@ -690,12 +690,12 @@
 							</table>
 							<xsl:if test="$modifier != 'n' and m8:index( $chiefName )/quest">
 								<div style="padding: .4em">------ из мульта -------</div>
-								<xsl:for-each select="m8:quest( $chiefName )/*">
+								<xsl:for-each select="m8:quest( $chiefName )/*"><!--<div><xsl:value-of select="name()"/></div>-->
 									<xsl:variable name="linkName" select="name()"/>
 									<xsl:if test="$types/@*[.=$linkName]">
 										<xsl:variable name="multParam" select="name()"/>
 										<div style="padding-bottom: .5em">
-											<a href="{m8:action( $fact, $modifier )}&amp;{$types/@*[.=$multParam]}=">
+											<a href="{m8:root( $fact, $modifier )}&amp;{$types/@*[.=$multParam]}=">
 												<xsl:value-of select="m8:title( $multParam )"/>
 												<!--<xsl:value-of select="concat( ' (', span[3], ')' )"/>
 														$types/@*[name()=span[1]]  <xsl:value-of select="m8:title( $types/@*[name()=span[1]] )"/>-->

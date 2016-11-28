@@ -656,7 +656,7 @@ sub washProc{
 						$num[$s][4] = $$temp{'modifier'} 
 					}
 				}
-				$$temp{'modifier'} = 'n' if $num[0][2] eq 'r';
+				#$$temp{'modifier'} = 'n' if $num[0][2] eq 'r';
 				if ( 0 and defined $$temp{'quest'} and $$temp{'quest'} and $num[0][2] eq 'd' ){
 					&setWarn("	wP     Замена модификатора квестом $$temp{'quest'}");
 					$$temp{'modifier'} = $$temp{'quest'} ; #для того что бы можно было вывести элемент быстрого связывания - 2016-11-17

@@ -183,7 +183,8 @@
 			</xsl:when>
 			<xsl:when test="1 and m8:path( name(), 'subject_r' )/*">
 				<xsl:if test="not($currentQuestName)">
-					<xsl:variable name="parentFact" select="m8:path( name(), 'subject_r' )/*/@director"/>
+					<xsl:variable name="parentFact" select="m8:director( name() )"/>
+				<!--	<xsl:variable name="parentFact" select="m8:path( name(), 'subject_r' )/*/@director"/>-->
 					<xsl:variable name="parentFactName" select="name($parentFact)"/>
 					<xsl:apply-templates select="m8:path( name(), $parentFactName, 'port' )/r/*" mode="titleWord"/>
 					<xsl:text> </xsl:text>
@@ -215,7 +216,7 @@
 		<xsl:variable name="parentFactName" select="m8:director( $currentFactName )"/>
 		<xsl:variable name="typeName" select="m8:leader( $currentFactName )"/>
 		<xsl:variable name="newResult">
-			<xsl:if test="$currentFactName!='n'">
+			<xsl:if test="$currentFactName and $currentFactName !='n' ">
 				<xsl:element name="{$parentFactName}">
 					<!--<xsl:choose>
 						<xsl:when test="m8:port( $currentFactName )/d">
@@ -256,11 +257,14 @@
 				</xsl:message>
 				<xsl:copy-of select="exsl:node-set($newResult)/*"/>
 			</xsl:when>
-			<xsl:otherwise>
+			<xsl:when test="exsl:node-set($newResult)/*">
 				<xsl:call-template name="getParent">
 					<xsl:with-param name="currentFactName" select="name(exsl:node-set($newResult)/*[1])"/>
 					<xsl:with-param name="currentResult" select="exsl:node-set($newResult)"/>
 				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<null>_</null>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>

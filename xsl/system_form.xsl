@@ -190,7 +190,8 @@
 	<func:function name="m8:director">
 		<xsl:param name="fact"/>
 		<xsl:message>								== m8:director (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>
-		<func:result select="m8:path( $fact, 'subject_r' )/n/@director"/>
+		<func:result select="name( m8:port( $fact )/r/* )"/>
+		<!--<func:result select="m8:path( $fact, 'subject_r' )/n/@director"/>-->
 	</func:function>
 	<func:function name="m8:holder">
 		<xsl:param name="fact"/>
@@ -207,7 +208,7 @@
 		<xsl:variable name="ss">
 			<xsl:call-template name="getAncestor">
 				<xsl:with-param name="currentFactName" select="$fact"/>
-				<xsl:with-param name="chiefOnly" select="1"/>
+				<xsl:with-param name="chiefOnly" select="$chiefOnly"/><!--1-->
 			</xsl:call-template>
 		</xsl:variable>
 		<func:result select="exsl:node-set( $ss )"/>
