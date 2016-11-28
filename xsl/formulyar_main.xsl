@@ -82,11 +82,11 @@
 													<xsl:choose>
 														<xsl:when test="m8:port( $fact )/i[not(r)]">
 															<xsl:apply-templates select="m8:port( $fact )/i/*" mode="simpleName"/>
-															<span style="font-size: .9em">
+															<span style="font-size: .8em">
 																<xsl:text>&#160;</xsl:text>
 																<xsl:choose>
 																	<xsl:when test="$modifier='n'">
-																		<a href="{m8:root( 'n', $fact )}" title="использовать в модификаторе" style="color: #985">м</a>
+																		<a href="{m8:root( 'n', $fact )}" title="использовать в модификаторе" style="color: #974">м</a>
 																	</xsl:when>
 																	<xsl:otherwise>
 																		<a href="{m8:root( $modifier, $fact )}" title="поменять местами модификатор и факт" style="color: #6a6">
