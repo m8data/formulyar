@@ -83,19 +83,19 @@
 														<xsl:when test="m8:port( $fact )/i[not(r)]">
 															<xsl:apply-templates select="m8:port( $fact )/i/*" mode="simpleName"/>
 															<xsl:text>&#160;</xsl:text>
+															<xsl:choose>
+																<xsl:when test="$modifier='n'">
+																	<a href="{m8:root( 'n', $fact )}">M</a>
+																</xsl:when>
+																<xsl:otherwise>
+																	<a href="{m8:root( $modifier, $fact )}">
+																		<xsl:value-of select="$symbol_replace"/>
+																	</a>
+																</xsl:otherwise>
+															</xsl:choose>
+															<xsl:text>&#160;</xsl:text>
 															<sup style="font-size: .5em; color: #777" title="{$fact}">
 																<xsl:value-of select="substring-before( substring-after( $fact, '-' ), '-' )"/>
-																<xsl:text>&#160;</xsl:text>
-																<xsl:choose>
-																	<xsl:when test="$modifier='n'">
-																		<a href="{m8:root( 'n', $fact )}">M</a>
-																	</xsl:when>
-																	<xsl:otherwise>
-																		<a href="{m8:root( $modifier, $fact )}">
-																			<xsl:value-of select="$symbol_replace"/>
-																		</a>
-																	</xsl:otherwise>
-																</xsl:choose>
 															</sup>
 														</xsl:when>
 														<xsl:otherwise>
@@ -298,9 +298,9 @@
 										<!--<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>-->
 									</a>
 									<xsl:text> - </xsl:text>
-											<a href="{m8:root( $fact, name() )}">
-												<span style="color: #FFF9B9; background: #555">&#160;мод&#160;</span>
-											</a>
+									<a href="{m8:root( $fact, name() )}">
+										<span style="color: #FFF9B9; background: #555">&#160;мод&#160;</span>
+									</a>
 								</div>
 							</xsl:for-each>
 						</div>
@@ -672,7 +672,6 @@
 									</tr>
 								</xsl:for-each>
 							</table>
-							
 							<xsl:if test="$modifier != 'n' and m8:index( $chiefName )/quest">
 								<div style="padding: .4em">------ из мульта -------</div>
 								<xsl:for-each select="m8:quest( $chiefName )/*">
