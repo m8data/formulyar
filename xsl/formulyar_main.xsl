@@ -676,11 +676,11 @@
 							<!--<div style="padding-bottom: .2em">
 								<a href="{m8:action( $fact, $modifier )}&amp;r=">связь</a>
 							</div>-->
-							<xsl:if test="$modifier != 'n' ">
+							<!--<xsl:if test="$modifier != 'n' ">
 								<div style="padding-bottom: .5em">
 									<a href="{m8:root( $fact, $modifier )}&amp;sort=">сортировка</a>
 								</div>
-							</xsl:if>
+							</xsl:if>-->
 							<xsl:if test="not( $startPort/i )">
 								<div style="padding-bottom: .5em">
 									<a href="{m8:root( $fact, $modifier )}&amp;i=">имя</a>
