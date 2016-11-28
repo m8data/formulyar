@@ -82,17 +82,19 @@
 													<xsl:choose>
 														<xsl:when test="m8:port( $fact )/i[not(r)]">
 															<xsl:apply-templates select="m8:port( $fact )/i/*" mode="simpleName"/>
-															<xsl:text>&#160;</xsl:text>
-															<xsl:choose>
-																<xsl:when test="$modifier='n'">
-																	<a href="{m8:root( 'n', $fact )}">M</a>
-																</xsl:when>
-																<xsl:otherwise>
-																	<a href="{m8:root( $modifier, $fact )}">
-																		<xsl:value-of select="$symbol_replace"/>
-																	</a>
-																</xsl:otherwise>
-															</xsl:choose>
+															<span style="font-size: .9em">
+																<xsl:text>&#160;</xsl:text>
+																<xsl:choose>
+																	<xsl:when test="$modifier='n'">
+																		<a href="{m8:root( 'n', $fact )}">M</a>
+																	</xsl:when>
+																	<xsl:otherwise>
+																		<a href="{m8:root( $modifier, $fact )}">
+																			<xsl:value-of select="$symbol_replace"/>
+																		</a>
+																	</xsl:otherwise>
+																</xsl:choose>
+															</span>
 															<xsl:text>&#160;</xsl:text>
 															<sup style="font-size: .5em; color: #777" title="{$fact}">
 																<xsl:value-of select="substring-before( substring-after( $fact, '-' ), '-' )"/>
