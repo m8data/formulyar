@@ -273,7 +273,7 @@
 											</a>
 											<xsl:text> :: </xsl:text>
 											<a href="{m8:root( name(), $fact )}">
-												<span style="color: #FFF9B9; background: #555">модификация</span>
+												<span style="color: #FFF9B9; background: #555"> мод </span>
 											</a>
 										</xsl:when>
 										<xsl:otherwise>
