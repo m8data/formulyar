@@ -265,10 +265,12 @@
 									<xsl:choose>
 										<xsl:when test="m8:index( name() )/subject">
 											<a href="{m8:action( name(), $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
-												<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/>
+												<xsl:value-of select="m8:title( m8:chief( name() ) )"/>
+												<!--<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/>-->
 												<xsl:text> :: </xsl:text>
 												<xsl:if test="m8:port( name(), $fact )/d[not( r )]"> [<xsl:value-of select="m8:title( name( m8:port( name(), $fact )/d/* ) )"/>] </xsl:if>
-												<xsl:apply-templates select="." mode="simpleName"/>
+												<!--<xsl:apply-templates select="." mode="simpleName"/>-->
+												<xsl:value-of select="m8:title( name() )"/>
 											</a>
 										</xsl:when>
 										<xsl:otherwise>
