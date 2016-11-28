@@ -87,12 +87,16 @@
 																<xsl:value-of select="substring-before( substring-after( $fact, '-' ), '-' )"/>
 																<xsl:text>&#160;</xsl:text>
 																<xsl:choose>
-																	<xsl:when test="$modifier='n'"><a href="{m8:root( $fact, $fact )}">M</a></xsl:when>
-																	<xsl:otherwise><a href="{m8:root( $modifier, $fact )}"><xsl:value-of select="$symbol_replace"/></a></xsl:otherwise>
+																	<xsl:when test="$modifier='n'">
+																		<a href="{m8:root( $fact, $fact )}">M</a>
+																	</xsl:when>
+																	<xsl:otherwise>
+																		<a href="{m8:root( $modifier, $fact )}">
+																			<xsl:value-of select="$symbol_replace"/>
+																		</a>
+																	</xsl:otherwise>
 																</xsl:choose>
 															</sup>
-															
-															
 														</xsl:when>
 														<xsl:otherwise>
 															<xsl:text>нечто </xsl:text>
@@ -261,9 +265,10 @@
 									<xsl:choose>
 										<xsl:when test="m8:index( name() )/subject">
 											<a href="{m8:action( name(), $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
-												
-												<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/><xsl:text> :: </xsl:text><xsl:if test="m8:port( name(), $fact )/d[not( r )]"> [<xsl:value-of select="m8:title( name( m8:port( name(), $fact )/d/* ) )"/>] </xsl:if><xsl:apply-templates select="." mode="simpleName"/>
-												
+												<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/>
+												<xsl:text> :: </xsl:text>
+												<xsl:if test="m8:port( name(), $fact )/d[not( r )]"> [<xsl:value-of select="m8:title( name( m8:port( name(), $fact )/d/* ) )"/>] </xsl:if>
+												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
 										</xsl:when>
 										<xsl:otherwise>
@@ -600,7 +605,8 @@
 															<xsl:value-of select="$symbol_replace"/>
 														</xsl:when>
 														<xsl:when test="$pName = 'd' and $modifier!='n'">
-															<a href="{m8:root( $modifier, $fact )}&amp;d={name( m8:port( $fact, $modifier )/d/* )}"><!--&amp;a0={m8:triple( $fact, 'd', $modifier )} &amp;fact={$fact} &amp;quest={$modifier}-->
+															<a href="{m8:root( $modifier, $fact )}&amp;d={name( m8:port( $fact, $modifier )/d/* )}">
+																<!--&amp;a0={m8:triple( $fact, 'd', $modifier )} &amp;fact={$fact} &amp;quest={$modifier}-->
 																<xsl:value-of select="$symbol_replace"/>
 															</a>
 														</xsl:when>
