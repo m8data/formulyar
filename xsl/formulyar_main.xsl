@@ -253,7 +253,7 @@
 					<br/>
 					<div>
 						<b>модификатор для</b>
-						<div style="padding: .2em; text-align: left">
+						<div style="padding: .2em; text-align: left; margin: 0 auto; width: 400px">
 							<xsl:for-each select="m8:quest( $fact )/*[name()!=$fact]">
 								<xsl:sort select="m8:title( name(), 'd', $fact )"/>
 								<!--="@time-->
@@ -261,8 +261,9 @@
 									<xsl:choose>
 										<xsl:when test="m8:index( name() )/subject">
 											<a href="{m8:action( name(), $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
-												<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
 												<xsl:if test="m8:port( name(), $fact )/d[not( r )]"> [<xsl:value-of select="m8:title( name( m8:port( name(), $fact )/d/* ) )"/>]</xsl:if>
+												<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
+												
 											</a>
 										</xsl:when>
 										<xsl:otherwise>
