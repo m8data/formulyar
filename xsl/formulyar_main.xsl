@@ -196,7 +196,7 @@
 								<div style="padding: 1em">
 									<xsl:for-each select="m8:index( $fact )/object/*[m8:director( name() ) = $fact]">
 										<xsl:sort select="m8:title( name() )"/>
-										<div style="font-size: 1.4em; padding: .1em">
+										<div style="font-size: 1.4em; padding: .2em">
 											<a href="{ m8:root( name(), $modifier )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
