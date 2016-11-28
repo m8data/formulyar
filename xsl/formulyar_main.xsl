@@ -253,7 +253,7 @@
 					<br/>
 					<div>
 						<b>модификатор для</b>
-						<div style="padding: .2em">
+						<div style="padding: .2em; text-align: left">
 							<xsl:for-each select="m8:quest( $fact )/*[name()!=$fact]">
 								<xsl:sort select="m8:title( name(), 'd', $fact )"/>
 								<!--="@time-->
