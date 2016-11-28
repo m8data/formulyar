@@ -263,7 +263,7 @@
 								<div>
 									<xsl:choose>
 										<xsl:when test="m8:index( name() )/subject">
-											<a href="{m8:action( $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
+											<a href="{m8:root( $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
 												<xsl:value-of select="m8:title( m8:chief( name() ) )"/>
 												<!--<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/>-->
 												<xsl:text> :: </xsl:text>
@@ -272,8 +272,8 @@
 												<xsl:value-of select="m8:title( name() )"/>
 											</a>
 											<xsl:text> :: </xsl:text>
-											<a href="{m8:action( name(), $fact )}">
-												<span style="color: #FFF9B9">модификация</span>
+											<a href="{m8:root( name(), $fact )}">
+												<span style="color: #FFF9B9; background: #555">модификация</span>
 											</a>
 										</xsl:when>
 										<xsl:otherwise>
