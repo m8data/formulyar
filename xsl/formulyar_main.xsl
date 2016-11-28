@@ -86,7 +86,7 @@
 																<xsl:text>&#160;</xsl:text>
 																<xsl:choose>
 																	<xsl:when test="$modifier='n'">
-																		<a href="{m8:root( 'n', $fact )}" title="использовать в модификаторе" style="color: #974">м</a>
+																		<a href="{m8:root( 'n', $fact )}" title="использовать в модификаторе" style="color: #a85">м</a>
 																	</xsl:when>
 																	<xsl:otherwise>
 																		<a href="{m8:root( $modifier, $fact )}" title="поменять местами модификатор и факт" style="color: #6a6">
