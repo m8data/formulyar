@@ -86,10 +86,10 @@
 																<xsl:text>&#160;</xsl:text>
 																<xsl:choose>
 																	<xsl:when test="$modifier='n'">
-																		<a href="{m8:root( 'n', $fact )}" title="использовать в модификаторе" style="color: #666">м</a>
+																		<a href="{m8:root( 'n', $fact )}" title="использовать в модификаторе" style="color: #985">м</a>
 																	</xsl:when>
 																	<xsl:otherwise>
-																		<a href="{m8:root( $modifier, $fact )}" title="поменять местами модификатор и факт" style="color: #666">
+																		<a href="{m8:root( $modifier, $fact )}" title="поменять местами модификатор и факт" style="color: #6a6">
 																			<xsl:value-of select="$symbol_replace"/>
 																		</a>
 																	</xsl:otherwise>
