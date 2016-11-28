@@ -86,7 +86,7 @@
 																<xsl:text>&#160;</xsl:text>
 																<xsl:choose>
 																	<xsl:when test="$modifier='n'">
-																		<a href="{m8:root( 'n', $fact )}" title="использовать в модификаторе" style="color: #a85">м</a>
+																		<a href="{m8:root( 'n', $fact )}" title="использовать в модификаторе" style="color: #a85"><i>м</i></a>
 																	</xsl:when>
 																	<xsl:otherwise>
 																		<a href="{m8:root( $modifier, $fact )}" title="поменять местами модификатор и факт" style="color: #6a6">
@@ -197,9 +197,12 @@
 									<xsl:for-each select="m8:index( $fact )/object/*[m8:director( name() ) = $fact]">
 										<xsl:sort select="m8:title( name() )"/>
 										<div style="font-size: 1.4em; padding: .1em">
-											<a href="{ m8:action( name(), $modifier )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
+											<a href="{ m8:root( name(), $modifier )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</a>
+											<xsl:if test="m8:index( name() )/object">
+												<sup style="color: gray"><xsl:value-of select="concat( ' (', count( m8:index( name() )/object/* ), ')' )"/></sup>
+											</xsl:if>
 											<!-- функционал копирования был подгототовлен 2016-11-15, но провалился на отладке
 											<xsl:if test="m8:port( name() )/*[name()!='r']">
 												<xsl:text> </xsl:text>
