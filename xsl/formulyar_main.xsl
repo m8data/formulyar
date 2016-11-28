@@ -81,9 +81,18 @@
 												<span style="font-size: 1.3em; {m8:color( $fact )}" title="{m8:holder( $fact )}">
 													<xsl:choose>
 														<xsl:when test="m8:port( $fact )/i[not(r)]">
-															<xsl:apply-templates select="m8:port( $fact )/i/*" mode="simpleName"/>&#160;<sup style="font-size: .5em; color: #777" title="{$fact}">
+															<xsl:apply-templates select="m8:port( $fact )/i/*" mode="simpleName"/>
+															<xsl:text>&#160;</xsl:text>
+															<sup style="font-size: .5em; color: #777" title="{$fact}">
 																<xsl:value-of select="substring-before( substring-after( $fact, '-' ), '-' )"/>
+																<xsl:text> </xsl:text>
+																<xsl:choose>
+																	<xsl:when test="$modifier='n'"><a href="{m8:root( $fact, $fact )}">L</a></xsl:when>
+																	<xsl:otherwise><a href="{m8:root( $modifier, $fact )}"><xsl:value-of select="$symbol_replace"/></a></xsl:otherwise>
+																</xsl:choose>
 															</sup>
+															
+															
 														</xsl:when>
 														<xsl:otherwise>
 															<xsl:text>нечто </xsl:text>
@@ -335,7 +344,9 @@
 												<xsl:apply-templates select="." mode="simpleName"/>
 												<xsl:if test="m8:port( $fact, name() )/d">
 													<xsl:text> - связано</xsl:text>
-													<xsl:if test="m8:port( $fact, name() )/d[not(r)]"><xsl:value-of select="concat( ' [', m8:title( m8:param( $fact, 'd', name() ) ), ']' )"/></xsl:if>
+													<xsl:if test="m8:port( $fact, name() )/d[not(r)]">
+														<xsl:value-of select="concat( ' [', m8:title( m8:param( $fact, 'd', name() ) ), ']' )"/>
+													</xsl:if>
 												</xsl:if>
 											</option>
 										</xsl:for-each>
@@ -443,7 +454,9 @@
 												<xsl:apply-templates select="." mode="simpleName"/>
 												<xsl:if test="m8:port( $fact, name() )/d">
 													<xsl:text> - связано</xsl:text>
-													<xsl:if test="m8:port( $fact, name() )/d[not(r)]"><xsl:value-of select="concat( ' [', m8:title( m8:param( $fact, 'd', name() ) ), ']' )"/></xsl:if>
+													<xsl:if test="m8:port( $fact, name() )/d[not(r)]">
+														<xsl:value-of select="concat( ' [', m8:title( m8:param( $fact, 'd', name() ) ), ']' )"/>
+													</xsl:if>
 												</xsl:if>
 											</option>
 										</xsl:for-each>
@@ -511,7 +524,8 @@
 			<xsl:apply-templates select="exsl:node-set($sorted_predicates)/*[1]" mode="predicate_grouping_new"/>
 		</xsl:variable>
 		<xsl:variable name="fact_n" select="m8:value( name( $factPort/n/* ) )"/>
-		<xsl:if test="$fact_n/*[name()='svg'] or $factPort/n1459505450-5328-1"><!-- n1459505450-5328-1 = $code -->
+		<xsl:if test="$fact_n/*[name()='svg'] or $factPort/n1459505450-5328-1">
+			<!-- n1459505450-5328-1 = $code -->
 			<style type="text/css">
 				.svg_formulyar svg {
 					background-color: #ccc;
@@ -521,16 +535,22 @@
 			</style>
 			<div class="svg_formulyar" style="float: left">
 				<xsl:choose>
-					<xsl:when test="$fact_n/*[name()='svg']"><xsl:copy-of select="$fact_n/*"/></xsl:when>
+					<xsl:when test="$fact_n/*[name()='svg']">
+						<xsl:copy-of select="$fact_n/*"/>
+					</xsl:when>
 					<xsl:otherwise>
 						<xsl:variable name="path" select="m8:img( $fact )"/>
 						<xsl:choose>
-							<xsl:when test="contains( $path, '.jpg' ) or contains( $path, '.png' )"><img src="{$path}" style="max-width: 350px"/></xsl:when>
-							<xsl:otherwise><a href="{$path}" target="_blank">файл <xsl:value-of select="substring-after( $path, '.' )"/></a></xsl:otherwise>
+							<xsl:when test="contains( $path, '.jpg' ) or contains( $path, '.png' )">
+								<img src="{$path}" style="max-width: 350px"/>
+							</xsl:when>
+							<xsl:otherwise>
+								<a href="{$path}" target="_blank">файл <xsl:value-of select="substring-after( $path, '.' )"/>
+								</a>
+							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:otherwise>
 				</xsl:choose>
-				
 			</div>
 		</xsl:if>
 		<table width="92%" style="font-size: 1em">
@@ -565,7 +585,8 @@
 										<table>
 											<tr>
 												<td>
-													<xsl:if test="1"><!--$pName != 'd' or $modifier='n'-->
+													<xsl:if test="1">
+														<!--$pName != 'd' or $modifier='n'-->
 														<xsl:call-template name="editParamOfPort">
 															<xsl:with-param name="predicateName" select="$pName"/>
 															<xsl:with-param name="objectElement" select="$startPort"/>
@@ -667,7 +688,8 @@
 							</xsl:if>
 							<xsl:if test="not( $startPort/d )">
 								<div style="padding-bottom: .5em">
-									<a href="{m8:root( $fact, $modifier )}&amp;d=&amp;quest={$modifier}">связь</a><!-- модификатор не срабатывает, т.к. для d модификатор берется принудительно из квеста, а там по умолчанию 'n'-->
+									<a href="{m8:root( $fact, $modifier )}&amp;d=">связь</a>
+									<!-- &amp;quest={$modifier} модификатор не срабатывает, т.к. для d модификатор берется принудительно из квеста, а там по умолчанию 'n'-->
 								</div>
 							</xsl:if>
 							<xsl:if test="not( $startPort/n ) and $modifier = 'n'">
