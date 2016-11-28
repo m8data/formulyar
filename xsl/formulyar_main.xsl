@@ -221,7 +221,7 @@
 												</xsl:when>
 											</xsl:choose>
 											<xsl:choose>
-												<xsl:when test="m8:index( name() )/object"><sup style="color: gray; font-size: 10px"><xsl:value-of select="concat( ' (', count( m8:index( name() )/object/* ), ')' )"/></sup></xsl:when>
+												<xsl:when test="m8:index( name() )/object"><sup style="color: #999; font-size: 10px"><xsl:value-of select="concat( ' (', count( m8:index( name() )/object/* ), ')' )"/></sup></xsl:when>
 												<xsl:when test="m8:holder( name() )=$user">
 												<!-- and $fact != 'n'-->
 												<xsl:text> </xsl:text>
