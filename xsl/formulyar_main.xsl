@@ -263,7 +263,7 @@
 								<div>
 									<xsl:choose>
 										<xsl:when test="m8:index( name() )/subject">
-											<a href="{m8:root( $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
+											<a href="{m8:root( name() )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
 												<xsl:value-of select="m8:title( m8:chief( name() ) )"/>
 												<!--<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/>-->
 												<xsl:text> :: </xsl:text>
@@ -293,7 +293,7 @@
 							<xsl:for-each select="m8:role1( $fact )/*[name()!='n']">
 								<xsl:sort select="m8:title( name() )"/>
 								<div>
-									<a href="{m8:root( $fact )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
+									<a href="{m8:root( name() )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
 										<xsl:value-of select="concat( m8:title( m8:chief ( name() ) ), ' :: ', m8:title( name() ) )"/>
 										<!--<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>-->
 									</a>
