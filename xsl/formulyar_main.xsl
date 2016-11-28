@@ -257,7 +257,7 @@
 					<br/>
 					<div>
 						<b>модификатор для</b>
-						<div style="padding: .2em; text-align: left; margin: 0 auto; width: 600px">
+						<div style="padding: .2em; text-align: left; margin: 0 auto; width: 500px">
 							<xsl:for-each select="m8:quest( $fact )/*[name()!=$fact]">
 								<!--<xsl:sort select="m8:title( name(), 'd', $fact )"/>
 								="@time-->
@@ -284,12 +284,13 @@
 					<br/>
 					<div>
 						<b>модификация из</b>
-						<div style="padding: .2em">
+						<div style="padding: .2em; text-align: left; margin: 0 auto; width: 500px">
 							<xsl:for-each select="m8:role1( $fact )/*[name()!='n']">
 								<xsl:sort select="m8:title( name() )"/>
 								<div>
 									<a href="{m8:action( $fact, name() )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
-										<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
+										<xsl:value-of select="concat( m8:title( m8:chief ( name() ) ), ' :: ', m8:title( name() ) )"/>
+										<!--<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>-->
 									</a>
 								</div>
 							</xsl:for-each>
