@@ -465,17 +465,17 @@ sub washProc{
 		
 		#весь блок работы с матрицей нужно уводить в работу с пустотой, т.к. может быть и не 'а', а 'b' и 'с' и 'd'.
 		#&setWarn( "		wP  Имеется строка запроса $$temp{'QUERY_STRING'}. Идет идет ее парсинг" );
-		if ( defined $param{'a'} ){
-			$$temp{'modifier'} = $$temp{'fact'} if not defined $$temp{'modifier'};
-			$matrix[3] = $$temp{'fact'};
-		}
-		else{
-			$$temp{'modifier'} = 'n' if not defined $$temp{'modifier'} or not -d 'm8/n/'.$$temp{'modifier'} or $$temp{'modifier'} eq $$temp{'fact'};
-			$matrix[1] = $$temp{'fact'};
-		}
-		for my $ps ( 1..3 ){
-			$matrix[$ps] = $$temp{$sentence[$ps]} if defined $$temp{$sentence[$ps]} 
-		}
+		#if ( defined $param{'a'} ){
+		#	$$temp{'modifier'} = $$temp{'fact'} if not defined $$temp{'modifier'};
+		#	$matrix[3] = $$temp{'fact'};
+		#}
+		#else{
+		#	$$temp{'modifier'} = 'n' if not defined $$temp{'modifier'} or not -d 'm8/n/'.$$temp{'modifier'} or $$temp{'modifier'} eq $$temp{'fact'};
+		#	$matrix[1] = $$temp{'fact'};
+		#}
+		#for my $ps ( 1..3 ){
+		#	$matrix[$ps] = $$temp{$sentence[$ps]} if defined $$temp{$sentence[$ps]} 
+		#}
 		#keys %param || return;
 		if ( not $$temp{'user'} ){
 			&setWarn( "		wP   Найден запрос смены автора" );# 
@@ -530,15 +530,17 @@ sub washProc{
 		}
 		elsif ( $$temp{'record'} and ( $localForce or $^O ne 'MSWin32' or $$temp{'user'} =~/^user/ or $$temp{'user'} eq 'guest' ) ) {	#and ( $localForce or $^O ne 'MSWin32' or $$temp{'user'} =~/^user/ or $$temp{'user'} eq 'guest' ) 
 			&setWarn( "		wP   Поиск и проверка номеров в строке запроса $$temp{'QUERY_STRING'}" );# стирка 
-			my @value; #массив для контроля повторяющихся значений внутри триплов
+			#my @value; #массив для контроля повторяющихся значений внутри триплов
 			my %table; #таблица перевода с буквы предлложения на номер позиции в процессе
-
+			my ( $a, $m ) = ( $$temp{'fact'}, $$temp{'modifier'} );
+			my %predicate;
 			for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
 				&setWarn('		wP  парсинг пары >'.$pair.'<');
 				my ($name, $value) = split(/=/, $pair);
 				next if $name eq '_'; #пара с именем '_' добавляется только для того что бы избежать кэширования запроса.
 				$name = $types{$name} if defined $types{$name};
 				next if $name eq 'user' or defined $$temp{$name};
+				####  работа с значением  ####
 				$value =~ s/^\s+//;
 				$value =~ s/\s+$//;
 				$value =~ s/\&#//;
@@ -547,7 +549,8 @@ sub washProc{
 				$value =~ s/\&\w\w\w\;//; #убить символы типа &shy;
 				if ( not $value and $value ne '0' ){ 
 					&setWarn('		wP     присвоение пустого значения');
-					$value = 'r' 
+					if ( defined $predicate{$name} ){ $value = $predicate{$name} }
+					elsif ( $name ne 'm' and $name ne 'a' ) { $value = 'r' } 
 				} #0 - тоже значение
 				elsif ( $value=~m!^/m8/(\w)/([1-5])$! and defined $table{$1} and $num[$table{$1}][$2]  ){
 					&setWarn('		wP     присвоение значения по ссылке');
@@ -570,99 +573,48 @@ sub washProc{
 					if ( $value[1] and $value[1]=~/^xsd:(\w+)$/ ){
 						&setWarn('		wP      запрос создания именнованой карты');
 						#здесь еще нужно исключить указание одному имени разных типов
-					
-						
 						$types{$value[0]} = $$temp{'fact'};
 						#&setXML ( $typesDir, 'type', \%types );
 						&rinseProc3 ( 'type', %types )
 					}
 				} 
-				if ( $name =~/^([a-z]+)([0-5]*)$/ and not $name =~/^[dirn]/ ){
-					&setWarn('		wP     Формирование номера в расширенном режиме. Член - '.$name.' Значение - '.$value);
-					my ( $s, $m ) = ( $1, $2 );	
-					if ( defined $table{$s} ){ $s = $table{$s} }
-					else {
-						&setWarn("			wP      $pair: новый номер $s" );
-						$s = $table{$s} = @num;
-						#$num[$s][4] = 'n'; #это что бы можно было копировать параметры
-						$num[$s][5] = 1 
+				####  работа с именем  ####
+				if ( $name eq 'a0' ){
+					&setWarn("			wP      $pair: демонтаж" );
+					my @triple = &getTriple( $$temp{'user'}, $value );
+					if ( $triple[2] eq 'r' ){
+						 $triple[4] = 'n'; #из-за этого момента нельзя использовать 'r' в квестах (под вопросом и цифры тут, т.к. они могут сильно мешать установлению иерархии)
+						#( $triple[4] ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$value, 1 );
+						&setWarn("		wP       присвоение модификатора $triple[4]");
 					}
-					if ( $m ){
-						&setWarn("			wP      $pair: подготовка номера $s частью $m" );
-						$value = $num[$s][3]."\n".$value if $m == 3 and $num[$s][3];
-						$num[$s][$m] = $value[$s]{$value} = $value;
-						
+					else { $triple[4] = $m }
+					push @num, \@triple;
+				}
+				elsif( $name eq 'a' ){
+					&setWarn("		wP     $pair: смена значения факта" );
+					if ( not $value ){ 
+						&setWarn("		wP      $pair: создание новой сущности" );
+						my $s = @num;
+						$value = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s;
+						my $triple = &setName( 'd', $$temp{'user'}, $value, 'r', $a );
+						my @triple = ( $triple, $value, 'r', $a, 'n', 2 );
+						push @num, \@triple;
 					}
-					elsif ( $m eq '0' ){
-						&setWarn("			wP      $pair: демонтаж номера $s" );
-						next if defined $value[0]{$value};
-						$num[$s][0] = $value;
-						#$num[$s][4] = $$temp{'modifier'};
-						$num[$s][5] = undef;
-						$value[0]{$value} = 1;
-					}
-					else{
-						&setWarn("			wP      $pair: создание новой сущности в номере $s" );
-						$matrix[1] = $num[$s][1] = 'n'.$$temp{'seconds'}.'-'.$$temp{'microseconds'}.'-'.$s; # $$temp{'user'}.'-'.
-						$num[$s][2] = $value;
-						#$num[$s][4] = $$temp{'modifier'};
-						$num[$s][5] = 2;
-						$$temp{'fact'} = $num[$s][1] if $name eq 'a'; # подготовка редиректа # $$temp{'quest'} = -2016-11-18
-					}
+					$predicate{'r'} = $a = $value
+				}
+				elsif( $name eq 'm' ){ 
+					&setWarn("			wP      $pair: смена значения квеста" );
+					$m = $value || 'n' 
 				}
 				else{ 
 					&setWarn('		wP     Формирование номера в простом режиме. Предикат - '.$name);
-					my @triple = ( undef, undef, $name, $value, undef, 1 );
+					$predicate{$name} = $value; #запоминаются все предикаты включая 'r'
+					my $triple = &setName( 'd', $$temp{'user'}, $a, $name, $value );
+					my @triple = ( $triple, $a, $name, $value, $m, 1 );
 					push @num, \@triple;
 				}
 			}
-			if ( @num and 1 ){
-				&setWarn( "		
-				wP    Найдены номера @num. Идет их обогащение удаление старого." );
-				for my $s ( 0..$#num ){
-					&setWarn("		
-						wP     Замена пустого в номере $s");
-					if ( $num[$s][0] ){			
-						&setWarn("		wP      на удаление");
-						my @span = &getTriple( $$temp{'user'}, $num[$s][0] );
-						if ($num[$s][4]){ $span[4] = $num[$s][4] }
-						else{
-							if ( $span[2]=~/^r/ ){
-								( $span[4] ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0], 1 );
-								&setWarn("		wP       присвоение модификатора $span[4]");
-							}
-							else {	$span[4] = $$temp{'modifier'} }
-						}
-	
-						#$span[5] = $num[$s][5] if $num[$s][5];
-						$num[$s] = \@span
-					}
-					else{
-						&setWarn("		wP      на добавление");
-						for my $m ( grep { not ( defined $num[$s][$_] and $num[$s][$_] ) } 1..3){
-							&setWarn("		wP       Замена пустого члена $m ");
-							$num[$s][$m] = $matrix[$m]
-							#if ( $m == 1 ){		$num[$s][1] = $$temp{'fact'}	}
-							#elsif ( $m == 2 ){	$num[$s][2] = 'r'				}
-							#else { 				$num[$s][3] = $$temp{'quest'}	}
-						}
-						$num[$s][0] = &setName( 'd', $$temp{'user'}, $num[$s][1], $num[$s][2], $num[$s][3] );
-					}
-					#$num[$s][4] = $$temp{'user'};
-					#$num[$s][4] = $matrix[4] if not $num[$s][4];
-					if ( $num[$s][4] ){ &setWarn("		wP      имеется обстоятельство - $num[$s][4] ") }
-					if ( not $num[$s][4] ){
-						&setWarn("		wP      присвоение номеру обстоятельства - $$temp{'modifier'} ");
-						$num[$s][4] = $$temp{'modifier'} 
-					}
-				}
-				#$$temp{'modifier'} = 'n' if $num[0][2] eq 'r';
-				if ( 0 and defined $$temp{'quest'} and $$temp{'quest'} and $num[0][2] eq 'd' ){
-					&setWarn("	wP     Замена модификатора квестом $$temp{'quest'}");
-					$$temp{'modifier'} = $$temp{'quest'} ; #для того что бы можно было вывести элемент быстрого связывания - 2016-11-17
-				}
-			}
-			
+			( $$temp{'fact'}, $$temp{'modifier'} ) = ( $a, $m );
 		}
 	}
 	@num || return;
@@ -670,10 +622,11 @@ sub washProc{
 	&setWarn( "		wP ## Имеются номера. Идет запись." );
 	my @warn = ("washProc @_ \n");
 	for my $s ( grep { $num[$_] } 0..$#num ){
-		&setWarn("		wP  Проверка номера $s ");
+		&setWarn("		wP  Проверка номера $s ( @{$num[$s]} ) ");
 		my $miss;
 		if ( $num[$s][5] != 2 and not defined $$temp{'wkhtmltopdf'}  ){#wkhtmltopdf - это костыль, потом нужно убрать инструкции на запись для wkhtmltopdf
 			&setWarn("		wP   Проверка собственности при изменениях");
+			#if ( $num[$s][4] eq 'n' and $num[$s][2] ne 'r' ) or $num[$s][2] eq 'r' ){
 			if ( $num[$s][4] eq 'n' or $num[$s][2] eq 'r' ){ #r - нужен для контроля удаления, в обстоятельствах там может быть что угодно и для этого нельзя проверять or not(num[$s][5]) т.к. удаляться может и параметр в обстоятельствах
 				&setWarn("		wP    Проверка подлежащего");
 				my $holder = &m8holder( $num[$s][1] );
@@ -842,7 +795,7 @@ sub spinProc {
 	my $quest = $modifier;
 	if ( $predicate eq 'r' ){
 		$value[4] = $quest = 'n';
-		push @value, ( $subject, $predicate, $object, $modifier )
+		push @value, ( $subject, $predicate, $object )#, $modifier
 	}
 	my $mainDir = &m8dir( $subject, $quest );
 	my $good;
@@ -900,7 +853,7 @@ sub spinProc {
 		elsif ( $mN == 6 ){ ( $role, $file, $first ) = ( $predicate,	'subject_'.$predicate	, $quest ) }
 		elsif ( $mN == 7 ){	( $role, $file, $first ) = ( $object,		'predicate_'.$object	, $quest ) }
 		elsif ( $mN == 8 ){	( $role, $file, $first ) = ( $subject, 		'object_'.$subject		, $quest ) } 
-		elsif ( $mN == 9 ){	( $role, $file, $first ) = ( $subject, 		'director_'.$subject	, $quest ) } 
+		#elsif ( $mN == 9 ){	( $role, $file, $first ) = ( $subject, 		'director_'.$subject	, $quest ) } 
 		
 		if ( $mN == 1 or $mN == 2 or $mN == 3  ){
 			&setWarn("		sP   Формирование порта/дока/терминала $role ($file, $first).  User: $user"  );
@@ -910,6 +863,7 @@ sub spinProc {
 			elsif ( $mN == 2 )	{ ( $master, $slave ) = ( $subject, 	$object 	) }
 			elsif ( $mN == 3 ) 	{ ( $master, $slave ) = ( $subject, 	$predicate 	) }
 			my %role = &getJSON( $metter.'/'.$quest, $superfile[$mN] );
+			$role{'user'} = $user;
 			if ( $addC ){
 				&setWarn("		sP    Операции при добавлении значения в индекс $metter/$quest  ($master, $slave)"  );
 				$role{$master}[0]{$slave}[0]{$name}[0]{'time'} = $time;
@@ -927,10 +881,10 @@ sub spinProc {
 			&setWarn("		sP   Счетчик упоминаний не пустой - дополняем/обновляем индекс-файл роли $role ($file, $first)"  );
 			$role1{$first}[0]{'time'} = $time;
 			$role1{$first}[0]{'triple'} = $name;
-			if ( $mN == 6 ){
-				$role1{$first}[0]{'holder'} = $user;
-				$role1{$first}[0]{'director'} = $modifier;# if $modifier ne 'n';
-			}
+			#if ( $mN == 6 ){
+			#	$role1{$first}[0]{'holder'} = $user;
+			#	$role1{$first}[0]{'director'} = $modifier;# if $modifier ne 'n';
+			#}
 		}
 		else {
 			&setWarn("		sP   Счетчик упоминаний пустой - сокращаем индекс-файл роли"  );
@@ -957,15 +911,17 @@ sub spinProc {
 	}
 	my $questDir = $planeDir.'/'.$user.'/tsv/'.$name.'/'.$modifier;
 	if ( $add ){
-		&setWarn("		sP   Добавление директории $questDir в базу");
+		&setWarn("		sP  Добавление в базу директории $questDir");
 		&setFile ( $questDir.'/time.txt', $time ); #ss
 	}
 	else{
-		&setWarn("		sP   Удаление директории $questDir из базы");
+		&setWarn("		sP  Удаление из базы директории $questDir");
 		rmtree $questDir;
 		if ( not &getDir ( $planeDir.'/'.$user.'/tsv/'.$name, 1 ) ){
+			&setWarn("		sP   Удаление из базы директории $planeDir/$user/tsv/$name");
 			rmtree $planeDir.'/'.$user.'/tsv/'.$name;
 			if ( not &getDir( $planeDir.'/'.$user.'/tsv', 1 ) ){
+				&setWarn("		sP    Удаление из базы директории $planeDir/$user/tsv");
 				&setXML( 'm8/d/'.$value[0], 'value' );
 				rmtree $planeDir.'/'.$user.'/tsv';
 			}
@@ -1343,14 +1299,18 @@ sub m8req {
 sub m8holder {
 	&setWarn( "			m8holder @_" );	
 	my $fact = shift;
-	my %subject = &getJSON( &m8dir( $fact ), 'subject_r' );
-	return $subject{'n'}[0]{'holder'}
+	my $dir = &m8dir( $fact, 'n' );
+	my %port = &getJSON( $dir, 'port' );
+	my @keys = keys %port;
+	&setWarn( "			return $port{'user'} ( dir: $dir / @keys )" );	
+	return $port{'user'}
 }
 sub m8director {
 	&setWarn( "			m8director @_" );	
 	my $fact = shift;
-	my %subject = &getJSON( &m8dir( $fact ), 'subject_r' );
-	return $subject{'n'}[0]{'director'}
+	my %port = &getJSON( &m8dir( $fact, 'n' ), 'port' );
+	my @oldObject = keys %{$port{'r'}[0]};
+	return $oldObject[0];
 }
 
 

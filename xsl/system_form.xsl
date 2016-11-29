@@ -196,7 +196,8 @@
 	<func:function name="m8:holder">
 		<xsl:param name="fact"/>
 		<xsl:message>								== m8:holder (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>
-		<func:result select="m8:path( $fact, 'subject_r' )/n/@holder"/>
+		<!--<func:result select="m8:path( $fact, 'subject_r' )/n/@holder"/>-->
+		<func:result select="m8:port( $fact )/@user"/>
 	</func:function>
 	<func:function name="m8:leader">
 		<xsl:param name="fact"/>
@@ -935,9 +936,9 @@
 				<xsl:with-param name="metterName" select="$cType"/>
 			</xsl:call-template>
 			<xsl:choose>
-				<xsl:when test="m8:index( $cType )/director/*">
+				<xsl:when test="m8:index( $cType )/object/*">
 					<children>
-						<xsl:for-each select="m8:index( $cType )/director/*">
+						<xsl:for-each select="m8:index( $cType )/object/*">
 							<!--[name() != $constructionCalcName]-->
 							<xsl:sort select="@time"/>
 							<xsl:element name="{name()}">
