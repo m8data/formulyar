@@ -214,7 +214,7 @@
 		<xsl:param name="currentFactName"/>
 		<xsl:param name="currentResult"/>
 		<xsl:variable name="parentFactName" select="m8:director( $currentFactName )"/>
-		<xsl:variable name="typeName" select="m8:leader( $currentFactName )"/>
+		<xsl:variable name="typeName" select="m8:director( $currentFactName )"/>
 		<xsl:variable name="newResult">
 			<xsl:if test="$currentFactName and $currentFactName !='n' ">
 				<xsl:element name="{$parentFactName}">
@@ -324,7 +324,7 @@
 				<!--<xsl:message>		= переход на следующий шаг = 
 				</xsl:message>-->
 				<xsl:call-template name="getAncestor">
-					<xsl:with-param name="currentFactName" select="m8:leader( $currentFactName )"/>
+					<xsl:with-param name="currentFactName" select="m8:director( $currentFactName )"/>
 					<xsl:with-param name="currentResult" select="exsl:node-set($newResult)"/>
 					<xsl:with-param name="chiefOnly" select="$chiefOnly"/>
 				</xsl:call-template>

@@ -38,7 +38,7 @@
 	</xsl:variable>-->
 	<xsl:variable name="director" select="m8:director( $fact )"/>
 	<xsl:variable name="directorName" select="$director"/>
-	<xsl:variable name="leader" select="m8:leader( $fact )"/>
+	<xsl:variable name="leader" select="m8:director( $fact )"/>
 	<xsl:variable name="parentName" select="name( exsl:node-set($parent)/*[last()] )"/>
 	<xsl:variable name="grandName" select="name( exsl:node-set($parent)/*[last()-1] )"/>
 	<xsl:variable name="typeName" select="name( exsl:node-set($parent)/*[last()]/* )"/>
@@ -173,7 +173,7 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
-	<func:function name="m8:multport">
+	<!--<func:function name="m8:multport">
 		<xsl:param name="fact"/>
 		<xsl:param name="quest"/>
 		<xsl:message>								== m8:multport (fact <xsl:value-of select="$fact"/>; quest <xsl:value-of select="$quest"/>) ==</xsl:message>
@@ -186,7 +186,7 @@
 				<func:result select="m8:path( 'n', 'n', 'port' )"/>
 			</xsl:otherwise>
 		</xsl:choose>
-	</func:function>
+	</func:function>-->
 	<func:function name="m8:director">
 		<xsl:param name="fact"/>
 		<xsl:message>								== m8:director (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>
@@ -199,10 +199,10 @@
 		<!--<func:result select="m8:path( $fact, 'subject_r' )/n/@holder"/>-->
 		<func:result select="m8:port( $fact )/@user"/>
 	</func:function>
-	<func:function name="m8:leader">
+	<!--<func:function name="m8:leader">
 		<xsl:param name="fact"/>
 		<func:result select="name( m8:port( $fact )/r/* )"/>
-	</func:function>
+	</func:function>-->
 	<func:function name="m8:ancestor-or-self">
 		<xsl:param name="fact"/>
 		<xsl:param name="chiefOnly"/>
@@ -294,7 +294,11 @@
 		<xsl:param name="modifier"/>
 		<xsl:message>								== m8:root (fact: <xsl:value-of select="$fact"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
 		<func:result>
-			<xsl:value-of select="concat( $start/@prefix, 'a/', $ctrl, '/' )"/>
+			<!--<xsl:value-of select="concat( $start/@prefix, 'a/', $ctrl, '/' )"/>-->
+			<xsl:value-of select="$start/@prefix"/>
+			<xsl:if test="$ctrl != $avatar">
+				<xsl:value-of select="concat( 'a/', $ctrl, '/' )"/>
+			</xsl:if>
 			<xsl:if test="$fact">
 				<xsl:value-of select="concat( m8:dir( $fact ), '/' )"/>
 			</xsl:if>
@@ -303,7 +307,7 @@
 			</xsl:if>
 		</func:result>
 	</func:function>
-	<func:function name="m8:action">
+	<!--<func:function name="m8:action">
 		<xsl:param name="fact"/>
 		<xsl:param name="modifier"/>
 		<xsl:choose>
@@ -317,7 +321,7 @@
 				<func:result select="concat( m8:root(), '?modifier=n' )"/>
 			</xsl:otherwise>
 		</xsl:choose>
-	</func:function>
+	</func:function>-->
 	<func:function name="m8:title">
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
