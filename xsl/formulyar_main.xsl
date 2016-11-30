@@ -768,7 +768,7 @@
 										<xsl:value-of select="name( m8:path( name(), $avatar, 'terminal' )/* )"/>
 									</xsl:variable>-->
 										<xsl:if test="not( $startPort/*[name()=current()] )">
-											<option value="{ name() }">
+											<option value="{ . }">
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</option>
 										</xsl:if>
