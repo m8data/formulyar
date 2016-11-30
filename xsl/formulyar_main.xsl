@@ -305,7 +305,7 @@
 							<div style="padding: .4em; text-align: center">
 								<b>модификация из</b>
 							</div>
-							<div style="padding: .2em; text-align: left; margin: 0 auto; width: 500px">
+							<!--<div style="padding: .2em; text-align: left; margin: 0 auto; width: 500px">-->
 								<xsl:for-each select="m8:role1( $fact )/*[name()!='n']">
 									<xsl:sort select="m8:title( name() )"/>
 									<div style="padding: .1em">
@@ -322,7 +322,7 @@
 										</a>
 									</div>
 								</xsl:for-each>
-							</div>
+							<!--</div>-->
 						</div>
 					</div>
 				</xsl:if>
