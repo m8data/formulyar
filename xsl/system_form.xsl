@@ -829,7 +829,11 @@
 				<xsl:variable name="title">
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
 				</xsl:variable>
-				<input type="text" name="{$predicateName}" size="{$size}">
+				<input type="text" name="{$predicateName}">
+					<xsl:choose>
+						<xsl:when test="$size"><xsl:attribute name="size"><xsl:value-of select="$size"/></xsl:attribute></xsl:when>
+						<xsl:when test="$title"><xsl:attribute name="size"><xsl:value-of select="string-length( $title ) + 4"/></xsl:attribute></xsl:when>
+					</xsl:choose>
 					<xsl:if test="not($ajaxMethod)">
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
 					</xsl:if>
