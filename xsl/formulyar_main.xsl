@@ -748,8 +748,7 @@
 								<!--<input type="hidden" name="a1" value="{$fact}"/>-->
 								<!--<input type="hidden" name="a4" value="n"/>-->
 								<input type="hidden" name="modifier" value="{$modifier}"/>
-								<input type="hidden" name="a3" value="r"/>
-								<select name="a2" onchange="this.form.submit()">
+								<select name="p" onchange="this.form.submit()">
 									<option/>
 									<!--<xsl:if test="not($startPort[name()='i'])">
 									<option value="i">имя</option>
@@ -761,7 +760,7 @@
 									<option value="n">структура</option>
 								</xsl:if>-->
 									<xsl:if test="not( $factPort/*[name()=$fact] )">
-										<option value="{$fact}">начало</option>
+										<option  value="{$fact}">начало</option>
 									</xsl:if>
 									<xsl:for-each select="$types/@*">
 										<xsl:sort select="m8:title( . )"/>
@@ -769,7 +768,7 @@
 										<xsl:value-of select="name( m8:path( name(), $avatar, 'terminal' )/* )"/>
 									</xsl:variable>-->
 										<xsl:if test="not( $startPort/*[name()=current()] )">
-											<option value="{.}">
+											<option value="{ name() }">
 												<xsl:apply-templates select="." mode="simpleName"/>
 											</option>
 										</xsl:if>

@@ -546,6 +546,7 @@ sub washProc{
 			my %table; #таблица перевода с буквы предлложения на номер позиции в процессе
 			my $a = $$temp{'fact'};
 			my $m = $$temp{'modifier'} || 'n';# if defined $$temp{'modifier'} and $$temp{'modifier'};
+			my $o = 'r';
 			my %predicate;
 			for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
 				&setWarn('		wP  парсинг пары >'.$pair.'<');
@@ -593,18 +594,18 @@ sub washProc{
 				} 
 				####  работа с именем  ####
 				if ( $name eq 'a0' ){
-					&setWarn("			wP      $pair: демонтаж" );
+					&setWarn("			wP      $pair: демонтаж (подлеж.: $a; обст.: $m)" );
 					my @triple = &getTriple( $$temp{'user'}, $value );
 					if ( $triple[2] eq 'r' ){
-						 $triple[4] = 'n'; #из-за этого момента нельзя использовать 'r' в квестах (под вопросом и цифры тут, т.к. они могут сильно мешать установлению иерархии)
+						 $triple[4] = 'n'; #из-за этого момента нельзя использовать 'r' в квестах (не используются и цифры тут, т.к. они могут сильно мешать установлению иерархии)
 						#( $triple[4] ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$value, 1 );
-						&setWarn("		wP       присвоение модификатора $triple[4]");
+						#&setWarn("		wP       присвоение модификатора $triple[4]");
 					}
 					else { $triple[4] = $m }
 					push @num, \@triple;
 				}
 				elsif( $name eq 'a' ){
-					&setWarn("		wP     $pair: смена значения факта" );
+					&setWarn("		wP     $pair: смена значения факта (обст.: $m)" );
 					if ( not $value ){ 
 						&setWarn("		wP      $pair: создание новой сущности" );
 						my $s = @num;
@@ -616,11 +617,21 @@ sub washProc{
 					$predicate{'r'} = $a = $value
 				}
 				elsif( $name eq 'm' ){ 
-					&setWarn("			wP      $pair: смена значения квеста" );
+					&setWarn("			wP      $pair: смена значения обстоятельства (подлеж.: $a)" );
 					$m = $value || $a 
 				}
+				elsif( $name eq 'o' ){ 
+					&setWarn("			wP      $pair: смена значения дополнения (подлеж.: $a; обст.: $m)" );
+					$o = $value || 'r' 
+				}
+				elsif( $name eq 'p' ){ 
+					&setWarn("			wP      $pair: установление в параметр текущее дополнение  (подлеж.: $a; обст.: $m)" );
+					my $triple = &setName( 'd', $$temp{'user'}, $a, $value, $o );
+					my @triple = ( $triple, $a, $value, $o, $m, 1 );
+					push @num, \@triple;
+				}
 				else{ 
-					&setWarn('		wP     Формирование номера в простом режиме. Предикат - '.$name);
+					&setWarn("			wP     $pair:  установление параметра в обычном режиме (подлеж.: $a; обст.: $m)");
 					$predicate{$name} = $value; #запоминаются все предикаты включая 'r'
 					my $triple = &setName( 'd', $$temp{'user'}, $a, $name, $value );
 					my @triple = ( $triple, $a, $name, $value, $m, 1 );
