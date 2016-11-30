@@ -838,7 +838,7 @@
 							<xsl:attribute name="size"><xsl:value-of select="$size"/></xsl:attribute>
 						</xsl:when>
 						<xsl:when test="$title">
-							<xsl:attribute name="size"><xsl:choose><xsl:when test="string-length( $title ) > 80">80</xsl:when><xsl:otherwise><xsl:value-of select="string-length( $title ) + 4"/></xsl:otherwise></xsl:choose></xsl:attribute>
+							<xsl:attribute name="size"><xsl:choose><xsl:when test="string-length( $title ) > 100">100</xsl:when><xsl:otherwise><xsl:value-of select="string-length( $title ) + 4"/></xsl:otherwise></xsl:choose></xsl:attribute>
 						</xsl:when>
 					</xsl:choose>
 					<xsl:if test="not($ajaxMethod)">
