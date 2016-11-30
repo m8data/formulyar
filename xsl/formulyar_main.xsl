@@ -640,7 +640,7 @@
 															<xsl:value-of select="$symbol_replace"/>
 														</xsl:when>
 														<xsl:when test="$pName = 'd' and $modifier!='n'">
-															<a href="{m8:root( $fact, $modifier )}&amp;a0={name(*/*)}&amp;m={$fact}&amp;a={$modifier}&amp;d={name( * )}" title="поменять направление связи">
+															<a href="{m8:root( $fact, $modifier )}&amp;a0={name(*/*)}&amp;m=&amp;a={$modifier}&amp;d={name( * )}" title="поменять направление связи">
 																<!--&amp;a0={m8:triple( $fact, 'd', $modifier )} &amp;fact={$fact} &amp;quest={$modifier}-->
 																<xsl:value-of select="$symbol_replace"/>
 															</a>

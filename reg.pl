@@ -315,8 +315,20 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			else { $location .= &m8req( \%temp ) }
 			print $q->header( -location => $location, -cookie => [@cookie] )# -status => '201 Created' #куки нужны исключительно для случая указания автора		
 		}		
-		elsif ( ( $temp{'mission'} ne $defaultAvatar or $temp{'user'} eq 'guest' ) and ( not $temp{'QUERY_STRING'} or ( not $temp{'record'} and not defined $temp{'message'} ) or defined $temp{'ajax'} or defined $temp{'wkhtmltopdf'} ) ) { 	#$temp{'QUERY_STRING'} $temp{'record'} or $temp{'QUERY_STRING'}=~/^n1464273764-4704-1/ $ENV{'HTTP_HOST'} eq 'localhost'$ENV{'REMOTE_ADDR'} eq "127.0.0.1" 
-		#elsif (1) {
+		elsif ( 
+			( 
+				$temp{'mission'} ne $defaultAvatar or $temp{'user'} eq 'guest' 
+			) and 
+			( 
+				not $temp{'QUERY_STRING'} or 
+				( not $temp{'record'} and not defined $temp{'message'} ) or 
+				defined $temp{'ajax'} or 
+				defined $temp{'wkhtmltopdf'} 
+			) 
+		) { 	
+		# ( not $temp{'record'} and not defined $temp{'message'} ) - для того что бы, например, указание в 'QUERY_STRING' только модификатора не приводило к редиректу
+		#$temp{'QUERY_STRING'} $temp{'record'} or $temp{'QUERY_STRING'}=~/^n1464273764-4704-1/ $ENV{'HTTP_HOST'} eq 'localhost'$ENV{'REMOTE_ADDR'} eq "127.0.0.1"  =~/(^|&)a=(&|$)/ 
+		#elsif (1) { and not $temp{'QUERY_STRING'}=~/^.*[?&]a=$/
 			&setWarn( '   Вывод в web без редиректа (номеров: '.$temp{'record'}.')' );		
 			my $doc;
 			print $q->header( 
@@ -532,7 +544,8 @@ sub washProc{
 			&setWarn( "		wP   Поиск и проверка номеров в строке запроса $$temp{'QUERY_STRING'}" );# стирка 
 			#my @value; #массив для контроля повторяющихся значений внутри триплов
 			my %table; #таблица перевода с буквы предлложения на номер позиции в процессе
-			my ( $a, $m ) = ( $$temp{'fact'}, $$temp{'modifier'} );
+			my $a = $$temp{'fact'};
+			my $m = $$temp{'modifier'} || 'n';# if defined $$temp{'modifier'} and $$temp{'modifier'};
 			my %predicate;
 			for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
 				&setWarn('		wP  парсинг пары >'.$pair.'<');
@@ -604,7 +617,7 @@ sub washProc{
 				}
 				elsif( $name eq 'm' ){ 
 					&setWarn("			wP      $pair: смена значения квеста" );
-					$m = $value || 'n' 
+					$m = $value || $a 
 				}
 				else{ 
 					&setWarn('		wP     Формирование номера в простом режиме. Предикат - '.$name);
@@ -1288,7 +1301,11 @@ sub m8dir {
 sub m8req {
 	my $temp = shift;
 	#&setWarn( "			m8req @_" );		
-	my $dir = $auraDir.'/'.$$temp{'ctrl'}.'/m8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/';
+	my $dir = '';
+	if ( defined $$temp{'avatar'} and $$temp{'ctrl'} ne $$temp{'avatar'} ){
+		$dir = $auraDir.'/'.$$temp{'ctrl'}.'/'
+	}
+	$dir .= 'm8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/';
 	if ( defined $$temp{'number'} and ( ( $$temp{'modifier'} ne 'n' ) or defined $$temp{'number'}[0]{'message'} ) ){
 		$dir .= '?';
 		$dir .= 'modifier='.$$temp{'modifier'} if $$temp{'modifier'} ne 'n';
