@@ -311,9 +311,10 @@
 									<div style="padding: .1em">
 										<a href="{m8:root( name() )}" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
 											<xsl:value-of select="m8:title( m8:chief( name() ) )"/>
-											<xsl:if test="m8:port( $fact, name() )/d[not( r )]"> [<xsl:value-of select="m8:title( name( m8:port( $fact, name() )/d/* ) )"/>] </xsl:if>
+											<xsl:text> :: </xsl:text>
 											<!--<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>-->
 											<xsl:value-of select="m8:title( name() )"/>
+											<xsl:if test="m8:port( $fact, name() )/d[not( r )]"> [<xsl:value-of select="m8:title( name( m8:port( $fact, name() )/d/* ) )"/>] </xsl:if>
 										</a>
 										<xsl:text> - </xsl:text>
 										<a href="{m8:root( $fact, name() )}">
