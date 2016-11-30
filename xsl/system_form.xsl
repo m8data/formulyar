@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:math="http://exslt.org/math"  xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:math="http://exslt.org/math" xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
 	<xsl:include href="get_name.xsl"/>
 	<!--<xsl:include href="../../../m8/type.xsl"/>-->
 	<!--
@@ -209,7 +209,8 @@
 		<xsl:variable name="ss">
 			<xsl:call-template name="getAncestor">
 				<xsl:with-param name="currentFactName" select="$fact"/>
-				<xsl:with-param name="chiefOnly" select="$chiefOnly"/><!--1-->
+				<xsl:with-param name="chiefOnly" select="$chiefOnly"/>
+				<!--1-->
 			</xsl:call-template>
 		</xsl:variable>
 		<func:result select="exsl:node-set( $ss )"/>
@@ -352,7 +353,7 @@
 		<xsl:param name="node"/>
 		<xsl:param name="param"/>
 		<func:result select="$node/*[name()=$param]/*[count(../*)=1 or */@time=math:max( ../*/*/@time )]" xml:lang="проверка функцией max на случай ошибочного указания нескольких значений"/>
-	</func:function>	
+	</func:function>
 	<func:function name="m8:i">
 		<xsl:param name="fact"/>
 		<func:result select="m8:value( m8:param( $fact, 'i' ) )"/>
@@ -394,7 +395,9 @@
 		<xsl:param name="size"/>
 		<func:result>
 			<code>
-				<div><xsl:value-of select="$title"/></div>
+				<div>
+					<xsl:value-of select="$title"/>
+				</div>
 				<xsl:if test="$size">
 					<xsl:attribute name="style"><xsl:value-of select="concat( 'font-size: ', $size )"/></xsl:attribute>
 				</xsl:if>
@@ -831,8 +834,12 @@
 				</xsl:variable>
 				<input type="text" name="{$predicateName}">
 					<xsl:choose>
-						<xsl:when test="$size"><xsl:attribute name="size"><xsl:value-of select="$size"/></xsl:attribute></xsl:when>
-						<xsl:when test="$title"><xsl:attribute name="size"><xsl:value-of select="string-length( $title ) + 4"/></xsl:attribute></xsl:when>
+						<xsl:when test="$size">
+							<xsl:attribute name="size"><xsl:value-of select="$size"/></xsl:attribute>
+						</xsl:when>
+						<xsl:when test="$title">
+							<xsl:attribute name="size"><xsl:choose><xsl:when test="string-length( $title ) > 80">80</xsl:when><xsl:otherwise><xsl:value-of select="string-length( $title ) + 4"/></xsl:otherwise></xsl:choose></xsl:attribute>
+						</xsl:when>
 					</xsl:choose>
 					<xsl:if test="not($ajaxMethod)">
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
