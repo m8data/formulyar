@@ -190,14 +190,16 @@
 	<func:function name="m8:director">
 		<xsl:param name="fact"/>
 		<xsl:message>								== m8:director (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>
-		<func:result select="name( m8:port( $fact )/r/* )"/>
+		<func:result select="name( m8:unic( m8:port( $fact ), 'r' ) )"/>
+		<!--<func:result select="name( m8:port( $fact )/r/* )"/>-->
 		<!--<func:result select="m8:path( $fact, 'subject_r' )/n/@director"/>-->
 	</func:function>
 	<func:function name="m8:holder">
 		<xsl:param name="fact"/>
 		<xsl:message>								== m8:holder (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>
 		<!--<func:result select="m8:path( $fact, 'subject_r' )/n/@holder"/>-->
-		<func:result select="m8:port( $fact )/@user"/>
+		<!--<func:result select="m8:port( $fact )/r/*/*/@user"/>-->
+		<func:result select=" m8:unic( m8:port( $fact ), 'r' )/*/@user"/>
 	</func:function>
 	<!--<func:function name="m8:leader">
 		<xsl:param name="fact"/>
@@ -354,9 +356,9 @@
 		<func:result select="name( m8:unic( m8:port( $fact, $modifier ), $param ) )"/>
 	</func:function>
 	<func:function name="m8:unic">
-		<xsl:param name="node"/>
+		<xsl:param name="rootNode"/>
 		<xsl:param name="param"/>
-		<func:result select="$node/*[name()=$param]/*[count(../*)=1 or */@time=math:max( ../*/*/@time )]" xml:lang="проверка функцией max на случай ошибочного указания нескольких значений"/>
+		<func:result select="$rootNode/*[name()=$param]/*[count(../*)=1 or */@time=math:max( ../*/*/@time )]" xml:lang="проверка функцией max на случай ошибочного указания нескольких значений"/>
 	</func:function>
 	<func:function name="m8:i">
 		<xsl:param name="fact"/>
@@ -841,9 +843,20 @@
 						<xsl:when test="$size">
 							<xsl:attribute name="size"><xsl:value-of select="$size"/></xsl:attribute>
 						</xsl:when>
-						<xsl:when test="$title">
-							<xsl:attribute name="size"><xsl:choose><xsl:when test="string-length( $title ) > 100">100</xsl:when><xsl:otherwise><xsl:value-of select="string-length( $title ) + 4"/></xsl:otherwise></xsl:choose></xsl:attribute>
-						</xsl:when>
+						<xsl:otherwise>
+							<xsl:variable name="length" select="string-length( $title )"/>
+							<xsl:choose>
+								<xsl:when test="$length > 100">
+									<xsl:attribute name="size">100</xsl:attribute>
+								</xsl:when>
+								<xsl:when test="$length > 40">
+									<xsl:attribute name="size"><xsl:value-of select="$length + 4"/></xsl:attribute>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:attribute name="size"><xsl:value-of select="$length + 12"/></xsl:attribute>
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:otherwise>
 					</xsl:choose>
 					<xsl:if test="not($ajaxMethod)">
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>

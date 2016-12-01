@@ -49,7 +49,7 @@ my %setting = (
 	'platformLevel'	=> 3,
 	'tempfsFolder'	=> '/mnt/tmpfs'
 );
-my $localForce = 0; #разрешение делать записи любым юзерам на любой стороне, в противном случае это будет разрешено лишь на сервере
+my $localForce = 1; #разрешение делать записи любым юзерам на любой стороне, в противном случае это будет разрешено лишь на сервере
 
 my $reindexDays = 7;
 my $passwordFile = 'password.txt';
@@ -750,6 +750,12 @@ sub washProc{
 				}
 			}
 		}
+		if ( $num[$s][2] eq 'r' and $num[$s][4] ne 'n' ){
+			&setWarn("		wP   Недопущение указания r в квесте."); # 2016-12-01
+			$$temp{'povtor'}[$s] = 3;
+			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает указание r в квесте';
+			next
+		}
 		if ( $num[$s][2] eq $types{'shag'} and -d &m8dir( $num[$s][0] ) and not defined $$temp{'activity'} ){ 
 			&setWarn("		wP     Не активность.");	
 			$$temp{'activity'} = 0 
@@ -837,12 +843,12 @@ sub spinProc {
 	my ( $name, $subject, $predicate, $object, $modifier, $add ) = ( $$val[0], $$val[1], $$val[2], $$val[3], $$val[4], $$val[5] );
 	#$add = 1 if $add;
 	my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
-	my $quest = $modifier;
+	#my $quest = $modifier;
 	if ( $predicate eq 'r' ){
-		$value[4] = $quest = 'n';
+	#	$value[4] = $quest = 'n';
 		push @value, ( $subject, $predicate, $object )#, $modifier
 	}
-	my $mainDir = &m8dir( $subject, $quest );
+	my $mainDir = &m8dir( $subject, $modifier );
 	my $good;
 	#if (-d $mainDir){
 	my %port = &getJSON( $mainDir, 'port' );
@@ -863,12 +869,13 @@ sub spinProc {
 			} #имеющееся значение новее текущего
 			elsif ( $oldObject eq $object ){ 
 				#warn " REPET RECORD ($time): @{$val} \n";
-				$good = 1 } # or $$val[2] = 'r' повтор, пропускаем реиндексацию, но (излишне?) перезаписываем базу
+				$good = 1 
+			} # or $$val[2] = 'r' повтор, пропускаем реиндексацию, но (излишне?) перезаписываем базу
 			else{
 				&setWarn("		sP    Удаление старого значения"  );
-				my $oldModifier = $modifier;
-				$oldModifier = &m8director( $subject ) if $predicate eq 'r';
-				my @triple = ( $oldTriple, $subject, $predicate, $oldObject, $oldModifier );
+				#my $oldModifier = $modifier;
+				#$oldModifier = &m8director( $subject ) if $predicate eq 'r';
+				my @triple = ( $oldTriple, $subject, $predicate, $oldObject, $modifier );
 				push @warn, " NEW VALUE ($time): @{$val} \n";
 				push @warn, &spinProc ( \@triple, $user, $oldTime, 809 );
 			}
@@ -880,25 +887,27 @@ sub spinProc {
 	#my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
 	if (not $good){
 	#push @value, ( $subject, $predicate, $object ) if $predicate=~/^r\d*$/;
-	my $superAddC; #добавлено 2016-11-28 что бы не удалялось упоминание в квест-индексе при любом удалении в квесте
+	my ( $superAddQuest, $superAddUser ); #добавлено 2016-11-28 что бы не удалялось упоминание в квест-индексе при любом удалении в квесте
 	for my $mN ( grep { $value[$_] } 0..$#value ){
 		&setWarn("		
 		sP  Обработка упоминания cущности $mN: $value[$mN] (user: $user)"  );
 		my $addC = $add || 0; #заводим отдельный регистр, т.к. $add должен оставаться с значением до цикла
-		$addC = $superAddC if $mN == 4 or $mN == 5 ;
+		#$addC = $superAddC if $mN == 4 
+		$addC = $superAddQuest if $mN == 4; 
+		$addC = $superAddUser if $mN == 5;
 		my $metter = &getID($value[$mN]);
 		#&setLink( $planeRoot.'m8',	$planeRoot.$auraDir.'/m8'			);
 		#&setLink( $planeRoot.'m8/n', 	$metter.'/q' ) if $value[$mN]=~/^n/ and $add;
 		my $type = $superrole[$mN];
 		my ( $role, $file, $first );
-		if ( $mN == 0 ){	( $role, $file, $first ) = ( 'activate',	'activate'				, $quest ) }
-		elsif ( $mN < 4 ) {	( $role, $file, $first ) = ( 'role'.$mN,	'role'.$mN 				, $quest ) }
+		if ( $mN == 0 ){	( $role, $file, $first ) = ( 'activate',	'activate'				, $modifier ) }
+		elsif ( $mN < 4 ) {	( $role, $file, $first ) = ( 'role'.$mN,	'role'.$mN 				, $modifier ) }
 		elsif ( $mN == 4 ){ ( $role, $file, $first ) = ( 'quest',		'quest'					, $subject ) }#вероятнее всего, здесь subject нужно поменять на name		
-		elsif ( $mN == 5 ){ ( $role, $file, $first ) = ( 'author',		'author'				, $quest ) }
-		elsif ( $mN == 6 ){ ( $role, $file, $first ) = ( $predicate,	'subject_'.$predicate	, $quest ) }
-		elsif ( $mN == 7 ){	( $role, $file, $first ) = ( $object,		'predicate_'.$object	, $quest ) }
-		elsif ( $mN == 8 ){	( $role, $file, $first ) = ( $subject, 		'object_'.$subject		, $quest ) } 
-		#elsif ( $mN == 9 ){	( $role, $file, $first ) = ( $subject, 		'director_'.$subject	, $quest ) } 
+		elsif ( $mN == 5 ){ ( $role, $file, $first ) = ( 'author',		'author'				, $modifier ) }
+		elsif ( $mN == 6 ){ ( $role, $file, $first ) = ( $predicate,	'subject_'.$predicate	, $modifier ) }
+		elsif ( $mN == 7 ){	( $role, $file, $first ) = ( $object,		'predicate_'.$object	, $modifier ) }
+		elsif ( $mN == 8 ){	( $role, $file, $first ) = ( $subject, 		'object_'.$subject		, $modifier ) } 
+		#elsif ( $mN == 9 ){	( $role, $file, $first ) = ( $subject, 		'director_'.$subject	, $modifier ) } 
 		
 		if ( $mN == 1 or $mN == 2 or $mN == 3  ){
 			&setWarn("		sP   Формирование порта/дока/терминала $role ($file, $first).  User: $user"  );
@@ -907,19 +916,24 @@ sub spinProc {
 			if ( $mN == 1 )		{ ( $master, $slave ) = ( $predicate, 	$object 	) }
 			elsif ( $mN == 2 )	{ ( $master, $slave ) = ( $subject, 	$object 	) }
 			elsif ( $mN == 3 ) 	{ ( $master, $slave ) = ( $subject, 	$predicate 	) }
-			my %role = &getJSON( $metter.'/'.$quest, $superfile[$mN] );
-			$role{'user'} = $user;
+			my %role = &getJSON( $metter.'/'.$modifier, $superfile[$mN] );
+			#$role{'user'} = $user;
 			if ( $addC ){
-				&setWarn("		sP    Операции при добавлении значения в индекс $metter/$quest  ($master, $slave)"  );
+				&setWarn("		sP    Операции при добавлении значения в индекс $metter/$modifier  ($master, $slave)"  );
 				$role{$master}[0]{$slave}[0]{$name}[0]{'time'} = $time;
+				$role{$master}[0]{$slave}[0]{$name}[0]{'user'} = $user if $mN == 1 and $master eq 'r';
 			}
 			else { 
 				&setWarn("		sP    Операции при удалении значения. Удаление ключа $master"  );
 				delete $role{$master} ; 
 				$addC = 1 if keys %role; 
 			} 
-			&setXML ( $metter.'/'.$quest, $superfile[$mN], \%role );
-			$superAddC = $addC if $mN == 1;
+			&setXML ( $metter.'/'.$modifier, $superfile[$mN], \%role );
+			if ( $mN == 1 ){
+				&setWarn("		sP   Установление супер-маркеров"  );
+				$superAddQuest = $addC if $modifier ne 'n';
+				$superAddUser = $addC
+			} 
 		}
 		my %role1 = &getJSON( $metter, $file );
 		if ( $addC ) {#==1
@@ -1139,17 +1153,24 @@ sub dryProc2 {
 			next if $tsvName=~/^i/;	
 			my @val = split "\t", $div[0];
 			unshift @val, $tsvName;
-			$val[4] = $userName;
+			#$val[4] = $userName;
 			$triple++;
 			if ( $val[3] =~/^i\d+$/ ){
 				my @map = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$val[3].'/value.tsv' );
 				$userType{$userName}{$val[3]} = $map[0] if $map[1] and $map[1]=~/^xsd:\w+$/;
 				$types{$map[0]} = $val[1] if $map[1] and $map[1]=~/^xsd:\w+$/;
 			}
-			if (1){
-			for my $questName ( &getDir( $tsvPath.'/'.$tsvName, 1 ) ){
+			if (1){		
+			my @quest = &getDir( $tsvPath.'/'.$tsvName, 1 );			
+			if ( not @quest ){
+				warn "	!!! delete triple without quest ( @val )";
+				rmtree $tsvPath.'/'.$tsvName || warn "Еrror deleting file $tsvPath/$tsvName: $!\n";;
+				next;
+			}
+			for my $questName ( @quest ){
 				#push @warn, "    Исследование квеста $questName \n";
 				$val[4] = $questName;
+
 				my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$val[4].'/time.txt' );
 				if ( $val[0] ne 'd' and $val[1] eq $val[4] ){
 					#корректировка формата данных 2016-10-07
@@ -1158,6 +1179,13 @@ sub dryProc2 {
 					if ( $val[2] eq 'r' ){ $val[4] = $val[3]; }
 					else { $val[4] = 'n'}
 					&setFile( $tsvPath.'/'.$tsvName.'/'.$val[4].'/time.txt', $timeProc )
+				}
+				elsif ( $val[4] ne 'n' and $val[2] eq 'r' ){
+					#удаление аномалии в квесте ( 2016-12-01 )
+					warn "	!!! delete r from quest: $tsvPath/$tsvName/$val[4] ( @val )";
+					rmtree $tsvPath.'/'.$tsvName.'/'.$val[4] || warn "Еrror deleting file $tsvPath/$tsvName/$val[4]: $!\n";
+					#sleep 8
+					next
 				}
 				if ( $userName eq 'guest' and $tsvName ne 'd' and $timeProc and $timeProc < $guestTime ){ 
 					push @warn, "     Удаление старого гостевого трипла '.$div[0].' \n";
@@ -1344,8 +1372,8 @@ sub m8req {
 		$string{'modifier'} = $$temp{'modifier'} if $$temp{'modifier'} ne 'n';
 		$string{'error'} = $$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
 		$string{'shag'} = $$temp{'shag'} if $$temp{'shag'}; #позднее здесь 'shag' заменить на 'n'
-		my @ss = keys %{$temp};
-		&setWarn( "			m8req  добавление cостояния @ss" ) if $$temp{'activity'};
+		#my @ss = keys %{$temp};
+		#&setWarn( "			m8req  добавление cостояния @ss" ) if $$temp{'activity'};
 		my $prefix = '?';
 		for my $key ( keys %string ){
 			&setWarn( "			m8req    Добавление параметра $key" );	
@@ -1366,16 +1394,21 @@ sub m8holder {
 	my $fact = shift;
 	my $dir = &m8dir( $fact, 'n' );
 	my %port = &getJSON( $dir, 'port' );
-	my @keys = keys %port;
-	&setWarn( "			return $port{'user'} ( dir: $dir / @keys )" );	
-	return $port{'user'}
+	#my @keys = keys %port;
+	#&setWarn( "			return $port{'user'} ( dir: $dir )" );	
+	my @object = keys %{$port{'r'}[0]};
+	my $object = $object[0];
+	my @triple = keys %{$port{'r'}[0]{$object}[0]};
+	my $triple = $triple[0];
+	return $port{'r'}[0]{$object}[0]{$triple}[0]{'user'}
 }
 sub m8director {
 	&setWarn( "			m8director @_" );	
 	my $fact = shift;
-	my %port = &getJSON( &m8dir( $fact, 'n' ), 'port' );
-	my @oldObject = keys %{$port{'r'}[0]};
-	return $oldObject[0];
+	my $dir = &m8dir( $fact, 'n' );
+	my %port = &getJSON( $dir, 'port' );
+	my @object = keys %{$port{'r'}[0]};
+	return $object[0];
 }
 
 

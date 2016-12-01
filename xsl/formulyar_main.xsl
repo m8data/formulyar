@@ -195,7 +195,8 @@
 					<tr>
 						<td align="center" valign="top" width="40%">
 							<xsl:if test="m8:index( $fact )/object/*[m8:director( name() ) = $fact]">
-								<b>Экземпляры</b>
+								<a href="/{m8:dir( $fact )}/index.xml" style="color: black"><b>Экземпляры</b></a>
+								
 								<div style="padding: 1em">
 									<xsl:for-each select="m8:index( $fact )/object/*[m8:director( name() ) = $fact]">
 										<xsl:sort select="m8:title( name() )"/>
@@ -271,7 +272,7 @@
 						<div style="text-align: left; margin: 0 auto; ">
 							<!-- width: 500px-->
 							<div style="padding: .4em; text-align: center">
-								<b>модификатор для</b>
+								<a href="/{m8:dir( $fact ) }/quest.xml" style="color: #777"><b>модификатор для</b></a>
 							</div>
 							<xsl:for-each select="m8:quest( $fact )/*[name()!=$fact]">
 								<xsl:sort select="m8:title( name(), 'd', $fact )"/>
@@ -305,7 +306,7 @@
 					<div style="display: flex; margin: 2em">
 						<div style="text-align: left; margin: 0 auto;">
 							<div style="padding: .4em; text-align: center">
-								<b>модификация из</b>
+								<a href="/{m8:dir( $fact )}/role1.xml" style="color: #777"><b>модификация из</b></a>
 							</div>
 							<!--<div style="padding: .2em; text-align: left; margin: 0 auto; width: 500px">-->
 							<xsl:for-each select="m8:role1( $fact )/*[name()!='n']">
@@ -445,8 +446,7 @@
 										<td valign="middle">
 											<xsl:if test="$director != 'n' ">
 												<xsl:text>&#160;</xsl:text>
-												<a title="to new Quest - { $newQuestName } COMMON">
-													<xsl:attribute name="href"><xsl:value-of select="concat( m8:root( $fact, $newQuestName ), '&amp;r=', $newQuestName )"/><!--<xsl:if test="$director = $typeName"><xsl:text>&amp;object=</xsl:text><xsl:value-of select="$newQuestName"/></xsl:if>--></xsl:attribute>
+												<a href="{m8:root( $fact )}?r={$newQuestName}" title="перемещение в факт {m8:title( $newQuestName )} ({ $newQuestName })">
 													<xsl:value-of select="$symbol_up"/>
 												</a>
 											</xsl:if>
@@ -684,7 +684,7 @@
 				</td>
 				<td align="center" valign="top">
 					<xsl:variable name="chiefName" select="m8:chief( $fact )"/>
-					<xsl:if test="( m8:holder( $fact )=$user or m8:holder( $modifier )=$user ) and ( $chiefName != 'n' or $modifier = 'n' ) ">
+					<xsl:if test="( m8:holder( $fact )=$user or m8:holder( $modifier )=$user ) and ( $chiefName != 'n' or $modifier = 'n')  or not( $types ) "><!-- -->
 						<!--not($modifier) or -->
 						<div style="padding: 1em; ">
 							<xsl:message>!! Правая панель: подсказки значений !!</xsl:message>
