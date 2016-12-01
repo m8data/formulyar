@@ -266,7 +266,7 @@
 			<!--<xsl:if test="$modifier='n'">-->
 			<xsl:message>= = = = = = = - Зона упоминаний - = = = = = =</xsl:message>
 			<div style="color: #777; padding: 2em;">
-				<xsl:if test="m8:quest( $fact )/*[name()!=$fact] and $fact!='n' ">
+				<xsl:if test="m8:quest( $fact )/*[name()!=$fact]">
 					<div style="display: flex; margin: 2em">
 						<div style="text-align: left; margin: 0 auto; ">
 							<!-- width: 500px-->
@@ -286,7 +286,7 @@
 												<!--<xsl:apply-templates select="." mode="simpleName"/>-->
 												<xsl:value-of select="m8:title( name() )"/>
 											</a>
-											<xsl:text> - </xsl:text>
+											<xsl:text> </xsl:text>
 											<a href="{m8:root( name(), $fact )}">
 												<span style="color: #FFF9B9; background: #555">&#160;мод&#160;</span>
 											</a>
@@ -318,7 +318,7 @@
 										<xsl:value-of select="m8:title( name() )"/>
 										<xsl:if test="m8:port( $fact, name() )/d[not( r )]"> [<xsl:value-of select="m8:title( name( m8:port( $fact, name() )/d/* ) )"/>] </xsl:if>
 									</a>
-									<xsl:text> - </xsl:text>
+									<xsl:text> </xsl:text>
 									<a href="{m8:root( $fact, name() )}">
 										<span style="color: #FFF9B9; background: #555">&#160;мод&#160;</span>
 									</a>
