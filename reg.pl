@@ -552,6 +552,7 @@ sub washProc{
 				&setWarn('		wP  парсинг пары >'.$pair.'<');
 				my ($name, $value) = split(/=/, $pair);
 				next if $name eq '_'; #пара с именем '_' добавляется только для того что бы избежать кэширования запроса.
+				$$temp{'state'} = $value if $name eq 'shag';
 				$name = $types{$name} if defined $types{$name};
 				next if $name eq 'user' or defined $$temp{$name};
 				####  работа с значением  ####
@@ -698,6 +699,9 @@ sub washProc{
 			$$temp{'povtor'}[$s] = 3;
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает нарушение правила иерархии';
 			next;
+		}
+		if ( defined $$temp{'state'} ){
+			&setWarn( "			m8req  проверка состояния" )
 		}
 		if ( $num[$s][2]=~/^r/ and -d 'm8/n/'.$num[$s][1] ){
 			&setWarn("		wP   Проверка изменения статуса имеющегося нечто.");
@@ -1311,17 +1315,33 @@ sub m8dir {
 }
 sub m8req {
 	my $temp = shift;
-	#&setWarn( "			m8req @_" );		
+	&setWarn( "			m8req @_" );		
 	my $dir = '';
 	if ( defined $$temp{'avatar'} and $$temp{'ctrl'} ne $$temp{'avatar'} ){
 		$dir = $auraDir.'/'.$$temp{'ctrl'}.'/'
 	}
 	$dir .= 'm8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/';
-	if ( defined $$temp{'number'} and ( ( $$temp{'modifier'} ne 'n' ) or defined $$temp{'number'}[0]{'message'} ) ){
-		$dir .= '?';
-		$dir .= 'modifier='.$$temp{'modifier'} if $$temp{'modifier'} ne 'n';
-		$dir .= '&error='.$$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
+	if ( defined $$temp{'number'} ){
+		#&setWarn( "			m8req  добавление строки запроса" );	
+		my %string;
+		$string{'modifier'} = $$temp{'modifier'} if $$temp{'modifier'} ne 'n';
+		$string{'error'} = $$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
+		$string{'shag'} = $$temp{'state'} if defined $$temp{'state'}; #позднее здесь 'shag' заменить на 'n'
+		#my @ss = keys %{$temp};
+		#&setWarn( "			m8req  добавление cостояния @ss" ) if defined $$temp{'state'};
+		my $prefix = '?';
+		for my $key ( keys %string ){
+			#&setWarn( "			m8req    Добавление параметра $key" );	
+			$dir .= $prefix.$key.'='.$string{$key};
+			$prefix = '&';
+		}
 	}
+	# and ( ( $$temp{'modifier'} ne 'n' ) or defined $$temp{'number'}[0]{'message'} or defined $$temp{'state'} ) ){
+	#	$dir .= '?';
+	#	$dir .= 'modifier='.$$temp{'modifier'} if $$temp{'modifier'} ne 'n';
+	#	$dir .= '&error='.$$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
+	#	$dir .= '&shag='.$$temp{'state'} if defined $$temp{'state'};
+	#}
 	return $dir;
 }
 sub m8holder {
