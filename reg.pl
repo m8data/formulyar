@@ -1185,7 +1185,12 @@ sub dryProc2 {
 					warn "	!!! delete r from quest: $tsvPath/$tsvName/$val[4] ( @val )";
 					rmtree $tsvPath.'/'.$tsvName.'/'.$val[4] || warn "Еrror deleting file $tsvPath/$tsvName/$val[4]: $!\n";
 					#sleep 8
-					next
+					if ( $val[4] eq $val[3] ){
+						warn "	!!!!! REPLACE";
+						$val[4] = 'n';
+						&setFile( $tsvPath.'/'.$tsvName.'/'.$val[4].'/time.txt', $timeProc )
+					}
+					else { next }
 				}
 				if ( $userName eq 'guest' and $tsvName ne 'd' and $timeProc and $timeProc < $guestTime ){ 
 					push @warn, "     Удаление старого гостевого трипла '.$div[0].' \n";
