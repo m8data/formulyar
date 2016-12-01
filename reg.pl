@@ -322,6 +322,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			( 
 				not $temp{'QUERY_STRING'} or 
 				( not $temp{'record'} and not defined $temp{'message'} ) or 
+				not $temp{'activity'} or
 				defined $temp{'ajax'} or 
 				defined $temp{'wkhtmltopdf'} 
 			) 
@@ -417,6 +418,7 @@ sub washProc{
 	my ( $temp, $cookie ) = @_;
 	&setWarn( "		wP @_" );
 	my @num;
+	my %types = &getJSON( $typesDir, 'type' );	
 	if ( $$temp{'REQUEST_METHOD'} eq 'POST' ){
 		&setWarn( "		wP  Запись файла" );# 
 		my $req = new CGI; 
@@ -450,7 +452,7 @@ sub washProc{
 				
 		$$temp{'QUERY_STRING'} = &utfText($$temp{'QUERY_STRING'});
 		$$temp{'QUERY_STRING'} = Encode::decode_utf8($$temp{'QUERY_STRING'});
-		my %types = &getJSON( $typesDir, 'type' );		
+			
 		for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
 			&setWarn( "		wP   Прием пары $pair" );	
 			my ($name, $value) = split( /=/, $pair );
@@ -552,7 +554,6 @@ sub washProc{
 				&setWarn('		wP  парсинг пары >'.$pair.'<');
 				my ($name, $value) = split(/=/, $pair);
 				next if $name eq '_'; #пара с именем '_' добавляется только для того что бы избежать кэширования запроса.
-				$$temp{'state'} = $value if $name eq 'shag';
 				$name = $types{$name} if defined $types{$name};
 				next if $name eq 'user' or defined $$temp{$name};
 				####  работа с значением  ####
@@ -598,7 +599,7 @@ sub washProc{
 					&setWarn("			wP      $pair: демонтаж (подлеж.: $a; обст.: $m)" );
 					my @triple = &getTriple( $$temp{'user'}, $value );
 					if ( $triple[2] eq 'r' ){
-						 $triple[4] = 'n'; #из-за этого момента нельзя использовать 'r' в квестах (не используются и цифры тут, т.к. они могут сильно мешать установлению иерархии)
+						$triple[4] = 'n'; #из-за этого момента нельзя использовать 'r' в квестах (не используются и цифры тут, т.к. они могут сильно мешать установлению иерархии)
 						#( $triple[4] ) = &getDir( $planeDir.'/'.$$temp{'user'}.'/tsv/'.$value, 1 );
 						#&setWarn("		wP       присвоение модификатора $triple[4]");
 					}
@@ -638,6 +639,7 @@ sub washProc{
 					my @triple = ( $triple, $a, $name, $value, $m, 1 );
 					push @num, \@triple;
 				}
+				$$temp{'shag'} = $value if $name eq $types{'shag'}
 			}
 			( $$temp{'fact'}, $$temp{'modifier'} ) = ( $a, $m );
 		}
@@ -700,9 +702,15 @@ sub washProc{
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает нарушение правила иерархии';
 			next;
 		}
-		if ( defined $$temp{'state'} ){
-			&setWarn( "			m8req  проверка состояния" )
-		}
+		#if ( $num[$s][2] eq $types{'shag'} and 0  ){
+		#	&setWarn( "			m8req  проверка состояния" );
+		#	&setWarn( &m8dir( $num[$s][0] ) );
+		#	if ( -d &m8dir( $num[$s][0] ) ){
+		#		$$temp{'activity'} = undef;
+		#		next;
+		#	}
+		#	&setWarn( &m8dir( $num[$s][0] ) );
+		#}
 		if ( $num[$s][2]=~/^r/ and -d 'm8/n/'.$num[$s][1] ){
 			&setWarn("		wP   Проверка изменения статуса имеющегося нечто.");
 			#my $holder = &m8holder( $num[$s][1] );
@@ -741,6 +749,15 @@ sub washProc{
 				
 				}
 			}
+		}
+		if ( $num[$s][2] eq $types{'shag'} and -d &m8dir( $num[$s][0] ) and not defined $$temp{'activity'} ){ 
+			&setWarn("		wP     Не активность.");	
+			$$temp{'activity'} = 0 
+		}
+		else{ 
+			&setWarn("		wP     Детектирование активности .");	
+			$$temp{'activity'} = 1;
+			#next if $num[$s][2] eq $types{'shag'} and -d &m8dir( $num[$s][0] )
 		}
 		push @warn, &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'}, 723 );
 		#if ( 0 and &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'}, 723 ) ){
@@ -1322,25 +1339,25 @@ sub m8req {
 	}
 	$dir .= 'm8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/';
 	if ( defined $$temp{'number'} ){
-		#&setWarn( "			m8req  добавление строки запроса" );	
+		&setWarn( "			m8req  добавление строки запроса" );	
 		my %string;
 		$string{'modifier'} = $$temp{'modifier'} if $$temp{'modifier'} ne 'n';
 		$string{'error'} = $$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
-		$string{'shag'} = $$temp{'state'} if defined $$temp{'state'}; #позднее здесь 'shag' заменить на 'n'
-		#my @ss = keys %{$temp};
-		#&setWarn( "			m8req  добавление cостояния @ss" ) if defined $$temp{'state'};
+		$string{'shag'} = $$temp{'shag'} if $$temp{'shag'}; #позднее здесь 'shag' заменить на 'n'
+		my @ss = keys %{$temp};
+		&setWarn( "			m8req  добавление cостояния @ss" ) if $$temp{'activity'};
 		my $prefix = '?';
 		for my $key ( keys %string ){
-			#&setWarn( "			m8req    Добавление параметра $key" );	
+			&setWarn( "			m8req    Добавление параметра $key" );	
 			$dir .= $prefix.$key.'='.$string{$key};
 			$prefix = '&';
 		}
 	}
-	# and ( ( $$temp{'modifier'} ne 'n' ) or defined $$temp{'number'}[0]{'message'} or defined $$temp{'state'} ) ){
+	# and ( ( $$temp{'modifier'} ne 'n' ) or defined $$temp{'number'}[0]{'message'} or defined $$temp{'activity'} ) ){
 	#	$dir .= '?';
 	#	$dir .= 'modifier='.$$temp{'modifier'} if $$temp{'modifier'} ne 'n';
 	#	$dir .= '&error='.$$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
-	#	$dir .= '&shag='.$$temp{'state'} if defined $$temp{'state'};
+	#	$dir .= '&shag='.$$temp{'activity'} if defined $$temp{'activity'};
 	#}
 	return $dir;
 }
