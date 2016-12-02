@@ -581,7 +581,7 @@
 			<!--
 							ВЫВОД ЗАПРОСА ФАЙЛА
 -->
-			<xsl:when test="$predicateName = 'n'">
+			<xsl:when test="$predicateName = 'n' and $modifier='n'">
 				<input type="file" name="file">
 					<xsl:if test="not($ajaxMethod)">
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
