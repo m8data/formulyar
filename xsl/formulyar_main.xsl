@@ -21,26 +21,6 @@
 	-->
 	<xsl:template name="startBody">
 		<xsl:call-template name="footer"/>
-		<!--<div style="position: fixed; bottom: 5px; left: 5px; z-index: 1">
-			<a href="{$start/@prefix}teplotn/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}">calculator</a>
-			<xsl:text> | </xsl:text>
-			<a href="{$start/@prefix}system/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}">sys</a>
-			<xsl:text> | </xsl:text>
-			<a href="{$start/@prefix}xalio/m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}">refresh</a>
-			<xsl:text> | </xsl:text>
-			<a href="{$start/@prefix}m8/{substring($fact,1,1)}/{$fact}/{$author}/{$quest}/port.xml">xml</a>
-		</div>
-		<div style="position: fixed; bottom: 5px; right: 5px; color: gray; z-index: 1">
-			<span title="аватар"><xsl:value-of select="$avatar"/></span>
-			<xsl:text> |  </xsl:text>	
-			<xsl:value-of select="$localtime"/>
-			<xsl:if test="$user != 'guest' ">
-				<xsl:text> |  </xsl:text>
-				<xsl:value-of select="$user"/>
-				<xsl:text> |  </xsl:text>
-				<a href="{$start/@prefix}m8/?logout=true" style="color: red">выйти</a>
-			</xsl:if>
-		</div>-->
 		<xsl:apply-templates select="." mode="start"/>
 	</xsl:template>
 	<!--
@@ -110,17 +90,12 @@
 												</span>
 											</div>
 											<xsl:if test="$parentName != $typeName">
-												<!-- and $parentName != 'n'-->
 												<xsl:text>  c типом </xsl:text>
 												<a href="{m8:root( $typeName )}" style="{m8:color( $typeName)}" title="{m8:holder( $typeName )}">
 													<b>
 														<xsl:apply-templates select="exsl:node-set($parent)/*[last()]/*" mode="simpleName"/>
 													</b>
 												</a>
-												<!--<xsl:text>  в квесте </xsl:text>
-												<a href="{$start/@prefix}a/{$ctrl}/{m8:dir( $quest )}" style="{m8:color( $quest)}" title="{m8:holder( $quest )}">
-													<xsl:apply-templates select="@quest" mode="simpleName"/>
-												</a>-->
 											</xsl:if>
 											<xsl:if test="$modifier != 'n'">
 												<span> в модификации </span>
@@ -177,7 +152,7 @@
 							<xsl:message>Красная карта</xsl:message>
 							<div style="margin: 2em; padding: 1em; background: #FED">
 								<div style="float: right">
-									<a href="{$start/@prefix}a/{$ctrl}/">X</a>
+									<a href="{m8:root()}">X</a>
 								</div>
 								<br style="clear: both"/>
 							</div>
@@ -195,7 +170,7 @@
 					<tr>
 						<td align="center" valign="top" width="40%">
 							<xsl:if test="m8:index( $fact )/object/*[m8:director( name() ) = $fact]">
-								<a href="/{m8:dir( $fact )}/index.xml" style="color: black"><b>Экземпляры</b></a>
+								<a href="{m8:file( $fact, 'index.xml' )}" style="color: black"><b>Экземпляры</b></a>
 								
 								<div style="padding: 1em">
 									<xsl:for-each select="m8:index( $fact )/object/*[m8:director( name() ) = $fact]">
@@ -272,7 +247,7 @@
 						<div style="text-align: left; margin: 0 auto; ">
 							<!-- width: 500px-->
 							<div style="padding: .4em; text-align: center">
-								<a href="/{m8:dir( $fact ) }/quest.xml" style="color: #777"><b>модификатор для</b></a>
+								<a href="{m8:file( $fact, 'quest.xml' )}" style="color: #777"><b>модификатор для</b></a>
 							</div>
 							<xsl:for-each select="m8:quest( $fact )/*[name()!=$fact]">
 								<xsl:sort select="m8:title( name(), 'd', $fact )"/>
@@ -306,7 +281,7 @@
 					<div style="display: flex; margin: 2em">
 						<div style="text-align: left; margin: 0 auto;">
 							<div style="padding: .4em; text-align: center">
-								<a href="/{m8:dir( $fact )}/role1.xml" style="color: #777"><b>модификация из</b></a>
+								<a href="{m8:dir( $fact, 'role1.xml' )}" style="color: #777"><b>модификация из</b></a>
 							</div>
 							<!--<div style="padding: .2em; text-align: left; margin: 0 auto; width: 500px">-->
 							<xsl:for-each select="m8:role1( $fact )/*[name()!='n']">
@@ -333,20 +308,39 @@
 					<!-- and $modifier = 'n' -->
 					<div>
 						<b>
-							<a href="/{m8:dir( $fact, 'n' )}/terminal.xml" style="color: gray">упоминания</a>
+							<a href="{m8:file( $fact, 'n', 'terminal.xml' )}" style="color: gray">упоминания в значении</a>
 						</b>
 						<div style="padding: .2em">
 							<xsl:for-each select="m8:path( $fact, 'n', 'terminal' )/*[not(r)][name()!=$director]">
 								<xsl:sort select="m8:title( name() )"/>
 								<div>
 									<a href="{m8:root( name(), $modifier ) }" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
-										<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>
+										<!--<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>-->
+										<xsl:value-of select="concat( m8:title( m8:director( name() ) ), ' :: ', m8:title( name() ) )"/>
 									</a>
 								</div>
 							</xsl:for-each>
 						</div>
 					</div>
 				</xsl:if>
+				<xsl:if test="m8:index( $fact )/role/role2">
+					<!-- and $modifier = 'n' -->
+					<div>
+						<b>
+							<a href="{m8:file( $fact, 'n', 'dock.xml' )}" style="color: gray">упоминания в параметре</a>
+						</b>
+						<div style="padding: .2em">
+							<xsl:for-each select="m8:path( $fact, 'n', 'dock' )/*">
+								<xsl:sort select="m8:title( name() )"/>
+								<div>
+									<a href="{m8:root( name(), $modifier ) }" style="{ m8:color( name() )}" title="{ m8:holder( name() ) }">
+										<xsl:value-of select="concat( m8:title( m8:director( name() ) ), ' :: ', m8:title( name() ) )"/>
+									</a>
+								</div>
+							</xsl:for-each>
+						</div>
+					</div>
+				</xsl:if>				
 			</div>
 			<xsl:message>= = = = = = = - Зона упоминаний (END) - = = = = = =</xsl:message>
 		</xsl:if>
@@ -667,7 +661,7 @@
 												<td valign="top">
 													<xsl:if test="$adminMode">
 														<sup>
-															<a href="/{m8:dir( name(*) )}/value.xml" style="color:gray; font-size:.6em">
+															<a href="{m8:file( name(*), 'value.xml' )}" style="color:gray; font-size:.6em">
 																<xsl:value-of select="name(*)"/>
 															</a>
 														</sup>
