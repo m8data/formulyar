@@ -522,7 +522,7 @@
 					</xsl:with-param>
 				</xsl:call-template>
 			</xsl:when>
-			<xsl:when test="m8:index( 'r' )/predicate/*[name()=$predicateName and name() != 'i' ]" xml:lang="вывод экземпляров типа">
+			<xsl:when test="m8:index( 'r' )/predicate/*[name()=$predicateName and name() != 'i' ] and $predicateName != 'n' " xml:lang="вывод экземпляров типа">
 				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> списком экземпляров типа</xsl:message>
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>
