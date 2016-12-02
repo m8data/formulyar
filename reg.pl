@@ -70,7 +70,7 @@ my @number = (	'name',		'subject', 	'predicate',	'object',	'modifier', 'add' );
 my @transaction = ( 'DOCUMENT_ROOT', 'REMOTE_ADDR', 'HTTP_USER_AGENT', 'REQUEST_URI', 'QUERY_STRING', 'HTTP_COOKIE', 'REQUEST_METHOD', 'HTTP_X_REQUESTED_WITH' );#, 'HTTP_USER_AGENT', 'HTTP_ACCEPT_LANGUAGE', 'REMOTE_ADDR' $$transaction{'QUERY_STRING'}
 my @mainTriple = ( 'n', 'r', 'i' );
 my %formatDir = ( '_doc', 1, '_json', 1, '_pdf', 1, '_xml', 1 );
-my @superrole = ( 'triple', 'role', 'role', 'role', 'quest', 'author', 'subject', 'predicate', 'object', 'director' );
+my @superrole = ( 'triple', 'role', 'role', 'role', 'quest', 'subject', 'predicate', 'object' );
 my @superfile = ( undef, 'port', 'dock', 'terminal' ); 
 
 
@@ -842,8 +842,10 @@ sub spinProc {
 	else{ push @warn, " DEL ($time / $dry): @{$val}\n" }
 	my ( $name, $subject, $predicate, $object, $modifier, $add ) = ( $$val[0], $$val[1], $$val[2], $$val[3], $$val[4], $$val[5] );
 	#$add = 1 if $add;
-	my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
+	my @value = ( $name, $subject, $predicate, $object );
 	#my $quest = $modifier;
+	if ( $modifier eq 'n' ){ push @value, $user }
+	else { push @value, $modifier } 
 	if ( $predicate eq 'r' ){
 	#	$value[4] = $quest = 'n';
 		push @value, ( $subject, $predicate, $object )#, $modifier
@@ -886,87 +888,90 @@ sub spinProc {
 	#}
 	#my @value = ( $name, $subject, $predicate, $object, $modifier, $user );
 	if (not $good){
-	#push @value, ( $subject, $predicate, $object ) if $predicate=~/^r\d*$/;
-	my ( $superAddQuest, $superAddUser ); #добавлено 2016-11-28 что бы не удалялось упоминание в квест-индексе при любом удалении в квесте
-	for my $mN ( grep { $value[$_] } 0..$#value ){
-		&setWarn("		
-		sP  Обработка упоминания cущности $mN: $value[$mN] (user: $user)"  );
-		my $addC = $add || 0; #заводим отдельный регистр, т.к. $add должен оставаться с значением до цикла
-		#$addC = $superAddC if $mN == 4 
-		$addC = $superAddQuest if $mN == 4; 
-		$addC = $superAddUser if $mN == 5;
-		my $metter = &getID($value[$mN]);
-		#&setLink( $planeRoot.'m8',	$planeRoot.$auraDir.'/m8'			);
-		#&setLink( $planeRoot.'m8/n', 	$metter.'/q' ) if $value[$mN]=~/^n/ and $add;
-		my $type = $superrole[$mN];
-		my ( $role, $file, $first );
-		if ( $mN == 0 ){	( $role, $file, $first ) = ( 'activate',	'activate'				, $modifier ) }
-		elsif ( $mN < 4 ) {	( $role, $file, $first ) = ( 'role'.$mN,	'role'.$mN 				, $modifier ) }
-		elsif ( $mN == 4 ){ ( $role, $file, $first ) = ( 'quest',		'quest'					, $subject ) }#вероятнее всего, здесь subject нужно поменять на name		
-		elsif ( $mN == 5 ){ ( $role, $file, $first ) = ( 'author',		'author'				, $modifier ) }
-		elsif ( $mN == 6 ){ ( $role, $file, $first ) = ( $predicate,	'subject_'.$predicate	, $modifier ) }
-		elsif ( $mN == 7 ){	( $role, $file, $first ) = ( $object,		'predicate_'.$object	, $modifier ) }
-		elsif ( $mN == 8 ){	( $role, $file, $first ) = ( $subject, 		'object_'.$subject		, $modifier ) } 
-		#elsif ( $mN == 9 ){	( $role, $file, $first ) = ( $subject, 		'director_'.$subject	, $modifier ) } 
-		
-		if ( $mN == 1 or $mN == 2 or $mN == 3  ){
-			&setWarn("		sP   Формирование порта/дока/терминала $role ($file, $first).  User: $user"  );
+		#push @value, ( $subject, $predicate, $object ) if $predicate=~/^r\d*$/;
+		#my ( $superAddQuest, $superAddUser ); #добавлено 2016-11-28 что бы не удалялось упоминание в квест-индексе при любом удалении в квесте
+		my ( $supRole, $supFile, $supFirst, $supAdd );
+		for my $mN ( grep { $value[$_] } 0..$#value ){
+			&setWarn("		
+			sP  Обработка упоминания cущности $mN: $value[$mN] (user: $user)"  );
+			my $addC = $add || 0; #заводим отдельный регистр, т.к. $add должен оставаться с значением до цикла
+			my $metter = &getID($value[$mN]);
+			#&setLink( $planeRoot.'m8',	$planeRoot.$auraDir.'/m8'			);
+			#&setLink( $planeRoot.'m8/n', 	$metter.'/q' ) if $value[$mN]=~/^n/ and $add;
+			my $type = $superrole[$mN];
+			my ( $role, $file, $first );
+			if ( $mN == 0 ){	( $role, $file, $first ) = ( 'activate',	'activate'				, $modifier ) }
+			elsif ( $mN < 4 ) {	( $role, $file, $first ) = ( 'role'.$mN,	'role'.$mN 				, $modifier ) }
+			elsif ( $mN == 4 ){ 
+								( $role, $file, $first ) = ( $supRole,		$supFile				, $supFirst ); 
+				$addC = $supAdd;
+				$type = 'author' if $modifier eq 'n';
+			}#вероятнее всего, здесь subject нужно поменять на name		
+			#elsif ( $mN == 5 ){ ( $role, $file, $first ) = ( 'author',		'author'				, $modifier ) }
+			elsif ( $mN == 5 ){ ( $role, $file, $first ) = ( $predicate,	'subject_'.$predicate	, $modifier ) }
+			elsif ( $mN == 6 ){	( $role, $file, $first ) = ( $object,		'predicate_'.$object	, $modifier ) }
+			elsif ( $mN == 7 ){	( $role, $file, $first ) = ( $subject, 		'object_'.$subject		, $modifier ) } 
+			#elsif ( $mN == 9 ){	( $role, $file, $first ) = ( $subject, 		'director_'.$subject	, $modifier ) } 
 			
-			my ( $master, $slave );
-			if ( $mN == 1 )		{ ( $master, $slave ) = ( $predicate, 	$object 	) }
-			elsif ( $mN == 2 )	{ ( $master, $slave ) = ( $subject, 	$object 	) }
-			elsif ( $mN == 3 ) 	{ ( $master, $slave ) = ( $subject, 	$predicate 	) }
-			my %role = &getJSON( $metter.'/'.$modifier, $superfile[$mN] );
-			#$role{'user'} = $user;
-			if ( $addC ){
-				&setWarn("		sP    Операции при добавлении значения в индекс $metter/$modifier  ($master, $slave)"  );
-				$role{$master}[0]{$slave}[0]{$name}[0]{'time'} = $time;
-				$role{$master}[0]{$slave}[0]{$name}[0]{'user'} = $user if $mN == 1 and $master eq 'r';
+			if ( $mN == 1 or $mN == 2 or $mN == 3  ){
+				&setWarn("		sP   Формирование порта/дока/терминала $role ($file, $first).  User: $user"  );
+				
+				my ( $master, $slave );
+				if ( $mN == 1 )		{ ( $master, $slave ) = ( $predicate, 	$object 	) }
+				elsif ( $mN == 2 )	{ ( $master, $slave ) = ( $subject, 	$object 	) }
+				elsif ( $mN == 3 ) 	{ ( $master, $slave ) = ( $subject, 	$predicate 	) }
+				my %role = &getJSON( $metter.'/'.$modifier, $superfile[$mN] );
+				#$role{'user'} = $user;
+				if ( $addC ){
+					&setWarn("		sP    Операции при добавлении значения в индекс $metter/$modifier  ($master, $slave)"  );
+					$role{$master}[0]{$slave}[0]{$name}[0]{'time'} = $time;
+					$role{$master}[0]{$slave}[0]{$name}[0]{'user'} = $user if $mN == 1 and $master eq 'r';
+				}
+				else { 
+					&setWarn("		sP    Операции при удалении значения. Удаление ключа $master"  );
+					delete $role{$master} ; 
+					$addC = 1 if keys %role; 
+				} 
+				&setXML ( $metter.'/'.$modifier, $superfile[$mN], \%role );
+				if ( $mN == 1 ){
+					&setWarn("		sP   Установление супер-маркеров"  );
+					if ( $modifier eq 'n' ){ ( $supRole, $supFile, $supFirst ) = ( 'author', 'author', $modifier ) }
+					else { ( $supRole, $supFile, $supFirst ) = ( 'quest', 'quest', $subject ) } 
+					$supAdd = $addC
+				} 
+			}
+			my %role1 = &getJSON( $metter, $file );
+			if ( $addC ) {#==1
+				&setWarn("		sP   Счетчик упоминаний не пустой - дополняем/обновляем индекс-файл роли $role ($file, $first)"  );
+				$role1{$first}[0]{'time'} = $time;
+				$role1{$first}[0]{'triple'} = $name;
+				#if ( $mN == 6 ){
+				#	$role1{$first}[0]{'holder'} = $user;
+				#	$role1{$first}[0]{'director'} = $modifier;# if $modifier ne 'n';
+				#}
+			}
+			else {
+				&setWarn("		sP   Счетчик упоминаний пустой - сокращаем индекс-файл роли"  );
+				delete $role1{$first};
+				#if ( not grep {$_ ne 'time'} keys %{$role1{$first}[0]} ){
+				#	delete $role1{$first};		
+				#}			
+			}
+			&setXML ( $metter, $file, \%role1 );
+			my %index = &getJSON( $metter, 'index' );
+			if (keys %role1){
+				&setWarn("		sP    Добавление/обновление упоминания роли"  );
+				$index{$type}[0]{$role}[0]{'time'} = $time;
+				$index{$type}[0]{$role}[0]{'file'} = $file;
+				$index{$type}[0]{$role}[0]{'superfile'} = $superfile[$mN] if $mN and $mN < 4
 			}
 			else { 
-				&setWarn("		sP    Операции при удалении значения. Удаление ключа $master"  );
-				delete $role{$master} ; 
-				$addC = 1 if keys %role; 
-			} 
-			&setXML ( $metter.'/'.$modifier, $superfile[$mN], \%role );
-			if ( $mN == 1 ){
-				&setWarn("		sP   Установление супер-маркеров"  );
-				$superAddQuest = $addC if $modifier ne 'n';
-				$superAddUser = $addC
-			} 
+				&setWarn("		sP    Удаление упоминания роли"  );
+				delete $index{$type}[0]{$role};
+				delete $index{$type} if not keys %{$index{$type}[0]};
+			}
+			&setXML ( $metter, 'index', \%index );
 		}
-		my %role1 = &getJSON( $metter, $file );
-		if ( $addC ) {#==1
-			&setWarn("		sP   Счетчик упоминаний не пустой - дополняем/обновляем индекс-файл роли $role ($file, $first)"  );
-			$role1{$first}[0]{'time'} = $time;
-			$role1{$first}[0]{'triple'} = $name;
-			#if ( $mN == 6 ){
-			#	$role1{$first}[0]{'holder'} = $user;
-			#	$role1{$first}[0]{'director'} = $modifier;# if $modifier ne 'n';
-			#}
-		}
-		else {
-			&setWarn("		sP   Счетчик упоминаний пустой - сокращаем индекс-файл роли"  );
-			delete $role1{$first};
-			#if ( not grep {$_ ne 'time'} keys %{$role1{$first}[0]} ){
-			#	delete $role1{$first};		
-			#}			
-		}
-		&setXML ( $metter, $file, \%role1 );
-		my %index = &getJSON( $metter, 'index' );
-		if (keys %role1){
-			&setWarn("		sP    Добавление/обновление упоминания роли"  );
-			$index{$type}[0]{$role}[0]{'time'} = $time;
-			$index{$type}[0]{$role}[0]{'file'} = $file;
-			$index{$type}[0]{$role}[0]{'superfile'} = $superfile[$mN] if $mN and $mN < 4
-		}
-		else { 
-			&setWarn("		sP    Удаление упоминания роли"  );
-			delete $index{$type}[0]{$role};
-			delete $index{$type} if not keys %{$index{$type}[0]};
-		}
-		&setXML ( $metter, 'index', \%index );
-	}
 	}
 	my $questDir = $planeDir.'/'.$user.'/tsv/'.$name.'/'.$modifier;
 	if ( $add ){
