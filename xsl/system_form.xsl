@@ -97,8 +97,13 @@
 	<xsl:param name="symbol_del" select="'&#215;'"/>
 	<!-- ####  ЗНАКИ (END)  ####-->
 	<!-- 
-
--->
+			Функции A
+	-->
+	<func:function name="m8:unic">
+		<xsl:param name="rootNode"/>
+		<xsl:param name="param"/>
+		<func:result select="$rootNode/*[name()=$param]/*[count(../*)=1 or */@time=math:max( ../*/*/@time )]" xml:lang="проверка функцией max на случай ошибочного указания нескольких значений"/>
+	</func:function>
 	<func:function name="m8:dir">
 		<xsl:param name="fact"/>
 		<xsl:param name="quest"/>
@@ -114,6 +119,66 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
+	<func:function name="m8:fact_color">
+		<xsl:param name="fact"/>
+		<func:result select="concat( 'color: #', translate( substring( $fact, 2, 3 ), '5qwertyuiopasdfghjklzxcvbnm', 'b1234567890abc1234567890abc' ) )"/>
+	</func:function>	
+	<func:function name="m8:capital">
+		<xsl:param name="fact"/>
+		<xsl:param name="all"/>
+		<func:result>
+			<xsl:choose>
+				<xsl:when test="$all">
+					<xsl:call-template name="uppercase">
+						<xsl:with-param name="input" select="$fact"/>
+					</xsl:call-template>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:call-template name="capitalLetter">
+						<xsl:with-param name="input" select="$fact"/>
+					</xsl:call-template>
+				</xsl:otherwise>
+			</xsl:choose>
+		</func:result>
+	</func:function>	
+	<func:function name="m8:sеrialize">
+		<xsl:param name="tree"/>
+		<xsl:param name="title"/>
+		<xsl:param name="size"/>
+		<func:result>
+			<code>
+				<div>
+					<xsl:value-of select="$title"/>
+				</div>
+				<xsl:if test="$size">
+					<xsl:attribute name="style"><xsl:value-of select="concat( 'font-size: ', $size )"/></xsl:attribute>
+				</xsl:if>
+				<xsl:apply-templates select="exsl:node-set($tree)" mode="serialize"/>
+			</code>
+		</func:result>
+	</func:function>
+	<func:function name="m8:class">
+		<xsl:param name="type"/>
+		<func:result select="$types/@*[name()=$type]"/>
+	</func:function>
+	<func:function name="m8:type">
+		<xsl:param name="class"/>
+		<func:result select="name( $types/@*[.=$class] )"/>
+	</func:function>	
+	<func:function name="m8:author">
+		<xsl:param name="author"/>
+		<xsl:choose>
+			<xsl:when test="$author">
+				<func:result select="concat( 'm8/author/', $author )"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<func:result select="'m8/n/n'"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</func:function>	
+	<!-- 
+			Функции B
+	-->	
 	<func:function name="m8:path">
 		<xsl:param name="level1"/>
 		<xsl:param name="level2"/>
@@ -139,27 +204,39 @@
 		<xsl:param name="level3"/>
 		<xsl:choose>
 			<xsl:when test="$level3">
-				<func:result select="concat( $start/@planeRoot, m8:dir( $level1, $level2 ), '/', $level3 )"/>
+				<func:result select="concat( $start/@prefix, m8:dir( $level1, $level2 ), '/', $level3 )"/>
 			</xsl:when>
 			<xsl:when test="$level2">
-				<func:result select="concat( $start/@planeRoot, m8:dir( $level1, $level2 ) )"/>
+				<func:result select="concat( $start/@prefix, m8:dir( $level1, $level2 ) )"/>
 			</xsl:when>
 			<xsl:when test="$level1">
-				<func:result select="concat( $start/@planeRoot, m8:dir( $level1 ) )"/>
+				<func:result select="concat( $start/@prefix, m8:dir( $level1 ) )"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<func:result select="concat( $start/@planeRoot, 'm8/type.xml' )"/>
+				<func:result select="concat( $start/@prefix, 'm8/type.xml' )"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>	
+	<func:function name="m8:root">
+		<xsl:param name="fact"/>
+		<xsl:param name="modifier"/>
+		<xsl:message>								== m8:root (fact: <xsl:value-of select="$fact"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
+		<func:result>
+			<xsl:value-of select="$start/@prefix"/>
+			<xsl:if test="$ctrl != $avatar">
+				<xsl:value-of select="concat( 'a/', $ctrl, '/' )"/>
+			</xsl:if>
+			<xsl:if test="$fact">
+				<xsl:value-of select="concat( m8:dir( $fact ), '/' )"/>
+			</xsl:if>
+			<xsl:if test="$modifier">
+				<xsl:value-of select="concat(  '?modifier=', $modifier )"/>
+			</xsl:if>
+		</func:result>
+	</func:function>	
 	<!-- 
--->
-	<!-- {$start/@prefix}a/{$ctrl}/{m8:dir( name() )}
--->
-	<!-- 
-		
-		## файлы корня ##
-	-->
+			Функции C
+	-->	
 	<func:function name="m8:value">
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
@@ -178,10 +255,6 @@
 		<xsl:param name="fact"/>
 		<func:result select="m8:path( $fact, 'quest' )"/>
 	</func:function>
-	<!-- 
-		## файлы корня (end) ##
-
--->
 	<func:function name="m8:port">
 		<xsl:param name="cFact"/>
 		<xsl:param name="cQuest"/>
@@ -200,6 +273,9 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</func:function>
+	<!-- 
+			Функции D 
+	-->	
 	<func:function name="m8:director">
 		<xsl:param name="fact"/>
 		<xsl:message>								== m8:director (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>
@@ -211,21 +287,6 @@
 		<xsl:message>								== m8:holder (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>
 		<!--<func:result select="m8:port( $fact )/r/*/*/@user"/>-->
 		<func:result select=" m8:unic( m8:port( $fact ), 'r' )/*/@user"/>
-	</func:function>
-	<func:function name="m8:ancestor-or-self">
-		<xsl:param name="fact"/>
-		<xsl:param name="chiefOnly"/>
-		<xsl:variable name="ss">
-			<xsl:call-template name="getAncestor">
-				<xsl:with-param name="currentFactName" select="$fact"/>
-				<xsl:with-param name="chiefOnly" select="$chiefOnly"/>
-			</xsl:call-template>
-		</xsl:variable>
-		<func:result select="exsl:node-set( $ss )"/>
-	</func:function>
-	<func:function name="m8:chief">
-		<xsl:param name="fact"/>
-		<func:result select="name( m8:ancestor-or-self( $fact, 1 )/*[1] )"/>
 	</func:function>
 	<func:function name="m8:triple">
 		<xsl:param name="fact"/>
@@ -242,59 +303,15 @@
 			</xsl:choose>
 		</func:result>
 	</func:function>
-	<func:function name="m8:color">
+	<func:function name="m8:param">
 		<xsl:param name="fact"/>
-		<func:result select="m8:fact_color( m8:holder( $fact ) )"/>
-	</func:function>
-	<func:function name="m8:fact_color">
-		<xsl:param name="fact"/>
-		<func:result select="concat( 'color: #', translate( substring( $fact, 2, 3 ), '5qwertyuiopasdfghjklzxcvbnm', 'b1234567890abc1234567890abc' ) )"/>
-	</func:function>
-
-	<func:function name="m8:author">
-		<xsl:param name="author"/>
-		<xsl:choose>
-			<xsl:when test="$author">
-				<func:result select="concat( 'm8/author/', $author )"/>
-			</xsl:when>
-			<xsl:otherwise>
-				<func:result select="'m8/n/n'"/>
-			</xsl:otherwise>
-		</xsl:choose>
-	</func:function>
-	<func:function name="m8:root">
-		<xsl:param name="fact"/>
+		<xsl:param name="param"/>
 		<xsl:param name="modifier"/>
-		<xsl:message>								== m8:root (fact: <xsl:value-of select="$fact"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
-		<func:result>
-			<!--<xsl:value-of select="concat( $start/@prefix, 'a/', $ctrl, '/' )"/>-->
-			<xsl:value-of select="$start/@prefix"/>
-			<xsl:if test="$ctrl != $avatar">
-				<xsl:value-of select="concat( 'a/', $ctrl, '/' )"/>
-			</xsl:if>
-			<xsl:if test="$fact">
-				<xsl:value-of select="concat( m8:dir( $fact ), '/' )"/>
-			</xsl:if>
-			<xsl:if test="$modifier">
-				<xsl:value-of select="concat(  '?modifier=', $modifier )"/>
-			</xsl:if>
-		</func:result>
-	</func:function>
-	<!--<func:function name="m8:action">
-		<xsl:param name="fact"/>
-		<xsl:param name="modifier"/>
-		<xsl:choose>
-			<xsl:when test="$modifier">
-				<func:result select="concat( m8:root( $fact), '?modifier=', $modifier )"/>
-			</xsl:when>
-			<xsl:when test="$fact">
-				<func:result select="concat( m8:root( $fact ), '?modifier=n' )"/>
-			</xsl:when>
-			<xsl:otherwise>
-				<func:result select="concat( m8:root(), '?modifier=n' )"/>
-			</xsl:otherwise>
-		</xsl:choose>
-	</func:function>-->
+		<func:result select="name( m8:unic( m8:port( $fact, $modifier ), $param ) )"/>
+	</func:function>	
+	<!-- 
+			Функции E 
+	-->	
 	<func:function name="m8:title">
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
@@ -320,17 +337,11 @@
 			</xsl:choose>
 		</func:result>
 	</func:function>
-	<func:function name="m8:param">
+	<func:function name="m8:color">
 		<xsl:param name="fact"/>
-		<xsl:param name="param"/>
-		<xsl:param name="modifier"/>
-		<func:result select="name( m8:unic( m8:port( $fact, $modifier ), $param ) )"/>
+		<func:result select="m8:fact_color( m8:holder( $fact ) )"/>
 	</func:function>
-	<func:function name="m8:unic">
-		<xsl:param name="rootNode"/>
-		<xsl:param name="param"/>
-		<func:result select="$rootNode/*[name()=$param]/*[count(../*)=1 or */@time=math:max( ../*/*/@time )]" xml:lang="проверка функцией max на случай ошибочного указания нескольких значений"/>
-	</func:function>
+	<!-- 	-->
 	<func:function name="m8:i">
 		<xsl:param name="fact"/>
 		<func:result select="m8:value( m8:param( $fact, 'i' ) )"/>
@@ -343,52 +354,25 @@
 		<xsl:param name="fact"/>
 		<func:result select="m8:value( m8:param( $fact, 'n' ) )"/>
 	</func:function>
-	<func:function name="m8:capital">
+	<!-- 	-->
+	<func:function name="m8:ancestor-or-self">
 		<xsl:param name="fact"/>
-		<xsl:param name="all"/>
-		<func:result>
-			<xsl:choose>
-				<xsl:when test="$all">
-					<xsl:call-template name="uppercase">
-						<xsl:with-param name="input" select="$fact"/>
-					</xsl:call-template>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:call-template name="capitalLetter">
-						<xsl:with-param name="input" select="$fact"/>
-					</xsl:call-template>
-				</xsl:otherwise>
-			</xsl:choose>
-		</func:result>
-	</func:function>
+		<xsl:param name="chiefOnly"/>
+		<xsl:variable name="ss">
+			<xsl:call-template name="getAncestor">
+				<xsl:with-param name="currentFactName" select="$fact"/>
+				<xsl:with-param name="chiefOnly" select="$chiefOnly"/>
+			</xsl:call-template>
+		</xsl:variable>
+		<func:result select="exsl:node-set( $ss )"/>
+	</func:function>	
+	<!-- 
+			Функции F 
+	-->	
 	<func:function name="m8:sort">
 		<xsl:param name="fact"/>
 		<xsl:param name="quest"/>
 		<func:result select="m8:title( name( m8:port( $fact, $quest )/*[name()=$sort]/* ) )"/>
-	</func:function>
-	<func:function name="m8:sеrialize">
-		<xsl:param name="tree"/>
-		<xsl:param name="title"/>
-		<xsl:param name="size"/>
-		<func:result>
-			<code>
-				<div>
-					<xsl:value-of select="$title"/>
-				</div>
-				<xsl:if test="$size">
-					<xsl:attribute name="style"><xsl:value-of select="concat( 'font-size: ', $size )"/></xsl:attribute>
-				</xsl:if>
-				<xsl:apply-templates select="exsl:node-set($tree)" mode="serialize"/>
-			</code>
-		</func:result>
-	</func:function>
-	<func:function name="m8:class">
-		<xsl:param name="type"/>
-		<func:result select="$types/@*[name()=$type]"/>
-	</func:function>
-	<func:function name="m8:type">
-		<xsl:param name="class"/>
-		<func:result select="name( $types/@*[.=$class] )"/>
 	</func:function>
 	<func:function name="m8:img">
 		<xsl:param name="fact"/>
@@ -396,6 +380,10 @@
 		<xsl:message>								== m8:img (fact: <xsl:value-of select="$fact"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
 		<xsl:variable name="chief" select="m8:chief( $fact )"/>
 		<func:result select="concat( $start/@prefix, 'p/', m8:holder( $fact ), '/img/', m8:type( $chief ), '/', m8:title( $fact, $code, $modifier ) )"/>
+	</func:function>
+		<func:function name="m8:chief">
+		<xsl:param name="fact"/>
+		<func:result select="name( m8:ancestor-or-self( $fact, 1 )/*[1] )"/>
 	</func:function>
 	<!--
 
