@@ -759,11 +759,12 @@ sub washProc{
 		if ( $num[$s][2] eq $types{'shag'} and -d &m8dir( $num[$s][0] ) and not defined $$temp{'activity'} ){ 
 			&setWarn("		wP     Не активность.");	
 			$$temp{'activity'} = 0 
+			next if $num[$s][2] eq $types{'shag'} and -d &m8dir( $num[$s][0] ); #что бы запись метки не повторялась аж дважды за запрос, здесь еще видимо нужно добавить поиск квеста, а не только папки трипла
 		}
 		else{ 
 			&setWarn("		wP     Детектирование активности .");	
 			$$temp{'activity'} = 1;
-			#next if $num[$s][2] eq $types{'shag'} and -d &m8dir( $num[$s][0] )
+			#
 		}
 		push @warn, &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'}, 723 );
 		#if ( 0 and &spinProc( $num[$s], $$temp{'user'}, $$temp{'time'}, 723 ) ){
