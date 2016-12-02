@@ -322,7 +322,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			( 
 				not $temp{'QUERY_STRING'} or 
 				( not $temp{'record'} and not defined $temp{'message'} ) or 
-				not $temp{'activity'} or
+				( not $temp{'activity'} and not defined $temp{'message'} ) or
 				defined $temp{'ajax'} or 
 				defined $temp{'wkhtmltopdf'} 
 			) 

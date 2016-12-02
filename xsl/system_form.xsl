@@ -432,7 +432,7 @@
 					</input>
 				</xsl:for-each>
 			</xsl:if>
-			<xsl:if test="$predicateName != 'n' ">
+			<xsl:if test="$predicateName != 'n' or $modifier !='n'" xml:lang="$modifier !='n' - нужен что бы можно было указывать n в квестах">
 				<input type="hidden" name="modifier">
 					<xsl:attribute name="value"><xsl:choose><xsl:when test="$questName"><xsl:value-of select="$questName"/></xsl:when><xsl:when test="$modifierName"><xsl:value-of select="$modifierName"/></xsl:when><xsl:otherwise><xsl:value-of select="$modifier"/></xsl:otherwise></xsl:choose></xsl:attribute>
 				</input>
@@ -1009,6 +1009,11 @@
 				<xsl:value-of select="$start/@error"/>
 			</div>
 		</xsl:if>
+		<xsl:if test="$adminMode and $start//@message">
+			<div style="position: fixed; width:100%; text-align: center; bottom: 80px; z-index: 1; color: magenta" class="adminPanel">
+				<xsl:value-of select="$start//@message"/>
+			</div>
+		</xsl:if>		
 		<xsl:if test="$user != 'guest' or $adminMode or $ctrl='formulyar'">
 			<!-- or $start/@debug-->
 			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray" class="adminPanel">
