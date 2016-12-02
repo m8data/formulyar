@@ -1140,10 +1140,11 @@ sub dryProc2 {
 		}
 		for my $tsvName ( &getDir( $tsvPath, 1 ) ){
 			#push @warn, "   Исследование tsv-шки $tsvName \n";
+			push @warn, "   tsv  $tsvName\n";
 			warn '	tsv  '.$tsvName;
 			if ( not -e $tsvPath.'/'.$tsvName.'/value.tsv' ){
-				warn 'Error: no value.tsv file';
 				push @warn, "   Error: no $tsvPath/$tsvName/value.tsv file \n";
+				warn "Error: no $tsvPath/$tsvName/value.tsv file";
 				rmtree $tsvPath.'/'.$tsvName;
 				next;
 			}
@@ -1163,6 +1164,7 @@ sub dryProc2 {
 			if (1){		
 			my @quest = &getDir( $tsvPath.'/'.$tsvName, 1 );			
 			if ( not @quest ){
+				push @warn, "	!!! delete triple without quest ( @val )";
 				warn "	!!! delete triple without quest ( @val )";
 				rmtree $tsvPath.'/'.$tsvName || warn "Еrror deleting file $tsvPath/$tsvName: $!\n";;
 				next;
@@ -1175,6 +1177,7 @@ sub dryProc2 {
 				if ( $val[0] ne 'd' and $val[1] eq $val[4] ){
 					#корректировка формата данных 2016-10-07
 					warn "	!!! refresh: @val";
+					push @warn, "	!!! корректировка формата данных 2016-10-07: ( @val ) \n";
 					rmtree $tsvPath.'/'.$tsvName.'/'.$val[4];
 					if ( $val[2] eq 'r' ){ $val[4] = $val[3]; }
 					else { $val[4] = 'n'}
@@ -1183,9 +1186,11 @@ sub dryProc2 {
 				elsif ( $val[4] ne 'n' and $val[2] eq 'r' ){
 					#удаление аномалии в квесте ( 2016-12-01 )
 					warn "	!!! delete r from quest: $tsvPath/$tsvName/$val[4] ( @val )";
+					push @warn, "	!!! delete r from quest: $tsvPath/$tsvName/$val[4] ( @val ) \n";
 					rmtree $tsvPath.'/'.$tsvName.'/'.$val[4] || warn "Еrror deleting file $tsvPath/$tsvName/$val[4]: $!\n";
 					#sleep 8
 					if ( $val[4] eq $val[3] ){
+						push @warn, "	!!!!! REPLACE \n";
 						warn "	!!!!! REPLACE";
 						$val[4] = 'n';
 						&setFile( $tsvPath.'/'.$tsvName.'/'.$val[4].'/time.txt', $timeProc )
