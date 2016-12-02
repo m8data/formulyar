@@ -636,7 +636,7 @@
 												</td>
 												<td valign="top">
 													<xsl:choose>
-														<xsl:when test="$pName = 'd' and $modifier!='n' and m8:port($modifier, $fact)/d">
+														<xsl:when test="$pName = 'd' and $modifier!='n' and m8:port( $modifier, $fact )/d">
 															<xsl:value-of select="$symbol_replace"/>
 														</xsl:when>
 														<xsl:when test="$pName = 'd' and $modifier!='n'">
@@ -735,9 +735,9 @@
 									<!-- &amp;quest={$modifier} модификатор не срабатывает, т.к. для d модификатор берется принудительно из квеста, а там по умолчанию 'n'-->
 								</div>
 							</xsl:if>
-							<xsl:if test="not( $startPort/n ) and $modifier = 'n'">
+							<xsl:if test="not( $startPort/n )">
 								<div style="padding-bottom: .5em">
-									<a href="{m8:root( $fact, $modifier )}&amp;n=">структура</a>
+									<a href="{m8:root( $fact, $modifier )}&amp;n=">состояние</a>
 								</div>
 							</xsl:if>
 							<xsl:message>
