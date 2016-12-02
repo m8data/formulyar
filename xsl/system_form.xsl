@@ -381,10 +381,24 @@
 		<xsl:variable name="chief" select="m8:chief( $fact )"/>
 		<func:result select="concat( $start/@prefix, 'p/', m8:holder( $fact ), '/img/', m8:type( $chief ), '/', m8:title( $fact, $code, $modifier ) )"/>
 	</func:function>
-		<func:function name="m8:chief">
+	<func:function name="m8:chief">
 		<xsl:param name="fact"/>
 		<func:result select="name( m8:ancestor-or-self( $fact, 1 )/*[1] )"/>
 	</func:function>
+	<func:function name="m8:status">
+		<xsl:param name="fact"/>
+		<func:result>
+			<xsl:if test="m8:index( $fact )/object">
+																	<xsl:variable name="cChief" select="m8:chief( $fact )"/>
+																	<xsl:choose>
+																		<xsl:when test="$cChief !='n' and $cChief!=$fact">✿</xsl:when>
+																	</xsl:choose>
+																</xsl:if>
+		
+		</func:result>
+	</func:function>
+	
+
 	<!--
 
 //-->

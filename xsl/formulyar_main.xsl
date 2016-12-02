@@ -177,14 +177,7 @@
 										<xsl:sort select="m8:title( name() )"/>
 										<div style="font-size: 1.4em; padding: .2em">
 											<a href="{ m8:root( name(), $modifier )}" style="{m8:color( name() )}" title="{m8:holder( name() )}">
-												<xsl:if test="m8:index( name() )/object">
-													<xsl:variable name="cChief" select="m8:chief( name() )"/>
-													<xsl:choose>
-														<xsl:when test="$cChief !='n' and $cChief!=name()">✿ </xsl:when>
-													</xsl:choose>
-													<xsl:text> </xsl:text>
-												</xsl:if>
-												<xsl:apply-templates select="." mode="simpleName"/>
+												<xsl:value-of select="concat( m8:status( name() ), ' ', m8:title( name() ) )"/>
 											</a>
 											<!-- функционал копирования был подгототовлен 2016-11-15, но провалился на отладке
 											<xsl:if test="m8:port( name() )/*[name()!='r']">
@@ -437,7 +430,8 @@
 																<!--<xsl:if test="name() = $modifier">
 																		<xsl:attribute name="selected">selected</xsl:attribute>
 																	</xsl:if>-->
-																<xsl:value-of select="m8:title( name() )"/>
+																
+																<xsl:value-of select="concat( m8:status( name() ), ' ', m8:title( name() ) )"/>
 															</option>
 														</xsl:for-each>
 													</select>
