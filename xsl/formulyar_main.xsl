@@ -258,7 +258,7 @@
 												<xsl:value-of select="m8:title( m8:chief( name() ) )"/>
 												<!--<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/>-->
 												<xsl:text> :: </xsl:text>
-												<xsl:if test="m8:port( name(), $fact )/d[not( r )]"> [<xsl:value-of select="m8:title( name(), 'd', $fact )"/><xsl:if test="m8:port( $fact, name() )/i[not( r )]"> - <xsl:value-of select="m8:title( $fact, 'i', name() )"/></xsl:if>] </xsl:if>
+												<xsl:if test="m8:port( name(), $fact )/d[not( r )]"> [<xsl:value-of select="m8:title( name(), 'd', $fact )"/><xsl:if test="m8:port( $fact, name() )/i[not( r )]">-<xsl:value-of select="m8:title( $fact, 'i', name() )"/></xsl:if>] </xsl:if>
 												<!--<xsl:apply-templates select="." mode="simpleName"/>-->
 												<xsl:value-of select="m8:title( name() )"/>
 											</a>
@@ -292,7 +292,7 @@
 										<xsl:text> :: </xsl:text>
 										<!--<xsl:apply-templates select="m8:port( name() )/r/*" mode="simpleName"/> :: <xsl:apply-templates select="." mode="simpleName"/>-->
 										<xsl:value-of select="m8:title( name() )"/>
-										<xsl:if test="m8:port( $fact, name() )/d[not( r )]"> [<xsl:value-of select="m8:title( $fact, 'd', name() )"/><xsl:if test="m8:port( $fact, name() )/i[not( r )]"> - <xsl:value-of select="m8:title( $fact, 'i', name() )"/></xsl:if>] </xsl:if>
+										<xsl:if test="m8:port( $fact, name() )/d[not( r )]"> [<xsl:value-of select="m8:title( $fact, 'd', name() )"/><xsl:if test="m8:port( $fact, name() )/i[not( r )]">-<xsl:value-of select="m8:title( $fact, 'i', name() )"/></xsl:if>] </xsl:if>
 									</a>
 									<xsl:text> </xsl:text>
 									<a href="{m8:root( $fact, name() )}">
