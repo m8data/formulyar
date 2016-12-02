@@ -611,8 +611,8 @@
 											<span style="font-size: .8em; color: black">
 												<xsl:choose>
 													<xsl:when test="$pName = 'i' ">имя</xsl:when>
-													<xsl:when test="$pName = 'n' ">файл</xsl:when>
 													<xsl:when test="$pName = 'd' ">связь</xsl:when>
+													<xsl:when test="$pName = 'n' ">метка</xsl:when>
 													<xsl:when test="$pName=$fact">по умолчанию</xsl:when>
 													<xsl:otherwise>
 														<xsl:apply-templates select="." mode="simpleName"/>
@@ -737,7 +737,7 @@
 							</xsl:if>
 							<xsl:if test="not( $startPort/n )">
 								<div style="padding-bottom: .5em">
-									<a href="{m8:root( $fact, $modifier )}&amp;n=">состояние</a>
+									<a href="{m8:root( $fact, $modifier )}&amp;n=">метка</a>
 								</div>
 							</xsl:if>
 							<xsl:message>

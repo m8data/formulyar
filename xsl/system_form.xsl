@@ -412,7 +412,7 @@
 		</xsl:if>
 		<form id="editParamOfPort" selectedValue="{name($selectedValue)}">
 			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose><!--<xsl:if test="$predicateName = 'n' ">/</xsl:if>			--></xsl:attribute>
-			<xsl:if test="$predicateName = 'n' ">
+			<xsl:if test="$predicateName = 'n' and $modifier='n' ">
 				<xsl:attribute name="ENCTYPE">multipart/form-data</xsl:attribute>
 				<xsl:attribute name="method">POST</xsl:attribute>
 			</xsl:if>
