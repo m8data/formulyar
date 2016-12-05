@@ -122,7 +122,7 @@
 	<func:function name="m8:fact_color">
 		<xsl:param name="fact"/>
 		<func:result select="concat( 'color: #', translate( substring( $fact, 2, 3 ), '5qwertyuiopasdfghjklzxcvbnm', 'b1234567890abc1234567890abc' ) )"/>
-	</func:function>	
+	</func:function>
 	<func:function name="m8:capital">
 		<xsl:param name="fact"/>
 		<xsl:param name="all"/>
@@ -140,7 +140,7 @@
 				</xsl:otherwise>
 			</xsl:choose>
 		</func:result>
-	</func:function>	
+	</func:function>
 	<func:function name="m8:sеrialize">
 		<xsl:param name="tree"/>
 		<xsl:param name="title"/>
@@ -164,7 +164,7 @@
 	<func:function name="m8:type">
 		<xsl:param name="class"/>
 		<func:result select="name( $types/@*[.=$class] )"/>
-	</func:function>	
+	</func:function>
 	<func:function name="m8:author">
 		<xsl:param name="author"/>
 		<xsl:choose>
@@ -175,10 +175,10 @@
 				<func:result select="'m8/n/n'"/>
 			</xsl:otherwise>
 		</xsl:choose>
-	</func:function>	
+	</func:function>
 	<!-- 
 			Функции B
-	-->	
+	-->
 	<func:function name="m8:path">
 		<xsl:param name="level1"/>
 		<xsl:param name="level2"/>
@@ -216,7 +216,7 @@
 				<func:result select="concat( $start/@prefix, 'm8/type.xml' )"/>
 			</xsl:otherwise>
 		</xsl:choose>
-	</func:function>	
+	</func:function>
 	<func:function name="m8:root">
 		<xsl:param name="fact"/>
 		<xsl:param name="modifier"/>
@@ -233,10 +233,10 @@
 				<xsl:value-of select="concat(  '?modifier=', $modifier )"/>
 			</xsl:if>
 		</func:result>
-	</func:function>	
+	</func:function>
 	<!-- 
 			Функции C
-	-->	
+	-->
 	<func:function name="m8:value">
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
@@ -275,7 +275,7 @@
 	</func:function>
 	<!-- 
 			Функции D 
-	-->	
+	-->
 	<func:function name="m8:director">
 		<xsl:param name="fact"/>
 		<xsl:message>								== m8:director (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>
@@ -308,10 +308,10 @@
 		<xsl:param name="param"/>
 		<xsl:param name="modifier"/>
 		<func:result select="name( m8:unic( m8:port( $fact, $modifier ), $param ) )"/>
-	</func:function>	
+	</func:function>
 	<!-- 
 			Функции E 
-	-->	
+	-->
 	<func:function name="m8:title">
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
@@ -365,10 +365,10 @@
 			</xsl:call-template>
 		</xsl:variable>
 		<func:result select="exsl:node-set( $ss )"/>
-	</func:function>	
+	</func:function>
 	<!-- 
 			Функции F 
-	-->	
+	-->
 	<func:function name="m8:sort">
 		<xsl:param name="fact"/>
 		<xsl:param name="quest"/>
@@ -389,16 +389,13 @@
 		<xsl:param name="fact"/>
 		<func:result>
 			<xsl:if test="m8:index( $fact )/object">
-																	<xsl:variable name="cChief" select="m8:chief( $fact )"/>
-																	<xsl:choose>
-																		<xsl:when test="$cChief !='n' and $cChief!=$fact">✿</xsl:when>
-																	</xsl:choose>
-																</xsl:if>
-		
+				<xsl:variable name="cChief" select="m8:chief( $fact )"/>
+				<xsl:choose>
+					<xsl:when test="$cChief !='n' and $cChief!=$fact">✿</xsl:when>
+				</xsl:choose>
+			</xsl:if>
 		</func:result>
 	</func:function>
-	
-
 	<!--
 
 //-->
@@ -538,13 +535,22 @@
 			</xsl:when>
 			<xsl:when test="m8:index( 'r' )/predicate/*[name()=$predicateName and name() != 'i' ] and $predicateName != 'n' " xml:lang="вывод экземпляров типа">
 				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> списком экземпляров типа</xsl:message>
+				<xsl:variable name="list">
+					<xsl:for-each select="m8:index( $predicateName )/object/*">
+						<xsl:copy-of select="."/>
+						<xsl:if test="m8:index( name() )/object/*">
+							<xsl:copy-of select="m8:index( name() )/object/*"/>
+						</xsl:if>
+					</xsl:for-each>
+				</xsl:variable>
 				<xsl:call-template name="inputParamOfPort">
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="questName" select="$questName"/>
 					<xsl:with-param name="predicateName" select="$predicateName"/>
 					<xsl:with-param name="selectedValue" select="$selectedValue"/>
-					<xsl:with-param name="sourceValue" select="m8:index( $predicateName )/object"/>
+					<!--<xsl:with-param name="sourceValue" select="m8:index( $predicateName )/object"/>-->
+					<xsl:with-param name="sourceValue" select="exsl:node-set( $list )"/>
 					<xsl:with-param name="sortSelect" select="$sortSelect"/>
 					<xsl:with-param name="titleSelect" select="$titleSelect"/>
 					<xsl:with-param name="ajaxMethod" select="$ajaxMethod"/>
@@ -1027,7 +1033,7 @@
 			<div style="position: fixed; width:100%; text-align: center; bottom: 80px; z-index: 1; color: magenta" class="adminPanel">
 				<xsl:value-of select="$start//@message"/>
 			</div>
-		</xsl:if>		
+		</xsl:if>
 		<xsl:if test="$user != 'guest' or $adminMode or $ctrl='formulyar'">
 			<!-- or $start/@debug-->
 			<div style="position: fixed;  bottom: 5px; left: 10px; z-index: 1; color:gray" class="adminPanel">
