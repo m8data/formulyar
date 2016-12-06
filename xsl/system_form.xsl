@@ -218,19 +218,19 @@
 		</xsl:choose>
 	</func:function>
 	<func:function name="m8:root">
-		<xsl:param name="fact"/>
-		<xsl:param name="modifier"/>
-		<xsl:message>								== m8:root (fact: <xsl:value-of select="$fact"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
+		<xsl:param name="cFact"/>
+		<xsl:param name="cModifier"/>
+		<xsl:message>								== m8:root (fact: <xsl:value-of select="$cFact"/>; modifier: <xsl:value-of select="$cModifier"/>) ==</xsl:message>
 		<func:result>
 			<xsl:value-of select="$start/@prefix"/>
 			<xsl:if test="$ctrl != $avatar">
 				<xsl:value-of select="concat( 'a/', $ctrl, '/' )"/>
 			</xsl:if>
-			<xsl:if test="$fact">
-				<xsl:value-of select="concat( m8:dir( $fact ), '/' )"/>
-			</xsl:if>
-			<xsl:if test="$modifier">
-				<xsl:value-of select="concat(  '?modifier=', $modifier )"/>
+			<xsl:if test="$cFact and ( $cFact!='n' or $cModifier )">
+				<xsl:value-of select="concat( m8:dir( $cFact ), '/' )"/>
+				<xsl:if test="$cModifier">
+					<xsl:value-of select="concat(  '?modifier=', $cModifier )"/>
+				</xsl:if>
 			</xsl:if>
 		</func:result>
 	</func:function>
@@ -781,8 +781,13 @@
 							<xsl:for-each select="exsl:node-set($sourceValue)/*">
 								<xsl:sort select="m8:title( name() )"/>
 								<!-- m8:title( name() )-->
-								<xsl:variable name="valueName" select="name()"/>
-								<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or name() = name( $selectedValue )">
+								<xsl:variable name="valueName">
+									<xsl:choose>
+										<xsl:when test="m8:class( name() )"><xsl:value-of select="@name"/></xsl:when>
+										<xsl:otherwise><xsl:value-of select="name()"/></xsl:otherwise>
+									</xsl:choose>
+								</xsl:variable>
+								<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or $valueName = name( $selectedValue )">
 									<option value="{$valueName}">
 										<xsl:if test="$valueName=name( $selectedValue )">
 											<xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
@@ -794,6 +799,9 @@
 												</xsl:when>
 												<xsl:when test="@title">
 													<xsl:value-of select="@title"/>
+												</xsl:when>
+												<xsl:when test="@i" xml:lang="add 2016-12-06">
+													<xsl:value-of select="@i"/>
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:apply-templates select="." mode="simpleName"/>

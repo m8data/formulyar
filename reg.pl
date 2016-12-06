@@ -390,7 +390,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			my $location = $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.$temp{'prefix'};
 			if ( defined $temp{'message'} and $temp{'message'} ne 'OK' ){ $location .= $defaultAvatar.'/?error='.$temp{'message'} }
 			else { $location .= &m8req( \%temp ) }
-			print $q->header( -location => $location, -cookie => [@cookie] )# -status => '201 Created' #куки нужны исключительно для случая указания автора		
+			print $q->header( -location => $location, -cookie => [@cookie], -status => "301 Moved Permanently")# Без установления статуса 301 в браузер уходит 302 (не найдено) и при нажатии "назад" браузер не сразу понимает как можно перейти на пустое место - секунду демонстрируется соответствующая страница. Куки нужны исключительно для случая указания автора		
 		}			
 	}
 }
@@ -454,7 +454,7 @@ sub washProc{
 		$$temp{'QUERY_STRING'} = Encode::decode_utf8($$temp{'QUERY_STRING'});
 			
 		for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
-			&setWarn( "		wP   Прием пары $pair" );	
+			&setWarn( "		wP   Первичный анализ пары $pair" );	
 			my ($name, $value) = split( /=/, $pair );
 			next if $name eq 'user';
 			$param{$name} = $value; #&utfText($value);
@@ -551,7 +551,7 @@ sub washProc{
 			my $o = 'r';
 			my %predicate;
 			for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
-				&setWarn('		wP  парсинг пары >'.$pair.'<');
+				&setWarn('		wP    итоговый парсинг пары >'.$pair.'<');
 				my ($name, $value) = split(/=/, $pair);
 				next if $name eq '_'; #пара с именем '_' добавляется только для того что бы избежать кэширования запроса.
 				$name = $types{$name} if defined $types{$name};
@@ -756,13 +756,15 @@ sub washProc{
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает указание r в квесте';
 			next
 		}
-		if ( $num[$s][2] eq $types{'shag'} and -d &m8dir( $num[$s][0] ) and not defined $$temp{'activity'} ){ 
+		if ( $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4] and not defined $$temp{'activity'} ){ 
 			&setWarn("		wP     Не активность.");	
 			$$temp{'activity'} = 0;
-			next if $num[$s][2] eq $types{'shag'} and -d &m8dir( $num[$s][0] ); #что бы запись метки не повторялась аж дважды за запрос, здесь еще видимо нужно добавить поиск квеста, а не только папки трипла
+			next if $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4]; #что бы запись метки не повторялась аж дважды за запрос, здесь еще видимо нужно добавить поиск квеста, а не только папки трипла
 		}
 		else{ 
 			&setWarn("		wP     Детектирование активности .");	
+			&setWarn("		wP     Детектирование активности - есть еще номера .") if defined $$temp{'activity'};
+			&setWarn("		wP     Нет директории ".$planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4] ) if not -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4];
 			$$temp{'activity'} = 1;
 			#
 		}
@@ -831,16 +833,16 @@ sub spinProc {
 	my ( $val, $user, $time, $dry )=@_;
 	&setWarn("
 		sP @_"  );
-	my @warn;# = ( "spinProc \n");
+	my @spin_warn;# = ( "spinProc \n");
 	#if ( $$val[] ){
 	if ( $$val[5] ){
 		for my $key ( 0..5 ){ 
 			&setWarn("		sP  Значение на сушку $key: $$val[$key]"  );
-			#push @warn, "		sP  Значение на сушку $key: $$val[$key]\n"
+			#push @spin_warn, "		sP  Значение на сушку $key: $$val[$key]\n"
 			#else { warn "delete $key - $$val[$key]"
 		}	
 	}
-	else{ push @warn, " DEL ($time / $dry): @{$val}\n" }
+	else{ push @spin_warn, " DEL ($time / $dry): @{$val}\n" }
 	my ( $name, $subject, $predicate, $object, $modifier, $add ) = ( $$val[0], $$val[1], $$val[2], $$val[3], $$val[4], $$val[5] );
 	#$add = 1 if $add;
 	my @value = ( $name, $subject, $predicate, $object );
@@ -865,7 +867,7 @@ sub spinProc {
 			my $oldTriple = $oldTriple[0];
 			my $oldTime = $port{$predicate}[0]{$oldObject}[0]{$oldTriple}[0]{'time'};
 			if ( $time < $oldTime ){ 
-				push @warn,  " DELETE OLD ( $time < $oldTime ): @{$val} \n";
+				push @spin_warn,  " DELETE OLD ( $time < $oldTime ): @{$val} \n";
 				$add = undef;
 				$good = 1;
 				#warn " DELETE OLD $planeDir/$user/tsv/$name/$modifier"
@@ -879,8 +881,8 @@ sub spinProc {
 				#my $oldModifier = $modifier;
 				#$oldModifier = &m8director( $subject ) if $predicate eq 'r';
 				my @triple = ( $oldTriple, $subject, $predicate, $oldObject, $modifier );
-				push @warn, " NEW VALUE ($time): @{$val} \n";
-				push @warn, &spinProc ( \@triple, $user, $oldTime, 809 );
+				push @spin_warn, " NEW VALUE ($time): @{$val} \n";
+				push @spin_warn, &spinProc ( \@triple, $user, $oldTime, 809 );
 			}
 		}
 	}
@@ -1002,9 +1004,10 @@ sub spinProc {
 			}
 		}
 	}
-	return @warn;
 	&setWarn("		sP @_ (END)
 	"  );	
+	return @spin_warn;
+	
 }
 
 sub dryProc2 {
@@ -1095,6 +1098,7 @@ sub dryProc2 {
 	my %dry;
 	my %userType;
 	my %types;
+	( $types{'n'}, $types{'r'}, $types{'d'}, $types{'i'} ) = ( 'n', 'r', 'd', 'i' );
 	my $count1 = 0;
 	my $n_delG = 0;
 	my $n_delR = 0;
@@ -1148,16 +1152,23 @@ sub dryProc2 {
 			#push @warn, "   Исследование tsv-шки $tsvName \n";
 			push @warn, "   tsv  $tsvName\n";
 			warn '	tsv  '.$tsvName;
-			if ( not -e $tsvPath.'/'.$tsvName.'/value.tsv' ){
-				push @warn, "   Error: no $tsvPath/$tsvName/value.tsv file \n";
-				warn "Error: no $tsvPath/$tsvName/value.tsv file";
-				rmtree $tsvPath.'/'.$tsvName;
+			my $metterPath = $tsvPath.'/'.$tsvName;
+			if ( not -e $metterPath.'/value.tsv' ){
+				push @warn, "   Error: no $metterPath/value.tsv file \n";
+				warn "Error: no $metterPath/value.tsv file";
+				rmtree $metterPath;
 				next;
 			}
 			$all++;
-			my @div = map{ Encode::decode_utf8($_) } &getFile( $tsvPath.'/'.$tsvName.'/value.tsv' );
+			my @div = map{ Encode::decode_utf8($_) } &getFile( $metterPath.'/value.tsv' );
 			&rinseProc( $tsvName, @div );
-			next if $tsvName=~/^i/;	
+			next if $tsvName=~/^i/;
+			if ( not &getDir( $metterPath, 1 ) ){
+				push @warn, "   Error: no dir in $tsvName. Deleting triple. \n";
+				warn "Error: no dir in $tsvName. Deleting triple.";
+				rmtree $metterPath;
+				next;
+			}
 			my @val = split "\t", $div[0];
 			unshift @val, $tsvName;
 			#$val[4] = $userName;
@@ -1168,38 +1179,38 @@ sub dryProc2 {
 				$types{$map[0]} = $val[1] if $map[1] and $map[1]=~/^xsd:\w+$/;
 			}
 			if (1){		
-			my @quest = &getDir( $tsvPath.'/'.$tsvName, 1 );			
+			my @quest = &getDir( $metterPath, 1 );			
 			if ( not @quest ){
 				push @warn, "	!!! delete triple without quest ( @val )";
 				warn "	!!! delete triple without quest ( @val )";
-				rmtree $tsvPath.'/'.$tsvName || warn "Еrror deleting file $tsvPath/$tsvName: $!\n";;
+				rmtree $metterPath || warn "Еrror deleting file $metterPath: $!\n";;
 				next;
 			}
 			for my $questName ( @quest ){
 				#push @warn, "    Исследование квеста $questName \n";
 				$val[4] = $questName;
 
-				my ( $timeProc ) = &getFile( $tsvPath.'/'.$tsvName.'/'.$val[4].'/time.txt' );
+				my ( $timeProc ) = &getFile( $metterPath.'/'.$val[4].'/time.txt' );
 				if ( $val[0] ne 'd' and $val[1] eq $val[4] ){
 					#корректировка формата данных 2016-10-07
 					warn "	!!! refresh: @val";
 					push @warn, "	!!! корректировка формата данных 2016-10-07: ( @val ) \n";
-					rmtree $tsvPath.'/'.$tsvName.'/'.$val[4];
+					rmtree $metterPath.'/'.$val[4];
 					if ( $val[2] eq 'r' ){ $val[4] = $val[3]; }
 					else { $val[4] = 'n'}
-					&setFile( $tsvPath.'/'.$tsvName.'/'.$val[4].'/time.txt', $timeProc )
+					&setFile( $metterPath.'/'.$val[4].'/time.txt', $timeProc )
 				}
 				elsif ( $val[4] ne 'n' and $val[2] eq 'r' ){
 					#удаление аномалии в квесте ( 2016-12-01 )
-					warn "	!!! delete r from quest: $tsvPath/$tsvName/$val[4] ( @val )";
-					push @warn, "	!!! delete r from quest: $tsvPath/$tsvName/$val[4] ( @val ) \n";
-					rmtree $tsvPath.'/'.$tsvName.'/'.$val[4] || warn "Еrror deleting file $tsvPath/$tsvName/$val[4]: $!\n";
+					warn "	!!! delete r from quest: $metterPath/$val[4] ( @val )";
+					push @warn, "	!!! delete r from quest: $metterPath/$val[4] ( @val ) \n";
+					rmtree $metterPath.'/'.$val[4] || warn "Еrror deleting file $metterPath/$val[4]: $!\n";
 					#sleep 8
 					if ( $val[4] eq $val[3] ){
 						push @warn, "	!!!!! REPLACE \n";
 						warn "	!!!!! REPLACE";
 						$val[4] = 'n';
-						&setFile( $tsvPath.'/'.$tsvName.'/'.$val[4].'/time.txt', $timeProc )
+						&setFile( $metterPath.'/'.$val[4].'/time.txt', $timeProc )
 					}
 					else { next }
 				}
@@ -1381,20 +1392,22 @@ sub m8req {
 	if ( defined $$temp{'avatar'} and $$temp{'ctrl'} ne $$temp{'avatar'} ){
 		$dir = $auraDir.'/'.$$temp{'ctrl'}.'/'
 	}
-	$dir .= 'm8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/';
-	if ( defined $$temp{'number'} ){
-		&setWarn( "			m8req  добавление строки запроса" );	
-		my %string;
-		$string{'modifier'} = $$temp{'modifier'} if $$temp{'modifier'} ne 'n';
-		$string{'error'} = $$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
-		$string{'shag'} = $$temp{'shag'} if $$temp{'shag'}; #позднее здесь 'shag' заменить на 'n'
-		#my @ss = keys %{$temp};
-		#&setWarn( "			m8req  добавление cостояния @ss" ) if $$temp{'activity'};
-		my $prefix = '?';
-		for my $key ( keys %string ){
-			&setWarn( "			m8req    Добавление параметра $key" );	
-			$dir .= $prefix.$key.'='.$string{$key};
-			$prefix = '&';
+	if ( $$temp{'fact'} ne 'n' ){
+		$dir .= 'm8/'.substr($$temp{'fact'},0,1).'/'.$$temp{'fact'}.'/';
+		if ( defined $$temp{'number'} ){
+			&setWarn( "			m8req  добавление строки запроса" );	
+			my %string;
+			$string{'modifier'} = $$temp{'modifier'} if $$temp{'modifier'} ne 'n';
+			$string{'error'} = $$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
+			$string{'shag'} = $$temp{'shag'} if $$temp{'shag'}; #позднее здесь 'shag' заменить на 'n'
+			#my @ss = keys %{$temp};
+			#&setWarn( "			m8req  добавление cостояния @ss" ) if $$temp{'activity'};
+			my $prefix = '?';
+			for my $key ( keys %string ){
+				&setWarn( "			m8req    Добавление параметра $key" );	
+				$dir .= $prefix.$key.'='.$string{$key};
+				$prefix = '&';
+			}
 		}
 	}
 	# and ( ( $$temp{'modifier'} ne 'n' ) or defined $$temp{'number'}[0]{'message'} or defined $$temp{'activity'} ) ){
