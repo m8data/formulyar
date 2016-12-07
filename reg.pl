@@ -390,7 +390,7 @@ if ( defined $ENV{DOCUMENT_ROOT} ){
 			my $location = $ENV{REQUEST_SCHEME}.'://'.$ENV{HTTP_HOST}.$temp{'prefix'};
 			if ( defined $temp{'message'} and $temp{'message'} ne 'OK' ){ $location .= $defaultAvatar.'/?error='.$temp{'message'} }
 			else { $location .= &m8req( \%temp ) }
-			print $q->header( -location => $location, -cookie => [@cookie], -status => "301 Moved Permanently")# Без установления статуса 301 в браузер уходит 302 (не найдено) и при нажатии "назад" браузер не сразу понимает как можно перейти на пустое место - секунду демонстрируется соответствующая страница. Куки нужны исключительно для случая указания автора		
+			print $q->header( -location => $location, -cookie => [@cookie], -status => "303 See Other")# Без установления статуса 301 в браузер уходит 302 (не найдено) и при нажатии "назад" браузер не сразу понимает как можно перейти на пустое место - секунду демонстрируется соответствующая страница. Куки нужны исключительно для случая указания автора		
 		}			
 	}
 }
