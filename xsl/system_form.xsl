@@ -175,6 +175,16 @@
 			</xsl:choose>
 		</func:result>
 	</func:function>
+	<func:function name="m8:choese_node">
+		<xsl:param name="first"/>
+		<xsl:param name="second"/>
+		<func:result>
+			<xsl:choose>
+				<xsl:when test="not($first)"><xsl:copy-of select="$second"/></xsl:when>
+				<xsl:otherwise><xsl:copy-of select="$first"/></xsl:otherwise>
+			</xsl:choose>
+		</func:result>
+	</func:function>	
 	<func:function name="m8:author">
 		<xsl:param name="author"/>
 		<xsl:choose>
@@ -428,7 +438,7 @@
 		<xsl:param name="ajaxMethod"/>
 		<!--<xsl:variable name="selectedValue" select="$objectElement/*[name()=$predicateName]/*"/> or */@time = math:max( ../*/*/@time )  -->
 		<xsl:variable name="selectedValue" select="m8:unic( $objectElement, $predicateName )"/>
-		<xsl:if test="name($selectedValue) = 'r' " xml:lang="add 2016-12-06"><xsl:attribute name="title">укажите здесь число больше нуля</xsl:attribute></xsl:if>
+		<!--<xsl:if test="name($selectedValue) = 'r' " xml:lang="add 2016-12-06"><xsl:attribute name="title">укажите здесь число больше нуля</xsl:attribute></xsl:if>-->
 		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message )" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
 			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
 		</xsl:if>
