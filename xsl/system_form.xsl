@@ -455,8 +455,41 @@
 		</func:result>
 	</func:function>
 	<!--
-
+			Функции G 
 //-->
+	<func:function name="m8:relation">
+		<xsl:param name="factName"/>
+		<xsl:param name="targetName" xml:lang="принимается тип, а не класс"/>
+		<xsl:param name="direct"/>
+		<xsl:variable name="relation">
+			<xsl:for-each select="m8:link( $factName, $direct )/*[m8:chief( name() )=m8:class($targetName)]">
+				<xsl:sort select="m8:param( name(), 'd', $factName )"/>
+				<xsl:variable name="relationName" select="name()"/>
+				<xsl:element name="{$targetName}">
+					<!--<xsl:attribute name="name"><xsl:value-of select="$relationName"/></xsl:attribute>-->
+					<xsl:choose>
+						<xsl:when test="count( m8:port( $relationName, $factName )/*[name()!='d'] ) > 0">
+							<modification><!-- name="{$techlistName}"-->
+								<xsl:for-each select="m8:port( $relationName, $factName )/*">
+									<xsl:element name="{m8:type( name() )}">
+										<xsl:variable name="valueName" select="name( m8:unic( .., name() ) )"/>
+										<xsl:element name="{$valueName}">
+											<xsl:value-of select="m8:title( $valueName )"/>
+										</xsl:element>
+									</xsl:element>
+								</xsl:for-each>
+							</modification>
+						</xsl:when>
+						<xsl:when test="m8:param( $relationName, 'd', $factName ) != 'r' ">
+							<xsl:attribute name="d"><xsl:value-of select="m8:param( $relationName, 'd', $factName )"/></xsl:attribute>
+						</xsl:when>
+					</xsl:choose>
+					<xsl:copy-of select="m8:copylist( $relationName )"/>
+				</xsl:element>
+			</xsl:for-each>
+		</xsl:variable>
+		<func:result select="exsl:node-set( $relation )"/>
+	</func:function>
 	<!--
 
 
@@ -843,7 +876,7 @@
 								<xsl:variable name="valueName">
 									<xsl:choose>
 										<xsl:when test="m8:class( name() )">
-											<xsl:value-of select="@name"/>
+											<xsl:value-of select="n/@name"/>
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of select="name()"/>
