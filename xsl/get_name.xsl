@@ -57,7 +57,7 @@
 	<xsl:template name="simpleName">
 		<xsl:param name="name"/>
 		<xsl:choose>
-			<xsl:when test="$name">
+			<xsl:when test="$name!=''">
 				<xsl:variable name="element">
 					<xsl:element name="{$name}">_</xsl:element>
 				</xsl:variable>
@@ -275,7 +275,7 @@
 		<xsl:param name="currentFactName"/>
 		<xsl:param name="currentResult"/>
 		<xsl:param name="chiefOnly"/>
-		<xsl:if test="not($currentResult)">
+		<xsl:if test="not($currentResult) and 0">
 			<xsl:message>		=== getAncestor (<xsl:value-of select="m8:title($currentFactName)"/>) ===
 			chiefOnly: <xsl:value-of select="$chiefOnly"/>
 				<xsl:if test="not(m8:index($currentFactName)/subject)">
@@ -297,27 +297,17 @@
 						<xsl:comment/>
 					</xsl:otherwise>
 				</xsl:choose>
-				<!--<xsl:element name="{$typeName}">
-						<xsl:if test="$types/@*[.=$typeName]">
-							<xsl:attribute name="type"><xsl:value-of select="name( $types/@*[.=$typeName] )"/></xsl:attribute>
-						</xsl:if>
-					</xsl:element>-->
 			</xsl:element>
 			<xsl:if test="$currentResult">
 				<xsl:copy-of select="$currentResult/*"/>
 			</xsl:if>
 		</xsl:variable>
-		<xsl:message>			- currentFactName2: <xsl:value-of select="$currentFactName"/>
-		</xsl:message>
-		<!--<xsl:if test="position()!=last() or 1"><xsl:message>**
-		</xsl:message></xsl:if>-->
+		<!--<xsl:message>			- currentFactName2: <xsl:value-of select="$currentFactName"/>
+		</xsl:message>-->
 		<xsl:choose>
 			<xsl:when test="$currentFactName = 'n' or ( $chiefOnly and $types/@*[.=$currentFactName])">
-				<!--<xsl:for-each select="exsl:node-set($newResult)/*">
-						<xsl:value-of select="concat( '                    ', position(), ') ', name(), ' - ', @type )"/>
-					</xsl:for-each>-->
-				<xsl:message>		=== getAncestor (end) === 
-				</xsl:message>
+				<!--<xsl:message>		=== getAncestor (end) === 
+				</xsl:message>-->
 				<xsl:copy-of select="exsl:node-set($newResult)/*"/>
 			</xsl:when>
 			<xsl:when test="m8:index($currentFactName)/subject">
@@ -330,8 +320,8 @@
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:message>		= BAD_NAME = 
-				</xsl:message>
+				<!--<xsl:message>		= BAD_NAME = 
+				</xsl:message>-->
 				<bad>_</bad>
 			</xsl:otherwise>
 		</xsl:choose>
