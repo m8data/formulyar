@@ -463,7 +463,7 @@
 		<xsl:param name="direct"/>
 		<xsl:variable name="relation">
 			<xsl:for-each select="m8:link( $factName, $direct )/*[m8:chief( name() )=m8:class($targetName)]">
-				<xsl:sort select="m8:param( name(), 'd', $factName )"/>
+				<xsl:sort select="m8:param( name(), 'd', $factName )" data-type="number"/>
 				<xsl:variable name="relationName" select="name()"/>
 				<xsl:element name="{$targetName}">
 					<!--<xsl:attribute name="name"><xsl:value-of select="$relationName"/></xsl:attribute>-->

@@ -250,7 +250,7 @@
 								<a href="{m8:file( $fact, 'quest.xml' )}" style="color: #777"><b>модификатор для</b></a>
 							</div>
 							<xsl:for-each select="m8:quest( $fact )/*[name()!=$fact]">
-								<xsl:sort select="m8:title( name(), 'd', $fact )"/>
+								<xsl:sort select="m8:title( name(), 'd', $fact )" data-type="number"/>
 								<div style="padding: .1em">
 									<xsl:choose>
 										<xsl:when test="m8:index( name() )/subject">
