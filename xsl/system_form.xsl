@@ -170,8 +170,12 @@
 		<xsl:param name="second"/>
 		<func:result>
 			<xsl:choose>
-				<xsl:when test="$first"><xsl:value-of select="$first"/></xsl:when>
-				<xsl:otherwise><xsl:value-of select="$second"/></xsl:otherwise>
+				<xsl:when test="$first">
+					<xsl:value-of select="$first"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="$second"/>
+				</xsl:otherwise>
 			</xsl:choose>
 		</func:result>
 	</func:function>
@@ -180,11 +184,15 @@
 		<xsl:param name="second"/>
 		<func:result>
 			<xsl:choose>
-				<xsl:when test="not($first)"><xsl:copy-of select="$second"/></xsl:when>
-				<xsl:otherwise><xsl:copy-of select="$first"/></xsl:otherwise>
+				<xsl:when test="not($first)">
+					<xsl:copy-of select="$second"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:copy-of select="$first"/>
+				</xsl:otherwise>
 			</xsl:choose>
 		</func:result>
-	</func:function>	
+	</func:function>
 	<func:function name="m8:author">
 		<xsl:param name="author"/>
 		<xsl:choose>
@@ -292,6 +300,17 @@
 				<func:result select="m8:path( 'n', 'n', 'port' )"/>
 			</xsl:otherwise>
 		</xsl:choose>
+	</func:function>
+	<func:function name="m8:link">
+		<xsl:param name="factName"/>
+		<xsl:param name="direction"/>
+		<xsl:variable name="vektor">
+			<xsl:choose>
+				<xsl:when test="$direction=1">quest</xsl:when>
+				<xsl:otherwise>role1</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<func:result select="m8:path( $factName, $vektor )"/>
 	</func:function>
 	<!-- 
 			Функции D 
@@ -414,6 +433,25 @@
 					<xsl:when test="$cChief !='n' and $cChief!=$fact">✿</xsl:when>
 				</xsl:choose>
 			</xsl:if>
+		</func:result>
+	</func:function>
+	<func:function name="m8:copylist">
+		<xsl:param name="factName"/>
+		<func:result>
+			<xsl:choose>
+				<xsl:when test="m8:index( $factName )/object">
+					<xsl:for-each select="m8:index( $factName )/object/*">
+						<xsl:copy-of select="m8:copylist( name() )"/>
+					</xsl:for-each>
+				</xsl:when>
+				<xsl:otherwise>
+					<n name="{$factName}">
+						<xsl:for-each select="m8:port( $factName )/*">
+							<xsl:attribute name="{m8:type( name() )}"><xsl:value-of select="m8:title( name( m8:unic( .., name() ) ) )"/></xsl:attribute>
+						</xsl:for-each>
+					</n>
+				</xsl:otherwise>
+			</xsl:choose>
 		</func:result>
 	</func:function>
 	<!--
@@ -804,8 +842,12 @@
 								<!-- m8:title( name() )-->
 								<xsl:variable name="valueName">
 									<xsl:choose>
-										<xsl:when test="m8:class( name() )"><xsl:value-of select="@name"/></xsl:when>
-										<xsl:otherwise><xsl:value-of select="name()"/></xsl:otherwise>
+										<xsl:when test="m8:class( name() )">
+											<xsl:value-of select="@name"/>
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="name()"/>
+										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:variable>
 								<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or $valueName = name( $selectedValue )">
