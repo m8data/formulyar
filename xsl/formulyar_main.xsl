@@ -451,7 +451,8 @@
 											<xsl:choose>
 												<xsl:when test="$leader = $director">
 													<a href="{m8:root( $director )}?a0={m8:triple( $fact )}" title="удаление" onclick="return confirm('Удаление факта &#171;{m8:title($fact)}&#187;')">
-														<xsl:value-of select="$symbol_del"/>
+														<xsl:text>␡</xsl:text>
+														<!--<xsl:value-of select="$symbol_del"/>-->
 													</a>
 												</xsl:when>
 												<xsl:otherwise>
