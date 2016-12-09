@@ -463,27 +463,26 @@
 		<xsl:param name="direct"/>
 		<xsl:variable name="relation">
 			<xsl:for-each select="m8:link( $factName, $direct )/*[m8:chief( name() )=m8:class($targetName)]">
-				<xsl:sort select="m8:param( name(), 'd', $factName )" data-type="number"/>
+				<xsl:sort select="m8:title( name(), 'd', $factName )" data-type="number"/>
 				<xsl:variable name="relationName" select="name()"/>
 				<xsl:element name="{$targetName}">
-					<!--<xsl:attribute name="name"><xsl:value-of select="$relationName"/></xsl:attribute>-->
-					<xsl:choose>
-						<xsl:when test="count( m8:port( $relationName, $factName )/*[name()!='d'] ) > 0">
-							<modification><!-- name="{$techlistName}"-->
-								<xsl:for-each select="m8:port( $relationName, $factName )/*">
-									<xsl:element name="{m8:type( name() )}">
-										<xsl:variable name="valueName" select="name( m8:unic( .., name() ) )"/>
-										<xsl:element name="{$valueName}">
-											<xsl:value-of select="m8:title( $valueName )"/>
-										</xsl:element>
+					<!--<xsl:attribute name="name"><xsl:value-of select="$relationName"/></xsl:attribute>-->					
+					<xsl:if test="m8:param( $relationName, 'd', $factName ) != 'r' ">
+						<xsl:attribute name="d"><xsl:value-of select="m8:title( $relationName, 'd', $factName )"/></xsl:attribute>
+					</xsl:if>
+					<xsl:if test="count( m8:port( $relationName, $factName )/*[name()!='d'] ) > 0">
+						<modification><!-- name="{$techlistName}"-->
+							<xsl:for-each select="m8:port( $relationName, $factName )/*[name()!='d']">
+								<xsl:element name="{m8:type( name() )}">
+									<xsl:variable name="valueName" select="name( m8:unic( .., name() ) )"/>
+									<xsl:element name="{$valueName}">
+										<xsl:value-of select="m8:title( $valueName )"/>
 									</xsl:element>
-								</xsl:for-each>
-							</modification>
-						</xsl:when>
-						<xsl:when test="m8:param( $relationName, 'd', $factName ) != 'r' ">
-							<xsl:attribute name="d"><xsl:value-of select="m8:param( $relationName, 'd', $factName )"/></xsl:attribute>
-						</xsl:when>
-					</xsl:choose>
+								</xsl:element>
+							</xsl:for-each>
+						</modification>
+					</xsl:if>
+
 					<xsl:copy-of select="m8:copylist( $relationName )"/>
 				</xsl:element>
 			</xsl:for-each>
