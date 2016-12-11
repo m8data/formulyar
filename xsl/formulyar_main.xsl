@@ -523,7 +523,7 @@
 									<tr>
 										<th valign="top" align="right">
 											<a href="{ m8:root( $pName )}">
-												<span style="font-size: .8em; color: black">
+												<span style="font-size: .7em; color: black">
 													<xsl:choose>
 														<xsl:when test="$pName = 'i' ">имя</xsl:when>
 														<xsl:when test="$pName = 'd' ">связь</xsl:when>
