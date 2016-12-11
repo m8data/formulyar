@@ -83,6 +83,7 @@
 						<xsl:value-of select="$message"/>
 					</div>
 				</xsl:if>
+				<xsl:call-template name="footer"/>
 				<!--<div style="width: 100%" align="center">-->
 				<!-- background: gray -->
 				<!--<div class="page" style="">-->
