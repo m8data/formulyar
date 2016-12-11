@@ -470,6 +470,7 @@
 					<xsl:if test="m8:param( $relationName, 'd', $factName ) != 'r' ">
 						<xsl:attribute name="d"><xsl:value-of select="m8:title( $relationName, 'd', $factName )"/></xsl:attribute>
 					</xsl:if>
+					<xsl:attribute name="holder"><xsl:value-of select="m8:holder( $relationName )"/></xsl:attribute>
 					<xsl:if test="count( m8:port( $relationName, $factName )/*[name()!='d'] ) > 0">
 						<modification><!-- name="{$techlistName}"-->
 							<xsl:for-each select="m8:port( $relationName, $factName )/*[name()!='d']">
@@ -494,6 +495,8 @@
 
 	-->
 	<xsl:template name="editParamOfPort">
+		<xsl:param name="currentFact"/>
+		<xsl:param name="currentModifier"/>
 		<xsl:param name="predicateName"/>
 		<xsl:param name="objectElement"/>
 		<xsl:param name="action"/>
@@ -514,7 +517,7 @@
 		</xsl:if>
 		<form id="editParamOfPort" selectedValue="{name($selectedValue)}">
 			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose><!--<xsl:if test="$predicateName = 'n' ">/</xsl:if>			--></xsl:attribute>
-			<xsl:if test="$predicateName = 'n' and $modifier='n' ">
+			<xsl:if test="$predicateName = 'n' and $currentModifier='n' ">
 				<xsl:attribute name="ENCTYPE">multipart/form-data</xsl:attribute>
 				<xsl:attribute name="method">POST</xsl:attribute>
 			</xsl:if>
@@ -541,6 +544,18 @@
 				<!--<input type="hidden" name="quest" value="{$questName}"/>-->
 			</xsl:if>
 			<xsl:call-template name="inputParamOfPortPre">
+				<xsl:with-param name="currentFact">
+					<xsl:choose>
+						<xsl:when test="$currentFact"><xsl:value-of select="$currentFact"/></xsl:when>
+						<xsl:otherwise><xsl:value-of select="$fact"/></xsl:otherwise>
+					</xsl:choose>
+				</xsl:with-param>
+				<xsl:with-param name="currentModifier">
+<xsl:choose>
+						<xsl:when test="$currentModifier"><xsl:value-of select="$currentModifier"/></xsl:when>
+						<xsl:otherwise><xsl:value-of select="$modifier"/></xsl:otherwise>
+					</xsl:choose>				
+				</xsl:with-param>
 				<xsl:with-param name="inputType" select="$inputType"/>
 				<xsl:with-param name="size" select="$size"/>
 				<xsl:with-param name="questName" select="$questName"/>
@@ -557,6 +572,8 @@
 
 	-->
 	<xsl:template name="inputParamOfPortPre">
+		<xsl:param name="currentFact"/>
+		<xsl:param name="currentModifier"/>
 		<xsl:param name="inputType"/>
 		<xsl:param name="size"/>
 		<xsl:param name="questName"/>
@@ -575,6 +592,8 @@
 			<xsl:when test="$sourceValue">
 				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> напрямую из входящего списка sourceValue</xsl:message>
 				<xsl:call-template name="inputParamOfPort">
+					<xsl:with-param name="currentFact" select="$currentFact"/>
+					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -592,6 +611,8 @@
 				<!--<xsl:variable name="currentListName" select="name( m8:port( $predicateName )/n/*)"/>-->
 				<!--$parentPredicateName, -->
 				<xsl:call-template name="inputParamOfPort">
+					<xsl:with-param name="currentFact" select="$currentFact"/>
+					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -609,6 +630,8 @@
 				<xsl:message>				Вывод параметров 'r' или 'modifier' списком экземпляров типа <xsl:value-of select="$typeName"/>
 				</xsl:message>
 				<xsl:call-template name="inputParamOfPort">
+					<xsl:with-param name="currentFact" select="$currentFact"/>
+					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -635,6 +658,8 @@
 					</xsl:for-each>
 				</xsl:variable>
 				<xsl:call-template name="inputParamOfPort">
+					<xsl:with-param name="currentFact" select="$currentFact"/>
+					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -653,6 +678,8 @@
 			<xsl:otherwise>
 				<xsl:message>				Вывод параметра <xsl:value-of select="$predicateName"/> без селекта</xsl:message>
 				<xsl:call-template name="inputParamOfPort">
+					<xsl:with-param name="currentFact" select="$currentFact"/>
+					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -671,6 +698,8 @@
 
 	-->
 	<xsl:template name="inputParamOfPort">
+		<xsl:param name="currentFact"/>
+		<xsl:param name="currentModifier"/>
 		<xsl:param name="inputType"/>
 		<xsl:param name="size"/>
 		<xsl:param name="questName"/>
@@ -684,7 +713,7 @@
 		<xsl:param name="ajaxMethod"/>
 		<xsl:param name="option"/>
 		<xsl:param name="method"/>
-		<xsl:variable name="params_of_quest" select="m8:port( $fact, $quest )/*"/>
+		<xsl:variable name="params_of_quest" select="m8:port( $currentFact, $currentModifier )/*"/>
 		<xsl:variable name="predicateParam" select="m8:value( name( m8:port( $predicateName )/d/* ) )"/>
 		<xsl:message>		inputParamOfPort :: sourceValue: <xsl:copy-of select="count(exsl:node-set($sourceValue)/*)"/>
 		</xsl:message>
@@ -706,7 +735,7 @@
 			<!--
 							ВЫВОД TEXTAREA
 -->
-			<xsl:when test="( $predicateName = 'd' and $modifier = 'n' ) or $predicateParam/div[3]/span='textarea' ">
+			<xsl:when test="( $predicateName = 'd' and $currentModifier = 'n' ) or $predicateParam/div[3]/span='textarea' ">
 				<xsl:variable name="name">
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
 				</xsl:variable>
@@ -718,7 +747,7 @@
 							<xsl:attribute name="placeholder">тип факта</xsl:attribute>
 						</xsl:when>
 						<xsl:otherwise>
-							<xsl:attribute name="cols">80</xsl:attribute>
+							<xsl:attribute name="cols">76</xsl:attribute>
 							<xsl:attribute name="rows"><xsl:value-of select="count( m8:value( name( $selectedValue ) )/* ) + 4"/></xsl:attribute>
 							<xsl:attribute name="placeholder">описание факта</xsl:attribute>
 						</xsl:otherwise>
@@ -928,10 +957,10 @@
 						<xsl:otherwise>
 							<xsl:variable name="length" select="string-length( $title )"/>
 							<xsl:choose>
-								<xsl:when test="$length > 100">
-									<xsl:attribute name="size">100</xsl:attribute>
+								<xsl:when test="$length > 70">
+									<xsl:attribute name="size">70</xsl:attribute>
 								</xsl:when>
-								<xsl:when test="$length > 40">
+								<xsl:when test="$length > 35">
 									<xsl:attribute name="size"><xsl:value-of select="$length + 4"/></xsl:attribute>
 								</xsl:when>
 								<xsl:otherwise>

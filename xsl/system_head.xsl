@@ -14,6 +14,7 @@
 				<xsl:call-template name="authorDef"/>
 			</xsl:when>
 			<xsl:when test="$factIndex/role/role1">
+				<!--<xsl:copy-of select="m8:sеrialize( m8:port( $fact ) )"/>-->
 				<xsl:apply-templates select="m8:port( $fact, $modifier )"/>
 				<!--<xsl:choose>
 					<xsl:when test="m8:path( $fact, 'role1' )/*[2]">
@@ -40,6 +41,7 @@
 
 	-->
 	<xsl:template match="port|terminal">
+		<xsl:param name="currentQuest"/>
 		<html>
 			<head>
 				<xsl:call-template name="TitleAndMisk"/>
@@ -74,20 +76,38 @@
 
 				</style>
 			</head>
-			<body style="padding: 0; margin: 0; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 0.8em;  text-align: center">
+			<body style="padding: 0; margin: 0; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 0.8em;  text-align: center; display: flex; align-items: flex-start; justify-content: center; flex-wrap: wrap">
 				<!--background: gray; -->
 				<xsl:if test="$message">
 					<div style="position: absolute; bottom: 25px; right: 400px">
 						<xsl:value-of select="$message"/>
 					</div>
 				</xsl:if>
-				<div style="width: 100%" align="center">
-					<!-- background: gray -->
-					<div class="page">
-						<!--<xsl:call-template name="head"/>-->
-						<xsl:call-template name="startBody"/>
-					</div>
-				</div>
+				<!--<div style="width: 100%" align="center">-->
+				<!-- background: gray -->
+				<!--<div class="page" style="">-->
+					<!--<xsl:call-template name="head"/>-->
+					<!--<xsl:call-template name="startBody">
+							<xsl:with-param name="currentQuest" select="$currentQuest"/>
+						</xsl:call-template>-->
+					<!--
+
+-->
+					<xsl:choose>
+						<xsl:when test="$modifier!='n'">
+							<xsl:apply-templates select="m8:port( $fact, $modifier )" mode="start">
+								<xsl:with-param name="currentQuest" select="$modifier"/>
+							</xsl:apply-templates>
+							<!--<div style="height: 1px">
+				</div>-->
+						</xsl:when>
+					</xsl:choose>
+					<xsl:apply-templates select="m8:port( $fact )" mode="start">
+						<xsl:with-param name="currentQuest" select="'n'"/>
+					</xsl:apply-templates>
+					<xsl:call-template name="actionElement"/>
+				<!--</div>-->
+				<!--</div>-->
 			</body>
 		</html>
 	</xsl:template>
