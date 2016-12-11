@@ -21,7 +21,7 @@
 	-->
 	<xsl:template name="startBody">
 		<xsl:param name="currentQuest"/>
-		<xsl:call-template name="footer"/>
+		<!--<xsl:call-template name="footer"/>-->
 		<xsl:apply-templates select="." mode="start">
 			<xsl:with-param name="currentQuest" select="$currentQuest"/>
 		</xsl:apply-templates>
