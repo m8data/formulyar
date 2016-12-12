@@ -95,6 +95,7 @@
 	<xsl:param name="symbol_replace" select="'&#8644;'"/>
 	<xsl:param name="symbol_up" select="'&#11014;'"/>
 	<xsl:param name="symbol_del" select="'&#215;'"/>
+	<xsl:param name="u2016" select="'&#8214;'" xml:lang="двойная вертикальная линия"/>
 	<!-- ####  ЗНАКИ (END)  ####-->
 	<!-- 
 			Функции A
@@ -466,13 +467,14 @@
 				<xsl:sort select="m8:title( name(), 'd', $factName )" data-type="number"/>
 				<xsl:variable name="relationName" select="name()"/>
 				<xsl:element name="{$targetName}">
-					<!--<xsl:attribute name="name"><xsl:value-of select="$relationName"/></xsl:attribute>-->					
+					<!--<xsl:attribute name="name"><xsl:value-of select="$relationName"/></xsl:attribute>-->
 					<xsl:if test="m8:param( $relationName, 'd', $factName ) != 'r' ">
 						<xsl:attribute name="d"><xsl:value-of select="m8:title( $relationName, 'd', $factName )"/></xsl:attribute>
 					</xsl:if>
 					<xsl:attribute name="holder"><xsl:value-of select="m8:holder( $relationName )"/></xsl:attribute>
 					<xsl:if test="count( m8:port( $relationName, $factName )/*[name()!='d'] ) > 0">
-						<modification><!-- name="{$techlistName}"-->
+						<modification>
+							<!-- name="{$techlistName}"-->
 							<xsl:for-each select="m8:port( $relationName, $factName )/*[name()!='d']">
 								<xsl:element name="{m8:type( name() )}">
 									<xsl:variable name="valueName" select="name( m8:unic( .., name() ) )"/>
@@ -483,7 +485,6 @@
 							</xsl:for-each>
 						</modification>
 					</xsl:if>
-
 					<xsl:copy-of select="m8:copylist( $relationName )"/>
 				</xsl:element>
 			</xsl:for-each>
@@ -515,9 +516,9 @@
 		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message )" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
 			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
 		</xsl:if>
-		<form id="editParamOfPort" selectedValue="{name($selectedValue)}">
+		<form id="editParamOfPort" selectedValue="{name($selectedValue)}"><!-- currentModifier="{$currentModifier}" questName="{$questName}"-->
 			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose><!--<xsl:if test="$predicateName = 'n' ">/</xsl:if>			--></xsl:attribute>
-			<xsl:if test="$predicateName = 'n' and $currentModifier='n' ">
+			<xsl:if test="$predicateName = 'n' and not( $currentModifier )">
 				<xsl:attribute name="ENCTYPE">multipart/form-data</xsl:attribute>
 				<xsl:attribute name="method">POST</xsl:attribute>
 			</xsl:if>
@@ -537,7 +538,7 @@
 					</input>
 				</xsl:for-each>
 			</xsl:if>
-			<xsl:if test="$predicateName != 'n' or $modifier !='n'" xml:lang="$modifier !='n' - нужен что бы можно было указывать n в квестах">
+			<xsl:if test="( $currentModifier or $questName or $modifierName )" xml:lang="$modifier !='n' - нужен что бы можно было указывать n в квестах"><!--( $predicateName != 'n' or $modifier !='n' ) and -->
 				<input type="hidden" name="modifier">
 					<xsl:attribute name="value"><xsl:choose><xsl:when test="$questName"><xsl:value-of select="$questName"/></xsl:when><xsl:when test="$modifierName"><xsl:value-of select="$modifierName"/></xsl:when><xsl:when test="$currentModifier"><xsl:value-of select="$currentModifier"/></xsl:when><xsl:otherwise><xsl:value-of select="$modifier"/></xsl:otherwise></xsl:choose></xsl:attribute>
 				</input>
@@ -546,16 +547,25 @@
 			<xsl:call-template name="inputParamOfPortPre">
 				<xsl:with-param name="currentFact">
 					<xsl:choose>
-						<xsl:when test="$currentFact"><xsl:value-of select="$currentFact"/></xsl:when>
-						<xsl:otherwise><xsl:value-of select="$fact"/></xsl:otherwise>
+						<xsl:when test="$currentFact">
+							<xsl:value-of select="$currentFact"/>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of select="$fact"/>
+						</xsl:otherwise>
 					</xsl:choose>
 				</xsl:with-param>
-				<xsl:with-param name="currentModifier">
-<xsl:choose>
-						<xsl:when test="$currentModifier"><xsl:value-of select="$currentModifier"/></xsl:when>
-						<xsl:otherwise><xsl:value-of select="$modifier"/></xsl:otherwise>
-					</xsl:choose>				
-				</xsl:with-param>
+				<xsl:with-param name="currentModifier" select="$currentModifier"/>
+<!--				<xsl:with-param name="currentModifier">
+					<xsl:choose>
+						<xsl:when test="$currentModifier">
+							<xsl:value-of select="$currentModifier"/>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of select="$modifier"/>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:with-param>-->
 				<xsl:with-param name="inputType" select="$inputType"/>
 				<xsl:with-param name="size" select="$size"/>
 				<xsl:with-param name="questName" select="$questName"/>
@@ -566,9 +576,9 @@
 				<xsl:with-param name="titleSelect" select="$titleSelect"/>
 				<xsl:with-param name="ajaxMethod" select="$ajaxMethod"/>
 			</xsl:call-template>
-
-				<xsl:if test="$modifier != $currentModifier"><input type="hidden" name="m" value="{$modifier}"/></xsl:if>
-			
+			<xsl:if test="not( $currentModifier )">
+				<input type="hidden" name="m" value="{$modifier}"/>
+			</xsl:if>
 		</form>
 	</xsl:template>
 	<!--
@@ -724,7 +734,7 @@
 			<!--
 							ВЫВОД ЗАПРОСА ФАЙЛА
 -->
-			<xsl:when test="$predicateName = 'n' and $modifier='n'">
+			<xsl:when test="$predicateName = 'n' and not( $currentModifier )"><!--$modifier='n'-->
 				<input type="file" name="file">
 					<xsl:if test="not($ajaxMethod)">
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
@@ -738,7 +748,7 @@
 			<!--
 							ВЫВОД TEXTAREA
 -->
-			<xsl:when test="( $predicateName = 'd' and $currentModifier = 'n' ) or $predicateParam/div[3]/span='textarea' ">
+			<xsl:when test="( $predicateName = 'd' and not( $currentModifier ) ) or $predicateParam/div[3]/span='textarea' ">
 				<xsl:variable name="name">
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
 				</xsl:variable>

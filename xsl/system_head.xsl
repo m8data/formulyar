@@ -41,7 +41,6 @@
 
 	-->
 	<xsl:template match="port|terminal">
-		<xsl:param name="currentQuest"/>
 		<html>
 			<head>
 				<xsl:call-template name="TitleAndMisk"/>
@@ -87,26 +86,27 @@
 				<!--<div style="width: 100%" align="center">-->
 				<!-- background: gray -->
 				<!--<div class="page" style="">-->
-					<!--<xsl:call-template name="head"/>-->
-					<!--<xsl:call-template name="startBody">
+				<!--<xsl:call-template name="head"/>-->
+				<!--<xsl:call-template name="startBody">
 							<xsl:with-param name="currentQuest" select="$currentQuest"/>
 						</xsl:call-template>-->
-					<!--
+				<!--
 
 -->
-					<xsl:choose>
-						<xsl:when test="$modifier!='n'">
-							<xsl:apply-templates select="m8:port( $fact, $modifier )" mode="start">
-								<xsl:with-param name="currentQuest" select="$modifier"/>
-							</xsl:apply-templates>
-							<!--<div style="height: 1px">
-				</div>-->
-						</xsl:when>
-					</xsl:choose>
-					<xsl:apply-templates select="m8:port( $fact )" mode="start">
-						<xsl:with-param name="currentQuest" select="'n'"/>
-					</xsl:apply-templates>
-					<xsl:call-template name="actionElement"/>
+				<xsl:choose>
+					<xsl:when test="$modifier='n'">
+						<xsl:apply-templates select="m8:port( 'n' )" mode="start">
+							<xsl:with-param name="currentQuest" select="'n'"/>			
+						</xsl:apply-templates>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:apply-templates select="m8:port( $fact, $modifier )" mode="start">
+							<xsl:with-param name="currentQuest" select="$modifier"/>
+						</xsl:apply-templates>
+					</xsl:otherwise>
+				</xsl:choose>
+				<xsl:apply-templates select="m8:port( $fact )" mode="start"/>
+				<xsl:call-template name="actionElement"/>
 				<!--</div>-->
 				<!--</div>-->
 			</body>
