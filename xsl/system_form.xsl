@@ -539,7 +539,7 @@
 			</xsl:if>
 			<xsl:if test="$predicateName != 'n' or $modifier !='n'" xml:lang="$modifier !='n' - нужен что бы можно было указывать n в квестах">
 				<input type="hidden" name="modifier">
-					<xsl:attribute name="value"><xsl:choose><xsl:when test="$questName"><xsl:value-of select="$questName"/></xsl:when><xsl:when test="$modifierName"><xsl:value-of select="$modifierName"/></xsl:when><xsl:otherwise><xsl:value-of select="$modifier"/></xsl:otherwise></xsl:choose></xsl:attribute>
+					<xsl:attribute name="value"><xsl:choose><xsl:when test="$questName"><xsl:value-of select="$questName"/></xsl:when><xsl:when test="$modifierName"><xsl:value-of select="$modifierName"/></xsl:when><xsl:when test="$currentModifier"><xsl:value-of select="$currentModifier"/></xsl:when><xsl:otherwise><xsl:value-of select="$modifier"/></xsl:otherwise></xsl:choose></xsl:attribute>
 				</input>
 				<!--<input type="hidden" name="quest" value="{$questName}"/>-->
 			</xsl:if>
@@ -566,6 +566,9 @@
 				<xsl:with-param name="titleSelect" select="$titleSelect"/>
 				<xsl:with-param name="ajaxMethod" select="$ajaxMethod"/>
 			</xsl:call-template>
+
+				<xsl:if test="$modifier != $currentModifier"><input type="hidden" name="m" value="{$modifier}"/></xsl:if>
+			
 		</form>
 	</xsl:template>
 	<!--

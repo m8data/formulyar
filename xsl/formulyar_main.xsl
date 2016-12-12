@@ -103,9 +103,12 @@
 												</span>
 												<xsl:if test="$currentQuest='n'">
 													<xsl:text>&#160;&#160;</xsl:text>
-													<a href="{m8:root( 'n', $currentFact )}" title="использовать в модификаторе" style="color: #a85">
+													<a href="{m8:root( $currentFact, $currentFact )}" title="использовать в модификаторе" style="color: #a85">
 														<xsl:value-of select="$symbol_up"/>
 													</a>
+													<!--<a href="{m8:root( 'n', $currentFact )}" title="использовать в модификаторе" style="color: #a85">
+														<xsl:value-of select="$symbol_up"/>
+													</a>-->
 													<!--&#8595;-->
 												</xsl:if>
 											</div>
@@ -182,11 +185,11 @@
 									</tr>
 								</table>
 								<xsl:message> ^ ^ ^ ^ ^ - Зона ссылок наверх (END) - ^ ^ ^ ^ ^ </xsl:message>
-								<br/>
+								<div style="padding: 1em 0">
 								<xsl:call-template name="quest_port">
 									<xsl:with-param name="currentQuest" select="$currentQuest"/>
 									<xsl:with-param name="currentFact" select="$currentFact"/>
-								</xsl:call-template>
+								</xsl:call-template></div>
 								<!--<br style="clear: both"/>-->
 							</div>
 						</xsl:when>
@@ -507,7 +510,7 @@
 				</xsl:choose>
 			</div>
 		</xsl:if>
-		<table width="100%" style="font-size: 1em">
+		<table width="100%" style="font-size: 1em; background: #ECFFDC">
 			<tr>
 				<td width="50%" align="center" valign="top">
 					<xsl:if test="$currentPort/*[name()!='r']">
@@ -547,7 +550,7 @@
 														<xsl:if test="1">
 															<!--$pName != 'd' or $modifier='n'-->
 															<xsl:call-template name="editParamOfPort">
-																<xsl:with-param name="currentFact" select="$currentFact"/>
+																<xsl:with-param name="currentFact" select="$fact"/>
 																<xsl:with-param name="currentModifier" select="$currentQuest"/>
 																<xsl:with-param name="predicateName" select="$pName"/>
 																<xsl:with-param name="objectElement" select="$currentPort"/>
@@ -574,7 +577,7 @@
 													<!--<xsl:if test="name()!='n'">-->
 													<td valign="top">
 														<!--<a href="{$startID}/?a0={name(*/*)}">x</a>-->
-														<a href="{m8:root( $fact, $modifier )}&amp;a0={name(*/*)}" title="удаление данного параметра">
+														<a href="{m8:root( $fact, $currentQuest )}&amp;a0={name(*/*)}&amp;m={$modifier}" title="удаление данного параметра">
 															<xsl:value-of select="$symbol_del"/>
 														</a>
 													</td>
@@ -620,15 +623,15 @@
 									</tr>
 								</xsl:for-each>
 							</table>
-							<xsl:if test="$modifier != 'n' and m8:index( $chiefName )/quest">
-								<div style="padding: .4em">------ из мульта -------</div>
+							<xsl:if test="$currentQuest != 'n' and m8:index( $chiefName )/quest">
+								<div style="padding: .4em">------ + из мульта ------</div>
 								<xsl:for-each select="m8:quest( $chiefName )/*">
 									<!--<div><xsl:value-of select="name()"/></div>-->
 									<xsl:variable name="linkName" select="name()"/>
 									<xsl:if test="$types/@*[.=$linkName]">
 										<xsl:variable name="multParam" select="name()"/>
 										<div style="padding-bottom: .5em">
-											<a href="{m8:root( $currentFact, $currentQuest )}&amp;{$types/@*[.=$multParam]}=">
+											<a href="{m8:root( $fact, $currentQuest )}&amp;{$types/@*[.=$multParam]}=&amp;m={$modifier}">
 												<xsl:value-of select="m8:title( $multParam )"/>
 												<!--<xsl:value-of select="concat( ' (', span[3], ')' )"/>
 														$types/@*[name()=span[1]]  <xsl:value-of select="m8:title( $types/@*[name()=span[1]] )"/>-->
@@ -637,24 +640,24 @@
 									</xsl:if>
 								</xsl:for-each>
 							</xsl:if>
-							<div>------------------------------</div>
-							<xsl:if test="not( $startPort/i )">
+							<div>------------ + ------------</div>
+							<xsl:if test="not( $currentPort/i )">
 								<span style="padding: .6em .8em">
-									<a href="{m8:root( $currentFact, $currentQuest )}&amp;i=" style="color: #822">имя</a>
+									<a href="{m8:root( $fact, $currentQuest )}&amp;i=&amp;m={$modifier}" style="color: #822">имя</a>
 								</span>
 							</xsl:if>
-							<xsl:if test="not( $startPort/d )">
+							<xsl:if test="not( $currentPort/d )">
 								<span style="padding: .6em .8em">
-									<a href="{m8:root( $currentFact, $currentQuest )}&amp;d=" style="color: #282">связь</a>
+									<a href="{m8:root( $fact, $currentQuest )}&amp;d=&amp;m={$modifier}" style="color: #282">связь</a>
 									<!-- &amp;quest={$modifier} модификатор не срабатывает, т.к. для d модификатор берется принудительно из квеста, а там по умолчанию 'n'-->
 								</span>
 							</xsl:if>
-							<xsl:if test="not( $startPort/n )">
+							<xsl:if test="not( $currentPort/n )">
 								<span style="padding-bottom: .6em .8em">
-									<a href="{m8:root( $currentFact, $currentQuest )}&amp;n=" style="color: #228">примечание</a>
+									<a href="{m8:root( $fact, $currentQuest )}&amp;n=&amp;m={$modifier}" style="color: #228">примечание</a>
 								</span>
 							</xsl:if>
-							<div>------------------------------</div>
+							<div>---------------------------</div>
 							<xsl:message>
 							START PORT:
 							<xsl:apply-templates select="$startPort" mode="serialize"/>
@@ -662,18 +665,18 @@
 							<form action="{m8:root( $fact )}">
 								<!--<input type="hidden" name="a1" value="{$fact}"/>-->
 								<!--<input type="hidden" name="a4" value="n"/>-->
-								<input type="hidden" name="modifier" value="{$modifier}"/>
+								<input type="hidden" name="modifier" value="{$currentQuest}"/>
 								<select name="p" onchange="this.form.submit()">
 									<option/>
 									<!--<xsl:if test="not($startPort[name()='i'])">
 									<option value="i">имя</option>
-								</xsl:if>
-								<xsl:if test="not($startPort[name()='d'])">
-									<option value="d">описание</option>
-								</xsl:if>
-								<xsl:if test="not($startPort[name()='n'])">
-									<option value="n">структура</option>
-								</xsl:if>-->
+									</xsl:if>
+									<xsl:if test="not($startPort[name()='d'])">
+										<option value="d">описание</option>
+									</xsl:if>
+									<xsl:if test="not($startPort[name()='n'])">
+										<option value="n">структура</option>
+									</xsl:if>-->
 									<xsl:if test="not( $factPort/*[name()=$fact] )">
 										<option value="{$fact}">начало</option>
 									</xsl:if>
@@ -689,6 +692,7 @@
 										</xsl:if>
 									</xsl:for-each>
 								</select>
+									<input type="hidden" name="m" value="{$modifier}"/>
 							</form>
 						</div>
 					</xsl:if>
