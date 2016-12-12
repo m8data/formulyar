@@ -484,7 +484,7 @@
 		<!--<div>currentFact: <xsl:value-of select="$currentFact"/></div>
 		<div>currentQuest: <xsl:value-of select="$currentQuest"/></div>
 		<xsl:copy-of select="m8:sеrialize( $currentPort )"/>-->
-		<xsl:if test="$fact_n/*[name()='svg'] or $factPort/n1459505450-5328-1">
+		<xsl:if test="$currentQuest='n' and ( $fact_n/*[name()='svg'] or $factPort/n1459505450-5328-1 )">
 			<!-- n1459505450-5328-1 = $code -->
 			<style type="text/css">
 				.svg_formulyar svg {
@@ -513,7 +513,7 @@
 				</xsl:choose>
 			</div>
 		</xsl:if>
-		<table width="100%" style="font-size: 1em; background: #ECFFDC">
+		<table width="100%" style="font-size: 1em; background: #ECFFDC" cellspacing="0" cellpadding="0">
 			<tr>
 				<td width="50%" align="center" valign="top">
 					<xsl:if test="$currentPort/*[name()!='r']">
