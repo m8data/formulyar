@@ -180,18 +180,7 @@
 														</a>
 													</xsl:if>
 													<xsl:text>&#160;</xsl:text>
-													<xsl:choose>
-														<xsl:when test="$leader = $director">
-															<a href="{m8:root( $director )}?a0={m8:triple( $fact )}" title="удаление" onclick="return confirm('Удаление факта &#171;{m8:title($fact)}&#187;')">
-																<xsl:text>␡</xsl:text>
-															</a>
-														</xsl:when>
-														<xsl:otherwise>
-															<a href="{m8:root( $fact, $director )}&amp;r={$director}" title="сделать тип таким же">
-																<xsl:value-of select="$symbol_replace"/>
-															</a>
-														</xsl:otherwise>
-													</xsl:choose>
+													<a href="{m8:root( $director )}?a0={m8:triple( $fact )}&amp;m={$modifier}" title="удаление" onclick="return confirm('Удаление факта &#171;{m8:title($fact)}&#187;')">␡</a>
 												</xsl:when>
 												<xsl:otherwise>
 													<span>владелец - </span>
