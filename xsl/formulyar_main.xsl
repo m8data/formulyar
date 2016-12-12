@@ -512,7 +512,7 @@
 				<td width="50%" align="center" valign="top">
 					<xsl:if test="$currentPort/*[name()!='r']">
 						<xsl:message>!! Левая панель: значения порта !!</xsl:message>
-						<div style="padding: 1em 0em; margin: .5em">
+						<div style="padding: 1em 0em; margin: .5em" id="adminInputs">
 							<!--<xsl:choose>
 							<xsl:when test="$startIndex/*[name()!='subject']">-->
 							<table>
@@ -528,7 +528,7 @@
 														<xsl:when test="$pName = 'i' ">имя</xsl:when>
 														<xsl:when test="$pName = 'd' ">связь</xsl:when>
 														<xsl:when test="$pName = 'n' ">примечание</xsl:when>
-														<xsl:when test="$pName=$fact">по умолчанию</xsl:when>
+														<xsl:when test="$pName=$fact">по умолчанию</xsl:when> 
 														<xsl:otherwise>
 															<xsl:apply-templates select="." mode="simpleName"/>
 														</xsl:otherwise>
@@ -538,6 +538,9 @@
 										</th>
 										<td valign="top" align="left">
 											<!--<xsl:for-each select="*">-->
+											<style type="text/css">
+												#adminInputs select { max-width: 300px }
+											</style>
 											<table>
 												<tr>
 													<td>
@@ -625,7 +628,7 @@
 									<xsl:if test="$types/@*[.=$linkName]">
 										<xsl:variable name="multParam" select="name()"/>
 										<div style="padding-bottom: .5em">
-											<a href="{m8:root( $fact, $modifier )}&amp;{$types/@*[.=$multParam]}=">
+											<a href="{m8:root( $currentFact, $currentQuest )}&amp;{$types/@*[.=$multParam]}=">
 												<xsl:value-of select="m8:title( $multParam )"/>
 												<!--<xsl:value-of select="concat( ' (', span[3], ')' )"/>
 														$types/@*[name()=span[1]]  <xsl:value-of select="m8:title( $types/@*[name()=span[1]] )"/>-->
@@ -637,18 +640,18 @@
 							<div>------------------------------</div>
 							<xsl:if test="not( $startPort/i )">
 								<span style="padding: .6em .8em">
-									<a href="{m8:root( $fact, $modifier )}&amp;i=" style="color: #822">имя</a>
+									<a href="{m8:root( $currentFact, $currentQuest )}&amp;i=" style="color: #822">имя</a>
 								</span>
 							</xsl:if>
 							<xsl:if test="not( $startPort/d )">
 								<span style="padding: .6em .8em">
-									<a href="{m8:root( $fact, $modifier )}&amp;d=" style="color: #282">связь</a>
+									<a href="{m8:root( $currentFact, $currentQuest )}&amp;d=" style="color: #282">связь</a>
 									<!-- &amp;quest={$modifier} модификатор не срабатывает, т.к. для d модификатор берется принудительно из квеста, а там по умолчанию 'n'-->
 								</span>
 							</xsl:if>
 							<xsl:if test="not( $startPort/n )">
 								<span style="padding-bottom: .6em .8em">
-									<a href="{m8:root( $fact, $modifier )}&amp;n=" style="color: #228">примечание</a>
+									<a href="{m8:root( $currentFact, $currentQuest )}&amp;n=" style="color: #228">примечание</a>
 								</span>
 							</xsl:if>
 							<div>------------------------------</div>
