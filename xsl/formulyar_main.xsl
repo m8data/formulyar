@@ -86,7 +86,10 @@
 										<td width="40%" align="center" style="color: #444" valign="top">
 											<!-- #####  заголовок  ##### -->
 											<div style="padding-bottom: .4em">
-												<span style="font-size: 1.3em; {m8:color( $currentFact )}" title="{m8:holder( $currentFact )}">
+												<a style="font-size: 1.3em; {m8:color( $currentFact )}" title="{m8:holder( $currentFact )}">
+													
+														<xsl:if test="$currentQuest!='n'"><xsl:attribute name="href"><xsl:value-of select="m8:root($currentQuest)"/></xsl:attribute></xsl:if>
+													
 													<xsl:choose>
 														<xsl:when test="m8:port( $currentFact )/i[not(r)]">
 															<xsl:apply-templates select="m8:port( $currentFact )/i/*" mode="simpleName"/>
@@ -100,7 +103,7 @@
 															<xsl:value-of select="$currentFact"/>
 														</xsl:otherwise>
 													</xsl:choose>
-												</span>
+												</a>
 												<xsl:if test="$currentQuest='n'">
 													<xsl:text>&#160;&#160;</xsl:text>
 													<a href="{m8:root( $currentFact, $currentFact )}" title="использовать в модификаторе" style="color: #a85">
