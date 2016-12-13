@@ -557,6 +557,7 @@ sub washProc{
 				$name = $types{$name} if defined $types{$name};
 				next if $name eq 'user' or defined $$temp{$name};
 				####  работа с значением  ####
+				#$value =~ s/^\+$//;
 				$value =~ s/^\s+//;
 				$value =~ s/\s+$//;
 				$value =~ s/\&#//;

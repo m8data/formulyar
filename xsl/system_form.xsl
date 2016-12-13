@@ -990,7 +990,7 @@
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
 					</xsl:if>
 					<xsl:if test="$selectedValue/@invalid or $selectedValue/../../@invalid or name($selectedValue) = 'r'" xml:lang="last part add 2016-12-06">
-						<xsl:attribute name="invalid"><xsl:value-of select="$selectedValue/@invalid"/><xsl:value-of select="$selectedValue/../../@invalid"/>_</xsl:attribute>
+						<xsl:attribute name="invalid"><xsl:value-of select="$selectedValue/@invalid"/><xsl:value-of select="$selectedValue/../../@invalid"/></xsl:attribute>
 					</xsl:if>
 					<xsl:attribute name="value"><xsl:choose><xsl:when test="starts-with( name( $selectedValue ), 'r' )"><xsl:value-of select="translate( $title, '.', ',' )"/></xsl:when><xsl:otherwise><xsl:value-of select="$title"/></xsl:otherwise></xsl:choose></xsl:attribute>
 				</input>
