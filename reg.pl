@@ -1088,6 +1088,15 @@ sub dryProc2 {
 	my $userTime = time - $userDays * 24 * 60 * 60;
 	if ( $clear ){
 		warn '		delete all index';
+		my $zip = Archive::Zip->new();
+		for my $userName ( grep{ not /^_/ and $_ ne 'formulyar' } &getDir( $planeDir, 1 ) ){ 
+			warn "\n		user $userName to archive   \n";		
+			my $tsvPath = $planeDir.'/'.$userName.'/tsv';
+			if ( $userName ne 'guest' and not $userName =~ /^user/ ){ #and not $userName =~ /^test/
+				$zip->addTree( $tsvPath, $userName );
+			}		
+		}
+		unless ( $zip->writeToFileNamed($logPath.'/reindex/'.$ctime.'_all.zip') == AZ_OK ) { die 'write error'	}
 		for my $d ( &getDir( 'm8' ) ){
 			if ( -d 'm8/'.$d ){ 
 				rmtree 'm8/'.$d 
@@ -1095,6 +1104,7 @@ sub dryProc2 {
 			else { unlink 'm8/'.$d }
 		}
 	}
+	exit;
 	my %dry;
 	my %userType;
 	my %types;
