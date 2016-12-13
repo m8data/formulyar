@@ -169,14 +169,18 @@
 	<func:function name="m8:choese">
 		<xsl:param name="first"/>
 		<xsl:param name="second"/>
+		<xsl:param name="third"/>
 		<func:result>
 			<xsl:choose>
 				<xsl:when test="$first">
 					<xsl:value-of select="$first"/>
 				</xsl:when>
-				<xsl:otherwise>
+				<xsl:when test="$second">
 					<xsl:value-of select="$second"/>
-				</xsl:otherwise>
+				</xsl:when>	
+				<xsl:when test="$third">
+					<xsl:value-of select="$third"/>
+				</xsl:when>								
 			</xsl:choose>
 		</func:result>
 	</func:function>
