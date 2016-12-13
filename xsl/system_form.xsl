@@ -576,7 +576,7 @@
 				<xsl:with-param name="titleSelect" select="$titleSelect"/>
 				<xsl:with-param name="ajaxMethod" select="$ajaxMethod"/>
 			</xsl:call-template>
-			<xsl:if test="not( $currentModifier )">
+			<xsl:if test="not( $currentModifier ) and $modifier != 'n'">
 				<input type="hidden" name="m" value="{$modifier}"/>
 			</xsl:if>
 		</form>
