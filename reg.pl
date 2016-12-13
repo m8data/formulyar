@@ -1104,7 +1104,7 @@ sub dryProc2 {
 			else { unlink 'm8/'.$d }
 		}
 	}
-	exit;
+	#exit;
 	my %dry;
 	my %userType;
 	my %types;
