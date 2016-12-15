@@ -506,6 +506,7 @@
 		<xsl:param name="objectElement"/>
 		<xsl:param name="action"/>
 		<xsl:param name="size"/>
+		<xsl:param name="placeholder"/>
 		<xsl:param name="hidden"/>
 		<xsl:param name="inputType"/>
 		<xsl:param name="modifierName"/>
@@ -520,7 +521,7 @@
 		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message )" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
 			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
 		</xsl:if>
-		<form id="editParamOfPort" selectedValue="{name($selectedValue)}"><!-- currentModifier="{$currentModifier}" questName="{$questName}"-->
+		<form id="editParamOfPort" selectedValue="{name($selectedValue)}" placeholder="{$placeholder}"><!-- currentModifier="{$currentModifier}" questName="{$questName}"-->
 			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose><!--<xsl:if test="$predicateName = 'n' ">/</xsl:if>			--></xsl:attribute>
 			<xsl:if test="$predicateName = 'n' and not( $currentModifier )">
 				<xsl:attribute name="ENCTYPE">multipart/form-data</xsl:attribute>
@@ -572,6 +573,7 @@
 				</xsl:with-param>-->
 				<xsl:with-param name="inputType" select="$inputType"/>
 				<xsl:with-param name="size" select="$size"/>
+				<xsl:with-param name="placeholder" select="$placeholder"/>
 				<xsl:with-param name="questName" select="$questName"/>
 				<xsl:with-param name="predicateName" select="$predicateName"/>
 				<xsl:with-param name="selectedValue" select="$selectedValue"/>
@@ -593,6 +595,7 @@
 		<xsl:param name="currentModifier"/>
 		<xsl:param name="inputType"/>
 		<xsl:param name="size"/>
+		<xsl:param name="placeholder"/>
 		<xsl:param name="questName"/>
 		<xsl:param name="predicateName"/>
 		<xsl:param name="selectedValue"/>
@@ -613,6 +616,7 @@
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
+					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
 					<xsl:with-param name="predicateName" select="$predicateName"/>
 					<xsl:with-param name="selectedValue" select="$selectedValue"/>
@@ -632,6 +636,7 @@
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
+					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
 					<xsl:with-param name="predicateName" select="$predicateName"/>
 					<xsl:with-param name="selectedValue" select="$selectedValue"/>
@@ -651,6 +656,7 @@
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
+					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
 					<xsl:with-param name="predicateName" select="$predicateName"/>
 					<xsl:with-param name="selectedValue" select="$selectedValue"/>
@@ -679,6 +685,7 @@
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
+					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
 					<xsl:with-param name="predicateName" select="$predicateName"/>
 					<xsl:with-param name="selectedValue" select="$selectedValue"/>
@@ -699,6 +706,7 @@
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
 					<xsl:with-param name="size" select="$size"/>
+					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
 					<xsl:with-param name="predicateName" select="$predicateName"/>
 					<xsl:with-param name="selectedValue" select="$selectedValue"/>
@@ -719,6 +727,7 @@
 		<xsl:param name="currentModifier"/>
 		<xsl:param name="inputType"/>
 		<xsl:param name="size"/>
+		<xsl:param name="placeholder"/>
 		<xsl:param name="questName"/>
 		<xsl:param name="predicateName"/>
 		<xsl:param name="selectedValue"/>
@@ -966,11 +975,15 @@
 				<xsl:variable name="title">
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
 				</xsl:variable>
-				<input type="text" name="{$predicateName}">
+				<input type="text" name="{$predicateName}">						
+					<xsl:if test="$placeholder">
+						<xsl:attribute name="placeholder"><xsl:value-of select="$placeholder"/></xsl:attribute>
+					</xsl:if>
 					<xsl:choose>
 						<xsl:when test="$size">
 							<xsl:attribute name="size"><xsl:value-of select="$size"/></xsl:attribute>
 						</xsl:when>
+
 						<xsl:otherwise>
 							<xsl:variable name="length" select="string-length( $title )"/>
 							<xsl:choose>

@@ -51,7 +51,7 @@ my %setting = (
 );
 my $localForce = 1; #разрешение делать записи любым юзерам на любой стороне, в противном случае это будет разрешено лишь на сервере
 
-my $reindexDays = 7;
+my $reindexDays = 14;
 my $passwordFile = 'password.txt';
 my $sessionFile = 'session.json';
 my $stylesheetDir = 'xsl';
@@ -843,7 +843,10 @@ sub spinProc {
 			#else { warn "delete $key - $$val[$key]"
 		}	
 	}
-	else{ push @spin_warn, " DEL ($time / $dry): @{$val}\n" }
+	else{ 
+		&setWarn("		sP  Значение на сушку @{$val}"  );
+		push @spin_warn, " DEL ($time / $dry): @{$val}\n" 
+	}
 	my ( $name, $subject, $predicate, $object, $modifier, $add ) = ( $$val[0], $$val[1], $$val[2], $$val[3], $$val[4], $$val[5] );
 	#$add = 1 if $add;
 	my @value = ( $name, $subject, $predicate, $object );
@@ -867,13 +870,15 @@ sub spinProc {
 			my @oldTriple = keys %{$port{$predicate}[0]{$oldObject}[0]};
 			my $oldTriple = $oldTriple[0];
 			my $oldTime = $port{$predicate}[0]{$oldObject}[0]{$oldTriple}[0]{'time'};
-			if ( $time < $oldTime ){ 
+			if ( $time < $oldTime ){
+				&setWarn("		sP    Значение было позже пезаписано другим. Пропуск"  );
 				push @spin_warn,  " DELETE OLD ( $time < $oldTime ): @{$val} \n";
 				$add = undef;
 				$good = 1;
 				#warn " DELETE OLD $planeDir/$user/tsv/$name/$modifier"
 			} #имеющееся значение новее текущего
 			elsif ( $oldObject eq $object ){ 
+				&setWarn("		sP    Найдено такое же значение - $object. Пропуск"  );
 				#warn " REPET RECORD ($time): @{$val} \n";
 				$good = 1 
 			} # or $$val[2] = 'r' повтор, пропускаем реиндексацию, но (излишне?) перезаписываем базу
@@ -1523,17 +1528,24 @@ sub setName {
 		my @name = murmur128_x64($value);
 		( $name[0], $name[1] ) = ( $type.$name[0], $type.$name[1] );
 		for my $n ( grep { -e $tsvPath.'/'.$name[$_].'/value.tsv' } ( 0, 1 ) ){
-			&setWarn( "					sN  проверка варианта $n - $name[$n]" );
+			&setWarn( "					sN  проверка варианта $n - $tsvPath.'/'.$name[$n].'/value.tsv'" );
 			my $old = join "\n", &getFile( $tsvPath.'/'.$name[$n].'/value.tsv' );
 			$old = Encode::decode_utf8($old);#читает и так нормально, но проверку на эквивалетность без флага не пройдет
-			if ( $value eq $old ){ $name = $name[$n] }
-			else { $name[$n] = undef }
+			if ( $value eq $old ){ 
+				&setWarn( "					sN  да, это текущее значение, оставляем его" );
+				$name = $name[$n] 
+			}
+			else { 
+				&setWarn( "					sN  нет, значения не совпали - игнорируем" );
+				$name[$n] = undef 
+			}
 		}
 		if (not $name ){
 			&setWarn( "					sN  присвоение первого попавшегося имени из двух: @name" );
 			( $name ) = grep { $_ } @name;
+			
 			&setFile( $tsvPath.'/'.$name.'/value.tsv', $value );
-			&rinseProc( $name, @value )
+			&rinseProc( $name, @value );
 		}	
 	}
 	else{
