@@ -1,59 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:m8="http://m8data.com">
-	<xsl:param name="DirectoryRoot" select="'file:C:/Dropbox/xampp/htdocs/livecells/www'"/>
-	<xsl:param name="mainServer" select="'www.m8data.com'"/>
-	<xsl:param name="admin" select="'admin'"/>
-	<xsl:param name="tempAuthor" select="/*/@tempAuthor"/>
-	<xsl:param name="moment" select="/*/@moment"/>
-	<xsl:param name="login" select="/*/@login"/>
-	<xsl:param name="new_author" select="/*/@new_author"/>
-	<xsl:param name="new_avatar" select="/*/@new_avatar"/>
-	<xsl:param name="object" select="/*/@object"/>
-	<xsl:param name="m8mode" select="/*/@m8mode"/>
-	<xsl:param name="referer" select="/*/@referer"/>
-	<xsl:param name="message" select="/*/@message"/>
-	<xsl:param name="add" select="/*/@add"/>
-	<xsl:param name="del" select="/*/@del"/>
-	<xsl:param name="Sec_of_New" select="100000"/>
-	<xsl:param name="focus" select="/*/*/@focus"/>
-	<xsl:param name="queryDeep" select="2"/>
-	<xsl:param name="vf" select="'/value.xml'"/>
-	<xsl:param name="if" select="'/index.xml'"/>
-	<xsl:param name="ind" select="'/m8'"/>
-	<xsl:variable name="startIndex" select="m8:path( $fact, 'index' )"/>
-	<xsl:variable name="startPort" select="m8:path( $fact, $author, $quest, 'port' )"/>
-	<xsl:param name="startTypeName" select="name( $startPort/r/* )"/>
 	<!--<xsl:param name="layer2" select="'gen'"/>
 	i7118132368377864911 - да
 
 	 -->
 	<xsl:template match="/">
-		<xsl:message terminate="no">interface match="/"</xsl:message>
-			<xsl:variable name="factIndex" select="m8:path( $fact, 'index' )"/>
-				<xsl:choose>
-					<xsl:when test="$start/@user='guest' and $start/@mission='formulyar'">
-						<!-- or $start/@ipath='a' -->
-						<!--<xsl:when test="$start/@path = '/m8' or $start/@path=concat( '/', $ctrl, '/m8' ) or $start/@path = '/formulyar' or $start/@path = '/a/formulyar' ">-->
-						<xsl:call-template name="authorDef"/>
-					</xsl:when>
-					<xsl:when test="$factIndex/role/role1">
-						<xsl:choose>
-							<xsl:when test="m8:path( $fact, 'role1' )/*/*[2]"><xsl:apply-templates select="m8:path( $fact, $author, $quest, 'port' )"/></xsl:when>
-							<xsl:otherwise><xsl:apply-templates select="m8:path( 'n', $author, 'n', 'port' )"/></xsl:otherwise>
-						</xsl:choose>
-						
-					</xsl:when>
-					<xsl:when test="$factIndex/role/role2">
-						<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'dock' )"/>
-					</xsl:when>
-					<xsl:when test="$factIndex/role/role3">
-						<xsl:apply-templates select="m8:path( $fact, $author, $quest, 'terminal' )"/>
+		<xsl:message terminate="no">	system_head template match="/"</xsl:message>
+		<xsl:variable name="factIndex" select="m8:index( $fact )"/>
+		<xsl:choose>
+			<xsl:when test="$start/@user='guest' and $start/@mission='formulyar'">
+				<!-- or $start/@ipath='a' -->
+				<!--<xsl:when test="$start/@path = '/m8' or $start/@path=concat( '/', $ctrl, '/m8' ) or $start/@path = '/formulyar' or $start/@path = '/a/formulyar' ">-->
+				<xsl:call-template name="authorDef"/>
+			</xsl:when>
+			<xsl:when test="$factIndex/role/role1">
+				<!--<xsl:copy-of select="m8:sеrialize( m8:port( $fact ) )"/>-->
+				<xsl:apply-templates select="m8:port( $fact, $modifier )"/>
+				<!--<xsl:choose>
+					<xsl:when test="m8:path( $fact, 'role1' )/*[2]">
+						<xsl:apply-templates select="m8:port( $fact, $modifier, 'port' )"/>
 					</xsl:when>
 					<xsl:otherwise>
-						<xsl:apply-templates select="m8:path( 'n', 'admin', 'port' )"/>
+						<xsl:apply-templates select="m8:port( )"/>
 					</xsl:otherwise>
-				</xsl:choose>
-			
+				</xsl:choose>-->
+			</xsl:when>
+			<xsl:when test="$factIndex/role/role2">
+				<xsl:apply-templates select="m8:path( $fact, $modifier, 'dock' )"/>
+			</xsl:when>
+			<xsl:when test="$factIndex/role/role3">
+				<xsl:apply-templates select="m8:path( $fact, $modifier, 'terminal' )"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates select="m8:port()"/>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	<!--
 
@@ -94,20 +75,40 @@
 
 				</style>
 			</head>
-			<body style="padding: 0; margin: 0; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 0.8em;  text-align: center">
+			<body style="padding: 0; margin: 0; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 0.8em;  text-align: center; display: flex; align-items: flex-start; justify-content: center; flex-wrap: wrap">
 				<!--background: gray; -->
 				<xsl:if test="$message">
 					<div style="position: absolute; bottom: 25px; right: 400px">
 						<xsl:value-of select="$message"/>
 					</div>
 				</xsl:if>
-				<div style="width: 100%" align="center">
-					<!-- background: gray -->
-					<div class="page">
-						<!--<xsl:call-template name="head"/>-->
-						<xsl:call-template name="startBody"/>
-					</div>
-				</div>
+				<xsl:call-template name="footer"/>
+				<!--<div style="width: 100%" align="center">-->
+				<!-- background: gray -->
+				<!--<div class="page" style="">-->
+				<!--<xsl:call-template name="head"/>-->
+				<!--<xsl:call-template name="startBody">
+							<xsl:with-param name="currentQuest" select="$currentQuest"/>
+						</xsl:call-template>-->
+				<!--
+
+-->
+				<xsl:choose>
+					<xsl:when test="$modifier='n'">
+						<xsl:apply-templates select="m8:port( 'n' )" mode="start">
+							<xsl:with-param name="currentQuest" select="'n'"/>			
+						</xsl:apply-templates>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:apply-templates select="m8:port( $fact, $modifier )" mode="start">
+							<xsl:with-param name="currentQuest" select="$modifier"/>
+						</xsl:apply-templates>
+					</xsl:otherwise>
+				</xsl:choose>
+				<xsl:apply-templates select="m8:port( $fact )" mode="start"/>
+				<xsl:call-template name="actionElement"/>
+				<!--</div>-->
+				<!--</div>-->
 			</body>
 		</html>
 	</xsl:template>
