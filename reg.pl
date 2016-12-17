@@ -763,7 +763,7 @@ sub washProc{
 		if ( $num[$s][5] and $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4] and not defined $$temp{'activity'} ){ 
 			&setWarn("		wP     Не активность.");	
 			$$temp{'activity'} = 0;
-			#next if $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4]; #что бы запись метки не повторялась аж дважды за запрос, здесь еще видимо нужно добавить поиск квеста, а не только папки трипла
+			next if $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4]; #что бы запись метки не повторялась аж дважды за запрос, здесь еще видимо нужно добавить поиск квеста, а не только папки трипла
 		}
 		else{ 
 			&setWarn("		wP     Детектирование активности .");	
