@@ -573,9 +573,12 @@ sub washProc{
 					&setWarn('		wP     присвоение значения по ссылке');
 					$value = $num[$table{$1}][$2] 
 				}
-				elsif ( $value=~/^-{0,1}\d{1,15}[,\.]*\d{0,8}$/ ){ 
+				elsif ( $value=~/^-?\d{1,100}[,.]*\d{0,50}$/ ){ #$value=~/^-{0,1}\d{1,15}[,\.]*\d{0,8}$/ 
 					&setWarn('		wP     присвоение цифрового значения');
-					$value=~tr/[,\.]/_/;
+					$value =~ tr/,/./;
+					#$value =~ s/$(-?)0*(\d)/$1$2/;
+					$value = $value + 0;
+					$value =~ tr/./_/;
 					$value = 'r'.$value 
 				}
 				elsif ( $value=~m!^/m8/[dirn]/([dirn][\d\w_\-]*)$! or $value=~m!^([dirn][\d\w_\-]*)$!  ){ #or ( ( $name =~/^[a-z]+[0-2]$/ or $name eq 'r' ) and $value=~m!^([dirn])$!)
@@ -760,12 +763,12 @@ sub washProc{
 		if ( $num[$s][5] and $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4] and not defined $$temp{'activity'} ){ 
 			&setWarn("		wP     Не активность.");	
 			$$temp{'activity'} = 0;
-			next if $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4]; #что бы запись метки не повторялась аж дважды за запрос, здесь еще видимо нужно добавить поиск квеста, а не только папки трипла
+			#next if $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4]; #что бы запись метки не повторялась аж дважды за запрос, здесь еще видимо нужно добавить поиск квеста, а не только папки трипла
 		}
 		else{ 
 			&setWarn("		wP     Детектирование активности .");	
-			&setWarn("		wP     Детектирование активности - есть еще номера .") if defined $$temp{'activity'};
-			&setWarn("		wP     Нет директории ".$planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4] ) if not -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4];
+			#&setWarn("		wP     Детектирование активности - есть еще номера .") if defined $$temp{'activity'};
+			#&setWarn("		wP     Нет директории ".$planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4] ) if not -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4];
 			$$temp{'activity'} = 1;
 			#
 		}
