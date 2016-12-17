@@ -643,7 +643,8 @@ sub washProc{
 					my @triple = ( $triple, $a, $name, $value, $m, 1 );
 					push @num, \@triple;
 				}
-				$$temp{'shag'} = $value if $name eq $types{'shag'}
+				$$temp{'n'} = $value if $name eq 'n'
+				#2016-12-18 - $$temp{'shag'} = $value if $name eq $types{'shag'}
 			}
 			( $$temp{'fact'}, $$temp{'modifier'} ) = ( $a, $m );
 		}
@@ -760,10 +761,12 @@ sub washProc{
 			$$temp{'number'}[$s]{'message'} = 'Номер запрашивает указание r в квесте';
 			next
 		}
-		if ( $num[$s][5] and $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4] and not defined $$temp{'activity'} ){ 
+		if ( $num[$s][5] and $num[$s][2] eq 'n' and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4] and not defined $$temp{'activity'} ){ 
+		# 2016-12-18 if ( $num[$s][5] and $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4] and not defined $$temp{'activity'} ){ 
 			&setWarn("		wP     Не активность.");	
 			$$temp{'activity'} = 0;
-			next if $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4]; #что бы запись метки не повторялась аж дважды за запрос, здесь еще видимо нужно добавить поиск квеста, а не только папки трипла
+			next if $num[$s][2] eq 'n' and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4];
+			# 2016-12-18next if $num[$s][2] eq $types{'shag'} and -d $planeDir.'/'.$$temp{'user'}.'/tsv/'.$num[$s][0].'/'.$num[$s][4]; #что бы запись метки не повторялась аж дважды за запрос, здесь еще видимо нужно добавить поиск квеста, а не только папки трипла
 		}
 		else{ 
 			&setWarn("		wP     Детектирование активности .");	
@@ -1418,7 +1421,8 @@ sub m8req {
 			my %string;
 			$string{'modifier'} = $$temp{'modifier'} if $$temp{'modifier'} ne 'n';
 			$string{'error'} = $$temp{'number'}[0]{'message'} if defined $$temp{'number'}[0]{'message'};
-			$string{'shag'} = $$temp{'shag'} if $$temp{'shag'}; #позднее здесь 'shag' заменить на 'n'
+			$string{'n'} = $$temp{'n'} if $$temp{'n'}; #позднее здесь 'shag' заменить на 'n'
+			# 2016-12-18 $string{'shag'} = $$temp{'shag'} if $$temp{'shag'};
 			#my @ss = keys %{$temp};
 			#&setWarn( "			m8req  добавление cостояния @ss" ) if $$temp{'activity'};
 			my $prefix = '?';
