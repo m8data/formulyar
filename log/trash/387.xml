@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<n1476703438-530202-0-teplotn m8path="m8/n/n1476703438-530202-0-teplotn" activity="1" record="2" fact="n1476703438-530202-0-teplotn" REQUEST_URI="/m8/n/n1476703438-530202-0-teplotn/?shag=5&amp;_=1481894850588" QUERY_STRING="shag=5&amp;_=1481894850588" HTTP_X_REQUESTED_WITH="XMLHttpRequest" seconds="1481894946" HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36" microseconds="438783" tempkey="u13369043929561870373" univer="teplotn" shag="r5" ctrl="teplotn" workpath="m8/n/n1476703438-530202-0-teplotn/" time="1481894946.43875" REMOTE_ADDR="94.231.125.250" DOCUMENT_ROOT="/var/www/m8data/.public/teplotn" ajax="XMLHttpRequest" quest="n" prefix="/" HTTP_COOKIE="debug=; user=u13369043929561870373" format="html" user="testingtn" multiRoot="/var/www/m8data/" mission="html" planeRoot="/var/www/m8data/.public/teplotn/" REQUEST_METHOD="GET" avatar="teplotn" branche="master" modifier="n" version="0.8" localtime="Fri Dec 16 13:29:06 2016">
+	<number modifier="n" subject="n1476703438-530202-0-teplotn" predicate="n1458474027-45952-0" name="d10484429757179662945" object="r5" add="1">
+		0
+	</number>
+	_
+</n1476703438-530202-0-teplotn>

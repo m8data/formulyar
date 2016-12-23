@@ -1,0 +1,31 @@
+	--- parent --- 
+								== m8:director (fact: n) ==
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/n/n/n/port.xml"
+								== m8:director (fact: n) ==
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/n/n/n/port.xml"
+		==== getParent 2 ====
+			currentFactName: n
+			parentFactName: 
+			
+								== m8:director (fact: n) ==
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/n/n/n/port.xml"
+	--- getAncestor --- 
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/type.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/n/n/n/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/class.xml"
+								== m8:director (fact: n) ==
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/n/n/n/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/n/n/n/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/n/n/n/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/i/i/testing/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/n/n/n/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/i/i/testing/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/n/n/n/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/d/d/testing/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/i/i/testing/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/n/n/n/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/d/d/testing/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/i/i/testing/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/n/n/n/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/d/d/testing/port.xml"
+warning: failed to load external entity "/var/www/m8data/.public/testing/m8/i/i/testing/port.xml"
