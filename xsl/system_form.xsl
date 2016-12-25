@@ -509,6 +509,8 @@
 		<xsl:param name="placeholder"/>
 		<xsl:param name="hidden"/>
 		<xsl:param name="inputType"/>
+		<xsl:param name="inputInvalid"/>
+		<xsl:param name="alertTitle"/>
 		<xsl:param name="modifierName"/>
 		<xsl:param name="questName"/>
 		<xsl:param name="sourceValue"/>
@@ -518,10 +520,10 @@
 		<!--<xsl:variable name="selectedValue" select="$objectElement/*[name()=$predicateName]/*"/> or */@time = math:max( ../*/*/@time )  -->
 		<xsl:variable name="selectedValue" select="m8:unic( $objectElement, $predicateName )"/>
 		<!--<xsl:if test="name($selectedValue) = 'r' " xml:lang="add 2016-12-06"><xsl:attribute name="title">укажите здесь число больше нуля</xsl:attribute></xsl:if>-->
-		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message )" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
-			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
+		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message or $alertTitle)" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
+			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$alertTitle"><xsl:value-of select="$alertTitle"/></xsl:when><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
 		</xsl:if>
-		<form id="editParamOfPort" selectedValue="{name($selectedValue)}" placeholder="{$placeholder}"><!-- currentModifier="{$currentModifier}" questName="{$questName}"-->
+		<form id="editParamOfPort" selectedValue="{name($selectedValue)}" placeholder="{$placeholder}" inputInvalid="{$inputInvalid}"><!-- currentModifier="{$currentModifier}" questName="{$questName}"-->
 			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose><!--<xsl:if test="$predicateName = 'n' ">/</xsl:if>			--></xsl:attribute>
 			<xsl:if test="$predicateName = 'n' and not( $currentModifier )">
 				<xsl:attribute name="ENCTYPE">multipart/form-data</xsl:attribute>
@@ -572,6 +574,7 @@
 					</xsl:choose>
 				</xsl:with-param>-->
 				<xsl:with-param name="inputType" select="$inputType"/>
+				<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 				<xsl:with-param name="size" select="$size"/>
 				<xsl:with-param name="placeholder" select="$placeholder"/>
 				<xsl:with-param name="questName" select="$questName"/>
@@ -594,6 +597,7 @@
 		<xsl:param name="currentFact"/>
 		<xsl:param name="currentModifier"/>
 		<xsl:param name="inputType"/>
+		<xsl:param name="inputInvalid"/>
 		<xsl:param name="size"/>
 		<xsl:param name="placeholder"/>
 		<xsl:param name="questName"/>
@@ -615,6 +619,7 @@
 					<xsl:with-param name="currentFact" select="$currentFact"/>
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
+					<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -635,6 +640,7 @@
 					<xsl:with-param name="currentFact" select="$currentFact"/>
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
+					<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -655,6 +661,7 @@
 					<xsl:with-param name="currentFact" select="$currentFact"/>
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
+					<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -684,6 +691,7 @@
 					<xsl:with-param name="currentFact" select="$currentFact"/>
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
+					<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -705,6 +713,7 @@
 					<xsl:with-param name="currentFact" select="$currentFact"/>
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
+					<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -726,6 +735,7 @@
 		<xsl:param name="currentFact"/>
 		<xsl:param name="currentModifier"/>
 		<xsl:param name="inputType"/>
+		<xsl:param name="inputInvalid"/>
 		<xsl:param name="size"/>
 		<xsl:param name="placeholder"/>
 		<xsl:param name="questName"/>
@@ -739,6 +749,7 @@
 		<xsl:param name="ajaxMethod"/>
 		<xsl:param name="option"/>
 		<xsl:param name="method"/>
+		
 		<xsl:variable name="params_of_quest" select="m8:port( $currentFact, $currentModifier )/*"/>
 		<xsl:variable name="predicateParam" select="m8:value( name( m8:port( $predicateName )/d/* ) )"/>
 		<xsl:message>		inputParamOfPort :: sourceValue: <xsl:copy-of select="count(exsl:node-set($sourceValue)/*)"/>
@@ -1002,8 +1013,8 @@
 					<xsl:if test="not($ajaxMethod)">
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
 					</xsl:if>
-					<xsl:if test="$selectedValue/@invalid or $selectedValue/../../@invalid or name($selectedValue) = 'r'" xml:lang="last part add 2016-12-06">
-						<xsl:attribute name="invalid"><xsl:value-of select="$selectedValue/@invalid"/><xsl:value-of select="$selectedValue/../../@invalid"/></xsl:attribute>
+					<xsl:if test="$selectedValue/@invalid or $selectedValue/../../@invalid or name($selectedValue) = 'r' or $inputInvalid" xml:lang="last part add 2016-12-06">
+						<xsl:attribute name="invalid"><xsl:value-of select="$selectedValue/@invalid"/><xsl:value-of select="$selectedValue/../../@invalid"/><xsl:value-of select="$inputInvalid"/></xsl:attribute>
 					</xsl:if>
 					<xsl:attribute name="value"><xsl:choose><xsl:when test="starts-with( name( $selectedValue ), 'r' )"><xsl:value-of select="translate( $title, '.', ',' )"/></xsl:when><xsl:otherwise><xsl:value-of select="$title"/></xsl:otherwise></xsl:choose></xsl:attribute>
 				</input>
