@@ -142,7 +142,7 @@
 			</xsl:choose>
 		</func:result>
 	</func:function>
-	<func:function name="m8:sеrialize">
+	<func:function name="m8:serialize">
 		<xsl:param name="tree"/>
 		<xsl:param name="title"/>
 		<xsl:param name="size"/>
