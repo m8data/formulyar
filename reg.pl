@@ -564,6 +564,7 @@ sub washProc{
 				my $shy = '&shy;';
 				$value =~ s/$shy//;
 				$value =~ s/\&\w\w\w\;//; #убить символы типа &shy;
+				$$temp{'n'} = $value if $name eq 'n'; #специально присваивается до последующего преобразования, что бы на выводе число (1) не перешло в форму кода (r1) 
 				if ( not $value and $value ne '0' ){ 
 					&setWarn('		wP     присвоение пустого значения');
 					if ( defined $predicate{$name} ){ $value = $predicate{$name} }
@@ -643,7 +644,7 @@ sub washProc{
 					my @triple = ( $triple, $a, $name, $value, $m, 1 );
 					push @num, \@triple;
 				}
-				$$temp{'n'} = $value if $name eq 'n'
+				
 				#2016-12-18 - $$temp{'shag'} = $value if $name eq $types{'shag'}
 			}
 			( $$temp{'fact'}, $$temp{'modifier'} ) = ( $a, $m );
