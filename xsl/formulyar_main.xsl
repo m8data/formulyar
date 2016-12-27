@@ -598,7 +598,6 @@
 																</a>
 															</xsl:otherwise>
 														</xsl:choose>
-														
 													</td>
 													<!--
 													<td valign="top">
@@ -623,68 +622,84 @@
 				<td align="center" valign="top">
 					<xsl:variable name="chiefName" select="m8:chief( $fact)"/>
 					<!--<xsl:if test="( m8:holder( $currentFact )=$user or ( $currentQuest and m8:holder( $currentQuest )=$user ) ) and ( $chiefName != 'n' or not( $currentQuest ) )  or not( $types ) ">-->
-					<xsl:if test="( m8:holder( $currentFact )=$user or ( $currentQuest and m8:holder( $currentQuest )=$user ) ) and ( $chiefName != 'n' or not( $currentQuest ) )  or not( $types ) ">
+					<xsl:if test="( ( not( $currentQuest ) and m8:holder( $fact )=$user ) or ( $currentQuest and m8:holder( $currentQuest )=$user ) ) and ( $chiefName != 'n' or not( $currentQuest ) )  or not( $types ) ">
 						<!-- -->
 						<!--not($modifier) or -->
 						<div style="padding: 1em; ">
 							<xsl:message>!! Правая панель: подсказки значений !!</xsl:message>
 							<!--<div>Добавление свойства:</div>-->
-							<table cellpadding="3px">
-								<xsl:for-each select="exsl:node-set($final_sort)/*[name()!='n' and name()!='d' and name()!='i' ]">
-									<xsl:sort select="m8:title( name() )"/>
-									<tr>
-										<xsl:variable name="predicate" select="name()"/>
-										<td valign="top" align="center">
-											<a href="{m8:root( $fact, $modifier )}&amp;{$predicate}=" title="популярность: {@count}">
-												<xsl:attribute name="style"><xsl:if test="@count=1"><xsl:text>font-size: .8em</xsl:text></xsl:if></xsl:attribute>
-												<xsl:apply-templates select="." mode="simpleName"/>
-											</a>
-										</td>
-									</tr>
-								</xsl:for-each>
-							</table>
-							<xsl:if test="$currentQuest and m8:index( $chiefName )/quest">
-								<div style="padding: .4em">------ + из мульта ------</div>
-								<xsl:for-each select="m8:quest( $chiefName )/*">
-									<!--<div><xsl:value-of select="name()"/></div>-->
-									<xsl:variable name="linkName" select="name()"/>
-									<xsl:if test="$types/@*[.=$linkName]">
-										<xsl:variable name="multParam" select="name()"/>
-										<div style="padding-bottom: .5em">
-											<a href="{m8:root( $fact, $currentQuest )}&amp;{$types/@*[.=$multParam]}=&amp;m={$modifier}">
-												<xsl:value-of select="m8:title( $multParam )"/>
-												<!--<xsl:value-of select="concat( ' (', span[3], ')' )"/>
-														$types/@*[name()=span[1]]  <xsl:value-of select="m8:title( $types/@*[name()=span[1]] )"/>-->
-											</a>
-										</div>
+							<xsl:choose>
+								<xsl:when test="$currentQuest">
+									<xsl:if test="$currentQuest and m8:index( $chiefName )/quest">
+										<div style="padding: .4em">------ + из мульта ------</div>
+										<xsl:for-each select="m8:quest( $chiefName )/*">
+											<!--<div><xsl:value-of select="name()"/></div>-->
+											<xsl:variable name="linkName" select="name()"/>
+											<xsl:if test="$types/@*[.=$linkName]">
+												<xsl:variable name="multParam" select="name()"/>
+												<div style="padding-bottom: .5em">
+													<a href="{m8:root( $fact, $currentQuest )}&amp;{$types/@*[.=$multParam]}=&amp;m={$modifier}">
+														<xsl:value-of select="m8:title( $multParam )"/>
+														<!--<xsl:value-of select="concat( ' (', span[3], ')' )"/>
+															$types/@*[name()=span[1]]  <xsl:value-of select="m8:title( $types/@*[name()=span[1]] )"/>-->
+													</a>
+												</div>
+											</xsl:if>
+										</xsl:for-each>
 									</xsl:if>
-								</xsl:for-each>
-							</xsl:if>
+								</xsl:when>
+								<xsl:otherwise>
+									<table cellpadding="3px">
+										<xsl:for-each select="exsl:node-set($final_sort)/*[name()!='n' and name()!='d' and name()!='i' and not( m8:param($fact, name() ) )]">
+											<xsl:sort select="m8:title( name() )"/>
+											<tr>
+												<xsl:variable name="predicate" select="name()"/>
+												<td valign="top" align="center">
+													<a href="{m8:root( $fact, $modifier )}&amp;{$predicate}=" title="популярность: {@count}">
+														<xsl:attribute name="style"><xsl:if test="@count=1"><xsl:text>font-size: .8em</xsl:text></xsl:if></xsl:attribute>
+														<xsl:apply-templates select="." mode="simpleName"/>
+													</a>
+												</td>
+											</tr>
+										</xsl:for-each>
+									</table>
+								</xsl:otherwise>
+							</xsl:choose>
 							<div>------------ + ------------</div>
 							<xsl:if test="not( $currentPort/i )">
 								<span style="padding: .6em .8em">
 									<xsl:choose>
-										<xsl:when test="$currentQuest"><a href="{m8:root( $fact, $currentQuest )}&amp;i=" style="color: #822">имя</a></xsl:when>
-										<xsl:otherwise><a href="{m8:root( $fact )}?i=&amp;m={$modifier}" style="color: #822">имя</a></xsl:otherwise>
+										<xsl:when test="$currentQuest">
+											<a href="{m8:root( $fact, $currentQuest )}&amp;i=" style="color: #822">имя</a>
+										</xsl:when>
+										<xsl:otherwise>
+											<a href="{m8:root( $fact )}?i=&amp;m={$modifier}" style="color: #822">имя</a>
+										</xsl:otherwise>
 									</xsl:choose>
-									
 								</span>
 							</xsl:if>
 							<xsl:if test="not( $currentPort/d )">
 								<span style="padding: .6em .8em">
 									<xsl:choose>
-										<xsl:when test="$currentQuest"><a href="{m8:root( $fact, $currentQuest )}&amp;d=" style="color: #282">связь</a></xsl:when>
-										<xsl:otherwise><a href="{m8:root( $fact )}?d=&amp;m={$modifier}" style="color: #282">связь</a></xsl:otherwise>
+										<xsl:when test="$currentQuest">
+											<a href="{m8:root( $fact, $currentQuest )}&amp;d=" style="color: #282">связь</a>
+										</xsl:when>
+										<xsl:otherwise>
+											<a href="{m8:root( $fact )}?d=&amp;m={$modifier}" style="color: #282">связь</a>
+										</xsl:otherwise>
 									</xsl:choose>
-									
 									<!-- &amp;quest={$modifier} модификатор не срабатывает, т.к. для d модификатор берется принудительно из квеста, а там по умолчанию 'n'-->
 								</span>
 							</xsl:if>
 							<xsl:if test="not( $currentPort/n )">
 								<span style="padding-bottom: .6em .8em">
 									<xsl:choose>
-										<xsl:when test="$currentQuest"><a href="{m8:root( $fact, $currentQuest )}&amp;n=" style="color: #228">примечание</a></xsl:when>
-										<xsl:otherwise><a href="{m8:root( $fact )}?n=&amp;m={$modifier}" style="color: #228">примечание</a></xsl:otherwise>
+										<xsl:when test="$currentQuest">
+											<a href="{m8:root( $fact, $currentQuest )}&amp;n=" style="color: #228">примечание</a>
+										</xsl:when>
+										<xsl:otherwise>
+											<a href="{m8:root( $fact )}?n=&amp;m={$modifier}" style="color: #228">примечание</a>
+										</xsl:otherwise>
 									</xsl:choose>
 								</span>
 							</xsl:if>

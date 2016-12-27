@@ -422,8 +422,8 @@
 		<xsl:param name="fact"/>
 		<xsl:param name="modifier"/>
 		<xsl:message>								== m8:img (fact: <xsl:value-of select="$fact"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
-		<xsl:variable name="chief" select="m8:chief( $fact )"/>
-		<func:result select="concat( $start/@prefix, 'p/', m8:holder( $fact ), '/img/', m8:type( $chief ), '/', m8:title( $fact, $code, $modifier ) )"/>
+		<xsl:variable name="chief" select="m8:chief( $fact )"/><!--m8:holder( $fact )-->
+		<func:result select="concat( $start/@prefix, 'p/',m8:holder( $fact ), '/img/', m8:type( $chief ), '/', m8:title( $fact, $code, $modifier ) )"/>
 	</func:function>
 	<func:function name="m8:chief">
 		<xsl:param name="fact"/>
