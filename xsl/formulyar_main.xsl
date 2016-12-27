@@ -622,7 +622,7 @@
 				<td align="center" valign="top">
 					<xsl:variable name="chiefName" select="m8:chief( $fact)"/>
 					<!--<xsl:if test="( m8:holder( $currentFact )=$user or ( $currentQuest and m8:holder( $currentQuest )=$user ) ) and ( $chiefName != 'n' or not( $currentQuest ) )  or not( $types ) ">-->
-					<xsl:if test="( ( not( $currentQuest ) and m8:holder( $fact )=$user ) or ( $currentQuest and m8:holder( $currentQuest )=$user ) ) and ( $chiefName != 'n' or not( $currentQuest ) )  or not( $types ) ">
+					<xsl:if test="( ( not( $currentQuest ) and m8:holder( $fact )=$user ) or ( $currentQuest and m8:holder( $currentQuest )=$user ) )"><!-- and ( $chiefName != 'n' or not( $currentQuest ) )  or not( $types ) -->
 						<!-- -->
 						<!--not($modifier) or -->
 						<div style="padding: 1em; ">
