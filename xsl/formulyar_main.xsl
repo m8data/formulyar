@@ -655,7 +655,7 @@
 											<tr>
 												<xsl:variable name="predicate" select="name()"/>
 												<td valign="top" align="center">
-													<a href="{m8:root( $fact, $modifier )}&amp;{$predicate}=" title="популярность: {@count}">
+													<a href="{m8:root( $fact )}&amp;{$predicate}=" title="популярность: {@count}">
 														<xsl:attribute name="style"><xsl:if test="@count=1"><xsl:text>font-size: .8em</xsl:text></xsl:if></xsl:attribute>
 														<xsl:apply-templates select="." mode="simpleName"/>
 													</a>
