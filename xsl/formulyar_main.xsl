@@ -467,9 +467,9 @@
 		<xsl:param name="currentQuest"/>
 		<xsl:variable name="currentPort" select="m8:port( $fact, $currentQuest )"/>
 		<xsl:variable name="predicatesThisNechto">
-			<xsl:for-each select="m8:index( $startTypeName )/object/*">
+			<xsl:for-each select="m8:index( m8:param( $fact, 'r' ) )/object/*">
 				<xsl:variable name="subjectName" select="name()"/>
-				<xsl:for-each select="m8:path( $startTypeName, concat( 'object_', $subjectName ) )/*">
+				<xsl:for-each select="m8:path( m8:param( $fact, 'r' ), concat( 'object_', $subjectName ) )/*">
 					<xsl:for-each select="m8:port( $subjectName, name() )/*[name() != 'r' ]">
 						<xsl:element name="{name()}">_</xsl:element>
 					</xsl:for-each>
@@ -622,7 +622,7 @@
 				<td align="center" valign="top">
 					<xsl:variable name="chiefName" select="m8:chief( $fact)"/>
 					<!--<xsl:if test="( m8:holder( $currentFact )=$user or ( $currentQuest and m8:holder( $currentQuest )=$user ) ) and ( $chiefName != 'n' or not( $currentQuest ) )  or not( $types ) ">-->
-					<xsl:if test="( ( not( $currentQuest ) and m8:holder( $fact )=$user ) or ( $currentQuest and m8:holder( $currentQuest )=$user ) )"><!-- and ( $chiefName != 'n' or not( $currentQuest ) )  or not( $types ) -->
+					<xsl:if test="( ( not( $currentQuest ) and m8:holder( $fact )=$user ) or ( $currentQuest and m8:holder( $currentQuest )=$user ) ) and ( $chiefName != 'n' or not( $currentQuest ) )  or not( $types )"><!-- or ( ( not( $currentQuest ) and m8:holder( $fact )=$user ) or ( $currentQuest and m8:holder( $currentQuest )=$user ) ) and ( $chiefName != 'n' or not( $currentQuest ) )  or not( $types ) -->
 						<!-- -->
 						<!--not($modifier) or -->
 						<div style="padding: 1em; ">
