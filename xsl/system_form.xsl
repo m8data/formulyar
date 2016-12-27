@@ -148,12 +148,12 @@
 		<xsl:param name="size"/>
 		<func:result>
 			<code>
-				<div>
-					<xsl:value-of select="$title"/>
-				</div>
 				<xsl:if test="$size">
 					<xsl:attribute name="style"><xsl:value-of select="concat( 'font-size: ', $size )"/></xsl:attribute>
 				</xsl:if>
+				<div>
+					<xsl:value-of select="$title"/>
+				</div>
 				<xsl:apply-templates select="exsl:node-set($tree)" mode="serialize"/>
 			</code>
 		</func:result>
@@ -172,13 +172,13 @@
 		<xsl:param name="third"/>
 		<func:result>
 			<xsl:choose>
-				<xsl:when test="$first">
+				<xsl:when test="$first and $first != 'BAD_NAME'">
 					<xsl:value-of select="$first"/>
 				</xsl:when>
-				<xsl:when test="$second">
+				<xsl:when test="$second and $second != 'BAD_NAME'">
 					<xsl:value-of select="$second"/>
 				</xsl:when>	
-				<xsl:when test="$third">
+				<xsl:when test="$third and $third != 'BAD_NAME'">
 					<xsl:value-of select="$third"/>
 				</xsl:when>								
 			</xsl:choose>
@@ -322,7 +322,7 @@
 	-->
 	<func:function name="m8:director">
 		<xsl:param name="fact"/>
-		<xsl:message>								== m8:director (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>
+		<!--<xsl:message>								== m8:director (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>-->
 		<func:result select="name( m8:unic( m8:port( $fact ), 'r' ) )"/>
 		<!--<func:result select="name( m8:port( $fact )/r/* )"/>-->
 	</func:function>
@@ -360,7 +360,7 @@
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
 		<xsl:param name="modifier"/>
-		<xsl:message>								== m8:title (fact: <xsl:value-of select="$fact"/>; param: <xsl:value-of select="$param"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
+		<!--<xsl:message>								== m8:title (fact: <xsl:value-of select="$fact"/>; param: <xsl:value-of select="$param"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>-->
 		<func:result>
 			<xsl:choose>
 				<xsl:when test="$param">
@@ -466,8 +466,11 @@
 		<xsl:param name="factName"/>
 		<xsl:param name="targetName" xml:lang="принимается тип, а не класс"/>
 		<xsl:param name="direct"/>
+		<xsl:param name="secondName" xml:lang="принимается тип, а не класс"/>
+		<xsl:param name="secondDirect" xml:lang="принимается тип, а не класс"/>
+		
 		<xsl:variable name="relation">
-			<xsl:for-each select="m8:link( $factName, $direct )/*[m8:chief( name() )=m8:class($targetName)][3 > position()]">
+			<xsl:for-each select="m8:link( $factName, $direct )/*[m8:chief( name() )=m8:class($targetName)]">
 				<xsl:sort select="m8:title( name(), 'd', $factName )" data-type="number"/>
 				<xsl:variable name="relationName" select="name()"/>
 				<xsl:element name="{$targetName}">
@@ -491,7 +494,42 @@
 							</xsl:for-each>
 						</modification>
 					</xsl:if>
-					<xsl:copy-of select="m8:copylist( $relationName )"/>
+				<!--	<xsl:variable name="copys" select="m8:copylist( $relationName )"/>-->
+					<xsl:choose>
+						<xsl:when test="$secondName">
+							<xsl:for-each select="exsl:node-set( m8:copylist( $relationName ) )/*">
+								<xsl:copy>
+									<xsl:copy-of select="@*"/>
+									
+									<xsl:for-each select="m8:role1( @name )/*[name()!='n' and m8:chief( name() ) = $secondName]">
+										<xsl:sort select="m8:title( name(), $depth )" data-type="number"/>
+							<xsl:element name="{name()}">
+								<xsl:attribute name="title"><xsl:value-of select="m8:title( name() )"/></xsl:attribute>
+								<!--<xsl:attribute name="picture"><xsl:value-of select="$picture"/></xsl:attribute>-->
+								<xsl:for-each select="m8:port( name() )/*|m8:port( m8:director(name()) )/*">
+									
+									<xsl:variable name="paramName" select="name()"/>
+									<xsl:if test="$class/@*[name()=$paramName]">
+										<xsl:element name="{$class/@*[name()=$paramName]}">
+											<xsl:value-of select="m8:title( name(*) )"/>
+											<!--<xsl:attribute name="title"></xsl:attribute>-->
+											<!--<xsl:comment/>-->
+										</xsl:element>
+									</xsl:if>
+								</xsl:for-each>
+							</xsl:element>
+						</xsl:for-each>
+									<!--<xsl:copy-of select="m8:relation( @name, $secondName, $secondDirect )"/>-->
+								</xsl:copy>
+								<!--<xsl:copy-of select="."/>-->
+							<!--	<dd>ss</dd>-->
+							</xsl:for-each>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:copy-of select="m8:copylist( $relationName )"/>
+						</xsl:otherwise>
+					</xsl:choose>
+					
 				</xsl:element>
 			</xsl:for-each>
 		</xsl:variable>
