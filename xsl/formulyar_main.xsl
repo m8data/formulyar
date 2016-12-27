@@ -630,7 +630,7 @@
 							<!--<div>Добавление свойства:</div>-->
 							<xsl:choose>
 								<xsl:when test="$currentQuest">
-									<xsl:if test="$currentQuest and m8:index( $chiefName )/quest">
+									<xsl:if test="m8:index( $chiefName )/quest">
 										<div style="padding: .4em">------ + из мульта ------</div>
 										<xsl:for-each select="m8:quest( $chiefName )/*">
 											<!--<div><xsl:value-of select="name()"/></div>-->
@@ -650,7 +650,7 @@
 								</xsl:when>
 								<xsl:otherwise>
 									<table cellpadding="3px">
-										<xsl:for-each select="exsl:node-set($final_sort)/*[name()!='n' and name()!='d' and name()!='i' and not( m8:param($fact, name() ) )]">
+										<xsl:for-each select="exsl:node-set($final_sort)/*[name()!='n' and name()!='d' and name()!='i' and not( m8:param( $fact, name() ) )]">
 											<xsl:sort select="m8:title( name() )"/>
 											<tr>
 												<xsl:variable name="predicate" select="name()"/>
