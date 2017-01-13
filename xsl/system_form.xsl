@@ -148,12 +148,15 @@
 		<xsl:param name="size"/>
 		<func:result>
 			<code>
+				<xsl:comment>m8:serialize</xsl:comment>
 				<xsl:if test="$size">
 					<xsl:attribute name="style"><xsl:value-of select="concat( 'font-size: ', $size )"/></xsl:attribute>
 				</xsl:if>
-				<div>
-					<xsl:value-of select="$title"/>
-				</div>
+				<xsl:if test="$title">
+					<div>
+						<xsl:value-of select="$title"/>
+					</div>
+				</xsl:if>
 				<xsl:apply-templates select="exsl:node-set($tree)" mode="serialize"/>
 			</code>
 		</func:result>
