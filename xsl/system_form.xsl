@@ -180,10 +180,10 @@
 				</xsl:when>
 				<xsl:when test="$second and $second != 'BAD_NAME'">
 					<xsl:value-of select="$second"/>
-				</xsl:when>	
+				</xsl:when>
 				<xsl:when test="$third and $third != 'BAD_NAME'">
 					<xsl:value-of select="$third"/>
-				</xsl:when>								
+				</xsl:when>
 			</xsl:choose>
 		</func:result>
 	</func:function>
@@ -425,7 +425,8 @@
 		<xsl:param name="fact"/>
 		<xsl:param name="modifier"/>
 		<xsl:message>								== m8:img (fact: <xsl:value-of select="$fact"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
-		<xsl:variable name="chief" select="m8:chief( $fact )"/><!--m8:holder( $fact )-->
+		<xsl:variable name="chief" select="m8:chief( $fact )"/>
+		<!--m8:holder( $fact )-->
 		<func:result select="concat( $start/@prefix, 'p/',m8:holder( $fact ), '/img/', m8:type( $chief ), '/', m8:title( $fact, $code, $modifier ) )"/>
 	</func:function>
 	<func:function name="m8:chief">
@@ -471,7 +472,6 @@
 		<xsl:param name="direct"/>
 		<xsl:param name="secondName" xml:lang="принимается тип, а не класс"/>
 		<xsl:param name="secondDirect" xml:lang="принимается тип, а не класс"/>
-		
 		<xsl:variable name="relation">
 			<xsl:for-each select="m8:link( $factName, $direct )/*[m8:chief( name() )=m8:class($targetName)]">
 				<xsl:sort select="m8:title( name(), 'd', $factName )" data-type="number"/>
@@ -497,42 +497,39 @@
 							</xsl:for-each>
 						</modification>
 					</xsl:if>
-				<!--	<xsl:variable name="copys" select="m8:copylist( $relationName )"/>-->
+					<!--	<xsl:variable name="copys" select="m8:copylist( $relationName )"/>-->
 					<xsl:choose>
 						<xsl:when test="$secondName">
 							<xsl:for-each select="exsl:node-set( m8:copylist( $relationName ) )/*">
 								<xsl:copy>
 									<xsl:copy-of select="@*"/>
-									
 									<xsl:for-each select="m8:role1( @name )/*[name()!='n' and m8:chief( name() ) = $secondName]">
 										<xsl:sort select="m8:title( name(), $depth )" data-type="number"/>
-							<xsl:element name="{name()}">
-								<xsl:attribute name="title"><xsl:value-of select="m8:title( name() )"/></xsl:attribute>
-								<!--<xsl:attribute name="picture"><xsl:value-of select="$picture"/></xsl:attribute>-->
-								<xsl:for-each select="m8:port( name() )/*|m8:port( m8:director(name()) )/*">
-									
-									<xsl:variable name="paramName" select="name()"/>
-									<xsl:if test="$class/@*[name()=$paramName]">
-										<xsl:element name="{$class/@*[name()=$paramName]}">
-											<xsl:value-of select="m8:title( name(*) )"/>
-											<!--<xsl:attribute name="title"></xsl:attribute>-->
-											<!--<xsl:comment/>-->
+										<xsl:element name="{name()}">
+											<xsl:attribute name="title"><xsl:value-of select="m8:title( name() )"/></xsl:attribute>
+											<!--<xsl:attribute name="picture"><xsl:value-of select="$picture"/></xsl:attribute>-->
+											<xsl:for-each select="m8:port( name() )/*|m8:port( m8:director(name()) )/*">
+												<xsl:variable name="paramName" select="name()"/>
+												<xsl:if test="$class/@*[name()=$paramName]">
+													<xsl:element name="{$class/@*[name()=$paramName]}">
+														<xsl:value-of select="m8:title( name(*) )"/>
+														<!--<xsl:attribute name="title"></xsl:attribute>-->
+														<!--<xsl:comment/>-->
+													</xsl:element>
+												</xsl:if>
+											</xsl:for-each>
 										</xsl:element>
-									</xsl:if>
-								</xsl:for-each>
-							</xsl:element>
-						</xsl:for-each>
+									</xsl:for-each>
 									<!--<xsl:copy-of select="m8:relation( @name, $secondName, $secondDirect )"/>-->
 								</xsl:copy>
 								<!--<xsl:copy-of select="."/>-->
-							<!--	<dd>ss</dd>-->
+								<!--	<dd>ss</dd>-->
 							</xsl:for-each>
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:copy-of select="m8:copylist( $relationName )"/>
 						</xsl:otherwise>
 					</xsl:choose>
-					
 				</xsl:element>
 			</xsl:for-each>
 		</xsl:variable>
@@ -566,7 +563,8 @@
 		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message or $alertTitle)" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
 			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$alertTitle"><xsl:value-of select="$alertTitle"/></xsl:when><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
 		</xsl:if>
-		<form id="editParamOfPort" selectedValue="{name($selectedValue)}" placeholder="{$placeholder}" inputInvalid="{$inputInvalid}"><!-- currentModifier="{$currentModifier}" questName="{$questName}"-->
+		<form id="editParamOfPort" selectedValue="{name($selectedValue)}" placeholder="{$placeholder}" inputInvalid="{$inputInvalid}">
+			<!-- currentModifier="{$currentModifier}" questName="{$questName}"-->
 			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose><!--<xsl:if test="$predicateName = 'n' ">/</xsl:if>			--></xsl:attribute>
 			<xsl:if test="$predicateName = 'n' and not( $currentModifier )">
 				<xsl:attribute name="ENCTYPE">multipart/form-data</xsl:attribute>
@@ -588,7 +586,8 @@
 					</input>
 				</xsl:for-each>
 			</xsl:if>
-			<xsl:if test="( $currentModifier or $questName or $modifierName )" xml:lang="$modifier !='n' - нужен что бы можно было указывать n в квестах"><!--( $predicateName != 'n' or $modifier !='n' ) and -->
+			<xsl:if test="( $currentModifier or $questName or $modifierName )" xml:lang="$modifier !='n' - нужен что бы можно было указывать n в квестах">
+				<!--( $predicateName != 'n' or $modifier !='n' ) and -->
 				<input type="hidden" name="modifier">
 					<xsl:attribute name="value"><xsl:choose><xsl:when test="$questName"><xsl:value-of select="$questName"/></xsl:when><xsl:when test="$modifierName"><xsl:value-of select="$modifierName"/></xsl:when><xsl:when test="$currentModifier"><xsl:value-of select="$currentModifier"/></xsl:when><xsl:otherwise><xsl:value-of select="$modifier"/></xsl:otherwise></xsl:choose></xsl:attribute>
 				</input>
@@ -606,7 +605,7 @@
 					</xsl:choose>
 				</xsl:with-param>
 				<xsl:with-param name="currentModifier" select="$currentModifier"/>
-<!--				<xsl:with-param name="currentModifier">
+				<!--				<xsl:with-param name="currentModifier">
 					<xsl:choose>
 						<xsl:when test="$currentModifier">
 							<xsl:value-of select="$currentModifier"/>
@@ -792,7 +791,6 @@
 		<xsl:param name="ajaxMethod"/>
 		<xsl:param name="option"/>
 		<xsl:param name="method"/>
-		
 		<xsl:variable name="params_of_quest" select="m8:port( $currentFact, $currentModifier )/*"/>
 		<xsl:variable name="predicateParam" select="m8:value( name( m8:port( $predicateName )/d/* ) )"/>
 		<xsl:message>		inputParamOfPort :: sourceValue: <xsl:copy-of select="count(exsl:node-set($sourceValue)/*)"/>
@@ -801,7 +799,8 @@
 			<!--
 							ВЫВОД ЗАПРОСА ФАЙЛА
 -->
-			<xsl:when test="$predicateName = 'n' and not( $currentModifier )"><!--$modifier='n'-->
+			<xsl:when test="$predicateName = 'n' and not( $currentModifier )">
+				<!--$modifier='n'-->
 				<input type="file" name="file">
 					<xsl:if test="not($ajaxMethod)">
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
@@ -1029,7 +1028,7 @@
 				<xsl:variable name="title">
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
 				</xsl:variable>
-				<input type="text" name="{$predicateName}">						
+				<input type="text" name="{$predicateName}">
 					<xsl:if test="$placeholder">
 						<xsl:attribute name="placeholder"><xsl:value-of select="$placeholder"/></xsl:attribute>
 					</xsl:if>
@@ -1037,7 +1036,6 @@
 						<xsl:when test="$size">
 							<xsl:attribute name="size"><xsl:value-of select="$size"/></xsl:attribute>
 						</xsl:when>
-
 						<xsl:otherwise>
 							<xsl:variable name="length" select="string-length( $title )"/>
 							<xsl:choose>
