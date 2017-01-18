@@ -561,7 +561,14 @@
 		<xsl:variable name="selectedValue" select="m8:unic( $objectElement, $predicateName )"/>
 		<!--<xsl:if test="name($selectedValue) = 'r' " xml:lang="add 2016-12-06"><xsl:attribute name="title">укажите здесь число больше нуля</xsl:attribute></xsl:if>-->
 		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message or $alertTitle)" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
-			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$alertTitle"><xsl:value-of select="$alertTitle"/></xsl:when><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
+			<xsl:variable name="error_title">
+				<xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута">
+					<xsl:when test="$alertTitle !='' "><xsl:value-of select="$alertTitle"/></xsl:when>
+					<xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when>
+					<xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:attribute name="title"><xsl:value-of select="$error_title"/></xsl:attribute>
 		</xsl:if>
 		<form id="editParamOfPort" selectedValue="{name($selectedValue)}" placeholder="{$placeholder}" inputInvalid="{$inputInvalid}">
 			<!-- currentModifier="{$currentModifier}" questName="{$questName}"-->
