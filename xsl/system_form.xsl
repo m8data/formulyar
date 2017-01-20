@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:math="http://exslt.org/math" xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:date="http://exslt.org/dates-and-times"   xmlns:math="http://exslt.org/math" xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
 	<xsl:include href="get_name.xsl"/>
 	<!--<xsl:include href="../../../m8/type.xsl"/>-->
 	<!--
@@ -100,6 +100,29 @@
 	<!-- 
 			Функции A
 	-->
+	<func:function name="m8:time">
+		<xsl:param name="sec"/>
+		<xsl:param name="format"/>
+		<xsl:variable name="duration" select="date:duration( substring-before( $sec, '.' ) )"/>
+		<func:result>
+			<xsl:choose>
+				<xsl:when test="$format">
+					<xsl:variable name="t">
+						<xsl:choose>
+							<xsl:when test="starts-with($format, 'rus')"><xsl:value-of select="date:add( '1970-01-01T03:00:00', $duration )"/></xsl:when>
+						</xsl:choose>
+					</xsl:variable>
+					<xsl:choose>
+						<xsl:when test="$format='rus1'"><xsl:value-of select="concat( date:day-in-month($t), ' ', date:month-name($t), ' ', date:year($t), ', ', substring( date:time($t), 1, 5 ) )"/></xsl:when>
+					</xsl:choose>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="date:add( '1970-01-01', $duration )"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</func:result>
+		<!--<func:result select="date:format-date( $cTime, $format )"/>-->
+	</func:function>	
 	<func:function name="m8:unic">
 		<xsl:param name="rootNode"/>
 		<xsl:param name="param"/>
