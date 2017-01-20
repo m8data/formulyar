@@ -11,14 +11,20 @@ use CGI::Carp qw(warningsToBrowser fatalsToBrowser); #идет в составе
 
  my $q = CGI->new;
 #http://stackoverflow.com/questions/23704058/perl-emailsendgmail-cannot-connect-to-gmail-account-on-windows-7
-# hao@infostandart.com
-my $poluchatel = 'hao@infostandart.com';
+my @account;
+
+open (FILE, $ENV{DOCUMENT_ROOT}.'/mail.conf' )|| die "Error opening file $ENV{DOCUMENT_ROOT}/mail.conf: $!\n"; 
+		while (<FILE>){
+			s/\s+\z//;
+			push @account, $_;
+		}
+	close (FILE);
 
 my $email = Email::Simple->create (
   header => [
     From    => param('email'),
-    To      => $poluchatel,
-    Subject => 'question from tn_landing',
+    To      => $account[0],
+    Subject => 'question from '.$ENV{SERVER_NAME},
   ],
 
   body => 'Имя: '.param('name').'
@@ -32,8 +38,8 @@ my $sender = Email::Send->new
   mailer      => 'Gmail',
   mailer_args => 
     [
-      username => '',
-      password => '',
+      username => $account[1],
+      password => $account[2],
     ]
 });
 
