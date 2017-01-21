@@ -38,14 +38,12 @@ my $sender = Email::Send->new
   mailer      => 'Gmail',
   mailer_args => 
     [
- #     username => $account[1],
-  #    password => $account[2],
-        username => 'ru7701',
-      password => 'oli&lisa2',
+      username => $account[1],
+      password => $account[2],
     ]
 });
 
 $sender->send ($email);
 
 print $q->header();
-print '0';
+print '1';
