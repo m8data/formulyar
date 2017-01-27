@@ -414,15 +414,18 @@
 	<!-- 	-->
 	<func:function name="m8:i">
 		<xsl:param name="fact"/>
-		<func:result select="m8:value( m8:param( $fact, 'i' ) )"/>
+		<xsl:param name="quest"/>
+		<func:result select="m8:value( m8:param( $fact, 'i', $quest ) )"/>
 	</func:function>
 	<func:function name="m8:d">
 		<xsl:param name="fact"/>
-		<func:result select="m8:value( m8:param( $fact, 'd' ) )"/>
+		<xsl:param name="quest"/>
+		<func:result select="m8:value( m8:param( $fact, 'd', $quest ) )"/>
 	</func:function>
 	<func:function name="m8:n">
 		<xsl:param name="fact"/>
-		<func:result select="m8:value( m8:param( $fact, 'n' ) )"/>
+		<xsl:param name="quest"/>
+		<func:result select="m8:value( m8:param( $fact, 'n', $quest ) )"/>
 	</func:function>
 	<!-- 	-->
 	<func:function name="m8:ancestor-or-self">

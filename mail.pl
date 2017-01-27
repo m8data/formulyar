@@ -20,17 +20,19 @@ open (FILE, $ENV{DOCUMENT_ROOT}.'/mail.conf' )|| die "Error opening file $ENV{DO
 		}
 	close (FILE);
 
+my $maddress = &utfText( param('email') );
+  
 my $email = Email::Simple->create (
   header => [
-    From    => param('email'),
+    From    => $maddress,
     To      => $account[0],
     Subject => 'question from '.$ENV{SERVER_NAME},
   ],
 
-  body => 'Имя: '.param('name').'
-Email: '.param('email').'
-Телефон: '.param('phone').'
-Вопрос: '.param('question')
+  body => 'Имя: '.&utfText( param('name') ).'
+Email: '.$maddress.'
+Телефон: '.&utfText( param('phone') ).'
+Вопрос: '.&utfText( param('question') )
 );
 
 my $sender = Email::Send->new 
@@ -47,3 +49,11 @@ $sender->send ($email);
 
 print $q->header();
 print '1';
+
+sub utfText {
+	my $value = shift;
+	$value =~ tr/+/ /;
+	$value =~ s/%([a-fA-F0-9]{2})/pack("C", hex($1))/eg;
+# $value = Encode::decode_utf8( $value );
+	return $value
+}
