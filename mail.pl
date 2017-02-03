@@ -26,13 +26,13 @@ my $email = Email::Simple->create (
   header => [
     From    => $maddress,
     To      => $account[0],
-    Subject => 'question from '.$ENV{SERVER_NAME},
+    Subject => 'mail from '.$ENV{SERVER_NAME},
   ],
 
-  body => 'Имя: '.&utfText( param('name') ).'
+  body => 'Name: '.&utfText( param('name') ).'
 Email: '.$maddress.'
-Телефон: '.&utfText( param('phone') ).'
-Вопрос: '.&utfText( param('question') )
+Phone: '.&utfText( param('phone') ).'
+Question: '.&utfText( param('question') )
 );
 
 my $sender = Email::Send->new 
