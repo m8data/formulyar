@@ -21,6 +21,11 @@ open (FILE, $ENV{DOCUMENT_ROOT}.'/mail.conf' )|| die "Error opening file $ENV{DO
 	close (FILE);
 
 my $maddress = &utfText( param('email') );
+my $body = '';  
+for my $pair ( split( /&/, &utfText( $$temp{'QUERY_STRING'} ) ) ){
+	my ($name, $value) = split(/=/, $pair);
+	$body .= ucfirst($name).': '.$value."\n";
+}  
   
 my $email = Email::Simple->create (
   header => [
@@ -28,11 +33,11 @@ my $email = Email::Simple->create (
     To      => $account[0],
     Subject => 'mail from '.$ENV{SERVER_NAME},
   ],
-
-  body => 'Name: '.&utfText( param('name') ).'
-Email: '.$maddress.'
-Phone: '.&utfText( param('phone') ).'
-Question: '.&utfText( param('question') )
+  body => $body;
+#'Name: '.&utfText( param('name') ).'
+#Email: '.$maddress.'
+#Phone: '.&utfText( param('phone') ).'
+#Question: '.&utfText( param('question') )
 );
 
 my $sender = Email::Send->new 
