@@ -553,7 +553,7 @@ sub washProc{
 			for my $pair ( split( /&/, $$temp{'QUERY_STRING'}  ) ){
 				&setWarn('		wP    итоговый парсинг пары >'.$pair.'<');
 				my ($name, $value) = split(/=/, $pair);
-				next if $name eq '_';  #пара с именем '_' добавляется только для того что бы избежать кэширования запроса.
+				next if $name eq '_';#пара с именем '_' добавляется только для того что бы избежать кэширования запроса.
 				$name = $types{$name} if defined $types{$name};
 				next if $name eq 'user' or defined $$temp{$name};
 				####  работа с значением  ####
