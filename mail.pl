@@ -14,11 +14,11 @@ use CGI::Carp qw(warningsToBrowser fatalsToBrowser); #идет в составе
 my @account;
 
 open (FILE, $ENV{DOCUMENT_ROOT}.'/mail.conf' )|| die "Error opening file $ENV{DOCUMENT_ROOT}/mail.conf: $!\n"; 
-		while (<FILE>){
-			s/\s+\z//;
-			push @account, $_;
-		}
-	close (FILE);
+	while (<FILE>){
+		s/\s+\z//;
+		push @account, $_;
+	}
+close (FILE);
 
 my $maddress = &utfText( param('email') );
 my $body = '';  
@@ -33,7 +33,7 @@ my $email = Email::Simple->create (
     To      => $account[0],
     Subject => 'mail from '.$ENV{SERVER_NAME},
   ],
-  body => $body;
+  body => $body
 #'Name: '.&utfText( param('name') ).'
 #Email: '.$maddress.'
 #Phone: '.&utfText( param('phone') ).'
