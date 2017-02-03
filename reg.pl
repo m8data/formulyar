@@ -1024,7 +1024,7 @@ sub spinProc {
 }
 
 sub dryProc2 {
-	my ( $clean, $clear )=@_; #$param
+	my ( $clean, $clear )=@_; # $param
 	#&setWarn("		dP 2 @_" );
 	$dbg = 0;
 	my @warn = ("dryProc2 @_ \n");
