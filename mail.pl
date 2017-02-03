@@ -24,6 +24,7 @@ my $maddress = &utfText( param('email') );
 my $body = '';  
 for my $pair ( split( /&/, &utfText( $ENV{'QUERY_STRING'} ) ) ){
 	my ($name, $value) = split(/=/, $pair);
+	next if $name eq '_';
 	$body .= ucfirst($name).': '.$value."\n";
 }  
   
@@ -34,10 +35,6 @@ my $email = Email::Simple->create (
     Subject => 'mail from '.$ENV{SERVER_NAME},
   ],
   body => $body
-#'Name: '.&utfText( param('name') ).'
-#Email: '.$maddress.'
-#Phone: '.&utfText( param('phone') ).'
-#Question: '.&utfText( param('question') )
 );
 
 my $sender = Email::Send->new 
