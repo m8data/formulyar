@@ -22,7 +22,7 @@ close (FILE);
 
 my $maddress = &utfText( param('email') );
 my $body = '';  
-for my $pair ( split( /&/, &utfText( $$temp{'QUERY_STRING'} ) ) ){
+for my $pair ( split( /&/, &utfText( $ENV{'QUERY_STRING'} ) ) ){
 	my ($name, $value) = split(/=/, $pair);
 	$body .= ucfirst($name).': '.$value."\n";
 }  
