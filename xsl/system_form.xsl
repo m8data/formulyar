@@ -420,8 +420,24 @@
 	<func:function name="m8:d">
 		<xsl:param name="fact"/>
 		<xsl:param name="quest"/>
-		<func:result select="m8:value( m8:param( $fact, 'd', $quest ) )"/>
+		<!--<func:result>-->
+			<xsl:choose>
+				<xsl:when test="m8:param( $fact, 'd', $quest ) and starts-with( m8:param( $fact, 'd', $quest ), 'r' )">
+					<func:result select="m8:title( $fact, 'd', $quest )"/>
+					<!--<xsl:value-of select="m8:title( $fact, 'd', $quest )"/>-->
+				</xsl:when>
+				<xsl:otherwise>
+					<func:result select="m8:value( m8:param( $fact, 'd', $quest ) )"/>
+					<!--<xsl:value-of select="m8:value( m8:param( $fact, 'd', $quest ) )"/>-->
+				</xsl:otherwise>
+			</xsl:choose>
+		<!--</func:result>-->		
 	</func:function>
+	<!--<func:function name="m8:d">
+		<xsl:param name="fact"/>
+		<xsl:param name="quest"/>
+		<func:result select="m8:value( m8:param( $fact, 'd', $quest ) )"/>
+	</func:function>	-->
 	<func:function name="m8:n">
 		<xsl:param name="fact"/>
 		<xsl:param name="quest"/>
@@ -989,10 +1005,17 @@
 								</xsl:for-each>
 							</input>
 							<label class="label-block" for="{name()}">
-								<xsl:if test="@activity!=1">
+							
+								<!--<xsl:if test="@activity!=1"><xsl:value-of select="@domination"/><xsl:value-of select="@activity"/>-->
+								<xsl:if test="@domination != 1">
 									<xsl:attribute name="style">position: relative</xsl:attribute>
-									<div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #B99; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">не активно</div>
+									<xsl:choose>
+										<xsl:when test="@domination = 2"><div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #5B5; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">служебное</div></xsl:when>
+										<xsl:otherwise><div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #B55; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">debug</div></xsl:otherwise>
+									</xsl:choose>
+									<!--<div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #B99; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">не активно</div>-->
 								</xsl:if>
+								<!--<xsl:value-of select="@domitation"/>|<xsl:value-of select="@activity"/>-->
 								<xsl:if test="@imgPath">
 									<img src="{@imgPath}/front.jpg" alt="{@code}" width="60"/>
 								</xsl:if>
