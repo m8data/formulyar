@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:date="http://exslt.org/dates-and-times"   xmlns:math="http://exslt.org/math" xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:date="http://exslt.org/dates-and-times" xmlns:math="http://exslt.org/math" xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
 	<xsl:include href="get_name.xsl"/>
 	<!--<xsl:include href="../../../m8/type.xsl"/>-->
 	<!--
@@ -109,11 +109,15 @@
 				<xsl:when test="$format">
 					<xsl:variable name="t">
 						<xsl:choose>
-							<xsl:when test="starts-with($format, 'rus')"><xsl:value-of select="date:add( '1970-01-01T03:00:00', $duration )"/></xsl:when>
+							<xsl:when test="starts-with($format, 'rus')">
+								<xsl:value-of select="date:add( '1970-01-01T03:00:00', $duration )"/>
+							</xsl:when>
 						</xsl:choose>
 					</xsl:variable>
 					<xsl:choose>
-						<xsl:when test="$format='rus1'"><xsl:value-of select="concat( date:day-in-month($t), ' ', date:month-name($t), ' ', date:year($t), ', ', substring( date:time($t), 1, 5 ) )"/></xsl:when>
+						<xsl:when test="$format='rus1'">
+							<xsl:value-of select="concat( date:day-in-month($t), ' ', date:month-name($t), ' ', date:year($t), ', ', substring( date:time($t), 1, 5 ) )"/>
+						</xsl:when>
 					</xsl:choose>
 				</xsl:when>
 				<xsl:otherwise>
@@ -122,7 +126,7 @@
 			</xsl:choose>
 		</func:result>
 		<!--<func:result select="date:format-date( $cTime, $format )"/>-->
-	</func:function>	
+	</func:function>
 	<func:function name="m8:unic">
 		<xsl:param name="rootNode"/>
 		<xsl:param name="param"/>
@@ -421,17 +425,17 @@
 		<xsl:param name="fact"/>
 		<xsl:param name="quest"/>
 		<!--<func:result>-->
-			<xsl:choose>
-				<xsl:when test="m8:param( $fact, 'd', $quest ) and starts-with( m8:param( $fact, 'd', $quest ), 'r' )">
-					<func:result select="m8:title( $fact, 'd', $quest )"/>
-					<!--<xsl:value-of select="m8:title( $fact, 'd', $quest )"/>-->
-				</xsl:when>
-				<xsl:otherwise>
-					<func:result select="m8:value( m8:param( $fact, 'd', $quest ) )"/>
-					<!--<xsl:value-of select="m8:value( m8:param( $fact, 'd', $quest ) )"/>-->
-				</xsl:otherwise>
-			</xsl:choose>
-		<!--</func:result>-->		
+		<xsl:choose>
+			<xsl:when test="m8:param( $fact, 'd', $quest ) and starts-with( m8:param( $fact, 'd', $quest ), 'r' )">
+				<func:result select="m8:title( $fact, 'd', $quest )"/>
+				<!--<xsl:value-of select="m8:title( $fact, 'd', $quest )"/>-->
+			</xsl:when>
+			<xsl:otherwise>
+				<func:result select="m8:value( m8:param( $fact, 'd', $quest ) )"/>
+				<!--<xsl:value-of select="m8:value( m8:param( $fact, 'd', $quest ) )"/>-->
+			</xsl:otherwise>
+		</xsl:choose>
+		<!--</func:result>-->
 	</func:function>
 	<!--<func:function name="m8:d">
 		<xsl:param name="fact"/>
@@ -486,13 +490,16 @@
 			</xsl:if>
 		</func:result>
 	</func:function>
+		<!--
+	//-->
 	<func:function name="m8:copylist">
 		<xsl:param name="factName"/>
+		<xsl:param name="note"/>
 		<func:result>
 			<xsl:choose>
 				<xsl:when test="m8:index( $factName )/object">
 					<xsl:for-each select="m8:index( $factName )/object/*">
-						<xsl:copy-of select="m8:copylist( name() )"/>
+						<xsl:copy-of select="m8:copylist( name(), $note )"/>
 					</xsl:for-each>
 				</xsl:when>
 				<xsl:otherwise>
@@ -500,6 +507,10 @@
 						<xsl:for-each select="m8:port( $factName )/*">
 							<xsl:attribute name="{m8:type( name() )}"><xsl:value-of select="m8:title( name( m8:unic( .., name() ) ) )"/></xsl:attribute>
 						</xsl:for-each>
+						<xsl:if test="$note" xml:lang="кастомное безобразие 1">
+							<xsl:attribute name="note" xml:lang="костыльный параметр для обслуживания селекта шага 3 calctn"><xsl:value-of select="translate( m8:title( $note, $teploprovodnost, $factName ), '.', ',' )"/></xsl:attribute>
+						<!--	<xsl:attribute name="note-t" xml:lang="костыльный параметр для обслуживания селекта шага 3 calctn"><xsl:value-of select="concat( $note, $teploprovodnost, $factName )"/></xsl:attribute>-->
+						</xsl:if>
 					</n>
 				</xsl:otherwise>
 			</xsl:choose>
@@ -514,14 +525,18 @@
 		<xsl:param name="direct"/>
 		<xsl:param name="secondName" xml:lang="принимается тип, а не класс"/>
 		<xsl:param name="secondDirect" xml:lang="принимается тип, а не класс"/>
+		<xsl:param name="note"/>
 		<xsl:variable name="relation">
 			<xsl:for-each select="m8:link( $factName, $direct )/*[m8:chief( name() )=m8:class($targetName)]">
 				<xsl:sort select="m8:title( name(), 'd', $factName )" data-type="number"/>
 				<xsl:variable name="relationName" select="name()"/>
 				<xsl:element name="{$targetName}">
-					<!--<xsl:attribute name="name"><xsl:value-of select="$relationName"/></xsl:attribute>-->
+					<xsl:attribute name="note-in"><xsl:value-of select="$note"/></xsl:attribute>
 					<xsl:attribute name="factName"><xsl:value-of select="$factName"/></xsl:attribute>
 					<xsl:attribute name="relationName"><xsl:value-of select="$relationName"/></xsl:attribute>
+					<xsl:if test="$targetName = 'tn_material' and $note" xml:lang="кастомное безобразие 1">
+						<xsl:attribute name="note"><xsl:value-of select="translate( m8:title( $note, $teploprovodnost, $relationName ), '.', ',' )"/></xsl:attribute>
+					</xsl:if>
 					<xsl:if test="m8:param( $relationName, 'd', $factName ) != 'r' ">
 						<xsl:attribute name="d"><xsl:value-of select="m8:title( $relationName, 'd', $factName )"/></xsl:attribute>
 					</xsl:if>
@@ -569,7 +584,8 @@
 							</xsl:for-each>
 						</xsl:when>
 						<xsl:otherwise>
-							<xsl:copy-of select="m8:copylist( $relationName )"/>
+							<xsl:copy-of select="m8:copylist( $relationName, $note )" xml:lang="кастомное безобразие 3"/>
+							
 						</xsl:otherwise>
 					</xsl:choose>
 				</xsl:element>
@@ -605,9 +621,15 @@
 		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message or $alertTitle)" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
 			<xsl:variable name="error_title">
 				<xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута">
-					<xsl:when test="$alertTitle !='' "><xsl:value-of select="$alertTitle"/></xsl:when>
-					<xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when>
-					<xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise>
+					<xsl:when test="$alertTitle !='' ">
+						<xsl:value-of select="$alertTitle"/>
+					</xsl:when>
+					<xsl:when test="$objectElement/@message">
+						<xsl:value-of select="$objectElement/@message"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="$selectedValue/@message"/>
+					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:variable>
 			<xsl:attribute name="title"><xsl:value-of select="$error_title"/></xsl:attribute>
@@ -1005,13 +1027,16 @@
 								</xsl:for-each>
 							</input>
 							<label class="label-block" for="{name()}">
-							
 								<!--<xsl:if test="@activity!=1"><xsl:value-of select="@domination"/><xsl:value-of select="@activity"/>-->
 								<xsl:if test="@domination != 1">
 									<xsl:attribute name="style">position: relative</xsl:attribute>
 									<xsl:choose>
-										<xsl:when test="@domination = 2"><div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #5B5; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">служебное</div></xsl:when>
-										<xsl:otherwise><div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #B55; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">debug</div></xsl:otherwise>
+										<xsl:when test="@domination = 2">
+											<div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #5B5; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">служебное</div>
+										</xsl:when>
+										<xsl:otherwise>
+											<div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #B55; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">debug</div>
+										</xsl:otherwise>
 									</xsl:choose>
 									<!--<div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #B99; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">не активно</div>-->
 								</xsl:if>
@@ -1033,45 +1058,84 @@
 							</xsl:if>
 							<xsl:attribute name="class"><xsl:choose><xsl:when test="exsl:node-set($sourceValue)/*[20]" xml:lang="для городов в калькуляторе TN например">custom-</xsl:when><xsl:otherwise>simple-</xsl:otherwise></xsl:choose><xsl:value-of select="$ajaxMethod"/><xsl:text>-select</xsl:text></xsl:attribute>
 							<xsl:copy-of select="$option"/>
-							<xsl:for-each select="exsl:node-set($sourceValue)/*">
-								<xsl:sort select="m8:title( name() )"/>
-								<!-- m8:title( name() )-->
-								<xsl:variable name="valueName">
-									<xsl:choose>
-										<xsl:when test="m8:class( name() )">
-											<xsl:value-of select="n/@name"/>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:value-of select="name()"/>
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:variable>
-								<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or $valueName = name( $selectedValue )">
-									<option value="{$valueName}">
-										<xsl:if test="$valueName=name( $selectedValue )">
-											<xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
-										</xsl:if>
-										<xsl:variable name="title">
+							<xsl:choose>
+								<xsl:when test="exsl:node-set($sourceValue)/*[1]/n and exsl:node-set($sourceValue)/*[1]/n[@name!=../@relationName]">
+									<!-- and exsl:node-set($sourceValue)/*/n[1][@name!=current()/../@relationName]-->
+									<xsl:for-each select="exsl:node-set($sourceValue)/*">
+										<xsl:sort select="m8:title( name() )"/>
+										<optgroup label="{m8:title(@relationName)}">
+											<xsl:for-each select="n">
+												<xsl:variable name="valueName" select="@name"/>
+												<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or $valueName = name( $selectedValue )">
+													<option value="{$valueName}">
+														<xsl:copy-of select="@note"/>
+														<xsl:if test="$valueName=name( $selectedValue )">
+															<xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
+														</xsl:if>
+														<xsl:variable name="title">
+															<xsl:choose>
+																<xsl:when test="@on_display">
+																	<xsl:value-of select="@on_display"/>
+																</xsl:when>
+																<xsl:when test="@title">
+																	<xsl:value-of select="@title"/>
+																</xsl:when>
+																<xsl:when test="@i|@on_display" xml:lang="add 2016-12-06">
+																	<xsl:value-of select="@i|@on_display"/>
+																</xsl:when>
+																<xsl:otherwise>
+																	<xsl:apply-templates select="." mode="simpleName"/>
+																</xsl:otherwise>
+															</xsl:choose>
+														</xsl:variable>
+														<xsl:value-of select="$title"/>
+													</option>
+												</xsl:if>
+											</xsl:for-each>
+										</optgroup>
+									</xsl:for-each>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:for-each select="exsl:node-set($sourceValue)/*">
+										<xsl:sort select="m8:title( name() )"/>
+										<xsl:variable name="valueName">
 											<xsl:choose>
-												<xsl:when test="@on_display">
-													<xsl:value-of select="@on_display"/>
-												</xsl:when>
-												<xsl:when test="@title">
-													<xsl:value-of select="@title"/>
-												</xsl:when>
-												<xsl:when test="n[not(@on_display)]/@i|n/@on_display" xml:lang="add 2016-12-06">
-													<xsl:value-of select="n[not(@on_display)]/@i|n/@on_display"/>
+												<xsl:when test="m8:class( name() )">
+													<xsl:value-of select="n/@name"/>
 												</xsl:when>
 												<xsl:otherwise>
-													<xsl:apply-templates select="." mode="simpleName"/>
-													<!--titleWord-->
+													<xsl:value-of select="name()"/>
 												</xsl:otherwise>
 											</xsl:choose>
 										</xsl:variable>
-										<xsl:value-of select="$title"/>
-									</option>
-								</xsl:if>
-							</xsl:for-each>
+										<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or $valueName = name( $selectedValue )">
+											<option value="{$valueName}">
+												<xsl:copy-of select="@note|@note2"/>
+												<xsl:if test="$valueName=name( $selectedValue )">
+													<xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
+												</xsl:if>
+												<xsl:variable name="title">
+													<xsl:choose>
+														<xsl:when test="@on_display">
+															<xsl:value-of select="@on_display"/>
+														</xsl:when>
+														<xsl:when test="@title">
+															<xsl:value-of select="@title"/>
+														</xsl:when>
+														<xsl:when test="n[not(@on_display)]/@i|n/@on_display" xml:lang="add 2016-12-06">
+															<xsl:value-of select="n[not(@on_display)]/@i|n/@on_display"/>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:apply-templates select="." mode="simpleName"/>
+														</xsl:otherwise>
+													</xsl:choose>
+												</xsl:variable>
+												<xsl:value-of select="$title"/>
+											</option>
+										</xsl:if>
+									</xsl:for-each>
+								</xsl:otherwise>
+							</xsl:choose>
 						</select>
 					</xsl:otherwise>
 				</xsl:choose>
