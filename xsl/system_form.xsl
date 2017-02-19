@@ -531,11 +531,15 @@
 				<xsl:sort select="m8:title( name(), 'd', $factName )" data-type="number"/>
 				<xsl:variable name="relationName" select="name()"/>
 				<xsl:element name="{$targetName}">
-					<xsl:attribute name="note-in"><xsl:value-of select="$note"/></xsl:attribute>
+					<!--<xsl:attribute name="note-in"><xsl:value-of select="$note"/></xsl:attribute>-->
 					<xsl:attribute name="factName"><xsl:value-of select="$factName"/></xsl:attribute>
 					<xsl:attribute name="relationName"><xsl:value-of select="$relationName"/></xsl:attribute>
 					<xsl:if test="$targetName = 'tn_material' and $note" xml:lang="кастомное безобразие 1">
-						<xsl:attribute name="note"><xsl:value-of select="translate( m8:title( $note, $teploprovodnost, $relationName ), '.', ',' )"/></xsl:attribute>
+						<xsl:variable name="note_result" select="m8:param( $note, $teploprovodnost, $relationName )"/>
+						<xsl:if test="$note_result">
+							<xsl:attribute name="note"><xsl:value-of select="translate( m8:title( $note_result ), '.', ',' )"/></xsl:attribute>
+						</xsl:if>
+						
 					</xsl:if>
 					<xsl:if test="m8:param( $relationName, 'd', $factName ) != 'r' ">
 						<xsl:attribute name="d"><xsl:value-of select="m8:title( $relationName, 'd', $factName )"/></xsl:attribute>
