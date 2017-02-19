@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:math="http://exslt.org/math" xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:exsl="http://exslt.org/common" xmlns:date="http://exslt.org/dates-and-times" xmlns:math="http://exslt.org/math" xmlns:func="http://exslt.org/functions" extension-element-prefixes="func" xmlns:m8="http://m8data.com">
 	<xsl:include href="get_name.xsl"/>
 	<!--<xsl:include href="../../../m8/type.xsl"/>-->
 	<!--
@@ -100,6 +100,33 @@
 	<!-- 
 			Функции A
 	-->
+	<func:function name="m8:time">
+		<xsl:param name="sec"/>
+		<xsl:param name="format"/>
+		<xsl:variable name="duration" select="date:duration( substring-before( $sec, '.' ) )"/>
+		<func:result>
+			<xsl:choose>
+				<xsl:when test="$format">
+					<xsl:variable name="t">
+						<xsl:choose>
+							<xsl:when test="starts-with($format, 'rus')">
+								<xsl:value-of select="date:add( '1970-01-01T03:00:00', $duration )"/>
+							</xsl:when>
+						</xsl:choose>
+					</xsl:variable>
+					<xsl:choose>
+						<xsl:when test="$format='rus1'">
+							<xsl:value-of select="concat( date:day-in-month($t), ' ', date:month-name($t), ' ', date:year($t), ', ', substring( date:time($t), 1, 5 ) )"/>
+						</xsl:when>
+					</xsl:choose>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="date:add( '1970-01-01', $duration )"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</func:result>
+		<!--<func:result select="date:format-date( $cTime, $format )"/>-->
+	</func:function>
 	<func:function name="m8:unic">
 		<xsl:param name="rootNode"/>
 		<xsl:param name="param"/>
@@ -142,17 +169,20 @@
 			</xsl:choose>
 		</func:result>
 	</func:function>
-	<func:function name="m8:sеrialize">
+	<func:function name="m8:serialize">
 		<xsl:param name="tree"/>
 		<xsl:param name="title"/>
 		<xsl:param name="size"/>
 		<func:result>
 			<code>
-				<div>
-					<xsl:value-of select="$title"/>
-				</div>
+				<xsl:comment>m8:serialize</xsl:comment>
 				<xsl:if test="$size">
 					<xsl:attribute name="style"><xsl:value-of select="concat( 'font-size: ', $size )"/></xsl:attribute>
+				</xsl:if>
+				<xsl:if test="$title">
+					<div>
+						<xsl:value-of select="$title"/>
+					</div>
 				</xsl:if>
 				<xsl:apply-templates select="exsl:node-set($tree)" mode="serialize"/>
 			</code>
@@ -172,15 +202,15 @@
 		<xsl:param name="third"/>
 		<func:result>
 			<xsl:choose>
-				<xsl:when test="$first">
+				<xsl:when test="$first and $first != 'BAD_NAME'">
 					<xsl:value-of select="$first"/>
 				</xsl:when>
-				<xsl:when test="$second">
+				<xsl:when test="$second and $second != 'BAD_NAME'">
 					<xsl:value-of select="$second"/>
-				</xsl:when>	
-				<xsl:when test="$third">
+				</xsl:when>
+				<xsl:when test="$third and $third != 'BAD_NAME'">
 					<xsl:value-of select="$third"/>
-				</xsl:when>								
+				</xsl:when>
 			</xsl:choose>
 		</func:result>
 	</func:function>
@@ -322,7 +352,7 @@
 	-->
 	<func:function name="m8:director">
 		<xsl:param name="fact"/>
-		<xsl:message>								== m8:director (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>
+		<!--<xsl:message>								== m8:director (fact: <xsl:value-of select="$fact"/>) ==</xsl:message>-->
 		<func:result select="name( m8:unic( m8:port( $fact ), 'r' ) )"/>
 		<!--<func:result select="name( m8:port( $fact )/r/* )"/>-->
 	</func:function>
@@ -360,7 +390,7 @@
 		<xsl:param name="fact"/>
 		<xsl:param name="param"/>
 		<xsl:param name="modifier"/>
-		<xsl:message>								== m8:title (fact: <xsl:value-of select="$fact"/>; param: <xsl:value-of select="$param"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
+		<!--<xsl:message>								== m8:title (fact: <xsl:value-of select="$fact"/>; param: <xsl:value-of select="$param"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>-->
 		<func:result>
 			<xsl:choose>
 				<xsl:when test="$param">
@@ -388,15 +418,34 @@
 	<!-- 	-->
 	<func:function name="m8:i">
 		<xsl:param name="fact"/>
-		<func:result select="m8:value( m8:param( $fact, 'i' ) )"/>
+		<xsl:param name="quest"/>
+		<func:result select="m8:value( m8:param( $fact, 'i', $quest ) )"/>
 	</func:function>
 	<func:function name="m8:d">
 		<xsl:param name="fact"/>
-		<func:result select="m8:value( m8:param( $fact, 'd' ) )"/>
+		<xsl:param name="quest"/>
+		<!--<func:result>-->
+		<xsl:choose>
+			<xsl:when test="m8:param( $fact, 'd', $quest ) and starts-with( m8:param( $fact, 'd', $quest ), 'r' )">
+				<func:result select="m8:title( $fact, 'd', $quest )"/>
+				<!--<xsl:value-of select="m8:title( $fact, 'd', $quest )"/>-->
+			</xsl:when>
+			<xsl:otherwise>
+				<func:result select="m8:value( m8:param( $fact, 'd', $quest ) )"/>
+				<!--<xsl:value-of select="m8:value( m8:param( $fact, 'd', $quest ) )"/>-->
+			</xsl:otherwise>
+		</xsl:choose>
+		<!--</func:result>-->
 	</func:function>
+	<!--<func:function name="m8:d">
+		<xsl:param name="fact"/>
+		<xsl:param name="quest"/>
+		<func:result select="m8:value( m8:param( $fact, 'd', $quest ) )"/>
+	</func:function>	-->
 	<func:function name="m8:n">
 		<xsl:param name="fact"/>
-		<func:result select="m8:value( m8:param( $fact, 'n' ) )"/>
+		<xsl:param name="quest"/>
+		<func:result select="m8:value( m8:param( $fact, 'n', $quest ) )"/>
 	</func:function>
 	<!-- 	-->
 	<func:function name="m8:ancestor-or-self">
@@ -423,7 +472,8 @@
 		<xsl:param name="modifier"/>
 		<xsl:message>								== m8:img (fact: <xsl:value-of select="$fact"/>; modifier: <xsl:value-of select="$modifier"/>) ==</xsl:message>
 		<xsl:variable name="chief" select="m8:chief( $fact )"/>
-		<func:result select="concat( $start/@prefix, 'p/', m8:holder( $fact ), '/img/', m8:type( $chief ), '/', m8:title( $fact, $code, $modifier ) )"/>
+		<!--m8:holder( $fact )-->
+		<func:result select="concat( $start/@prefix, 'p/',m8:holder( $fact ), '/img/', m8:type( $chief ), '/', m8:title( $fact, $code, $modifier ) )"/>
 	</func:function>
 	<func:function name="m8:chief">
 		<xsl:param name="fact"/>
@@ -440,13 +490,16 @@
 			</xsl:if>
 		</func:result>
 	</func:function>
+		<!--
+	//-->
 	<func:function name="m8:copylist">
 		<xsl:param name="factName"/>
+		<xsl:param name="note"/>
 		<func:result>
 			<xsl:choose>
 				<xsl:when test="m8:index( $factName )/object">
 					<xsl:for-each select="m8:index( $factName )/object/*">
-						<xsl:copy-of select="m8:copylist( name() )"/>
+						<xsl:copy-of select="m8:copylist( name(), $note )"/>
 					</xsl:for-each>
 				</xsl:when>
 				<xsl:otherwise>
@@ -454,6 +507,10 @@
 						<xsl:for-each select="m8:port( $factName )/*">
 							<xsl:attribute name="{m8:type( name() )}"><xsl:value-of select="m8:title( name( m8:unic( .., name() ) ) )"/></xsl:attribute>
 						</xsl:for-each>
+						<xsl:if test="$note" xml:lang="кастомное безобразие 1">
+							<xsl:attribute name="note" xml:lang="костыльный параметр для обслуживания селекта шага 3 calctn"><xsl:value-of select="translate( m8:title( $note, $teploprovodnost, $factName ), '.', ',' )"/></xsl:attribute>
+						<!--	<xsl:attribute name="note-t" xml:lang="костыльный параметр для обслуживания селекта шага 3 calctn"><xsl:value-of select="concat( $note, $teploprovodnost, $factName )"/></xsl:attribute>-->
+						</xsl:if>
 					</n>
 				</xsl:otherwise>
 			</xsl:choose>
@@ -466,12 +523,24 @@
 		<xsl:param name="factName"/>
 		<xsl:param name="targetName" xml:lang="принимается тип, а не класс"/>
 		<xsl:param name="direct"/>
+		<xsl:param name="secondName" xml:lang="принимается тип, а не класс"/>
+		<xsl:param name="secondDirect" xml:lang="принимается тип, а не класс"/>
+		<xsl:param name="note"/>
 		<xsl:variable name="relation">
 			<xsl:for-each select="m8:link( $factName, $direct )/*[m8:chief( name() )=m8:class($targetName)]">
 				<xsl:sort select="m8:title( name(), 'd', $factName )" data-type="number"/>
 				<xsl:variable name="relationName" select="name()"/>
 				<xsl:element name="{$targetName}">
-					<!--<xsl:attribute name="name"><xsl:value-of select="$relationName"/></xsl:attribute>-->
+					<!--<xsl:attribute name="note-in"><xsl:value-of select="$note"/></xsl:attribute>-->
+					<xsl:attribute name="factName"><xsl:value-of select="$factName"/></xsl:attribute>
+					<xsl:attribute name="relationName"><xsl:value-of select="$relationName"/></xsl:attribute>
+					<xsl:if test="$targetName = 'tn_material' and $note" xml:lang="кастомное безобразие 1">
+						<xsl:variable name="note_result" select="m8:param( $note, $teploprovodnost, $relationName )"/>
+						<xsl:if test="$note_result">
+							<xsl:attribute name="note"><xsl:value-of select="translate( m8:title( $note_result ), '.', ',' )"/></xsl:attribute>
+						</xsl:if>
+						
+					</xsl:if>
 					<xsl:if test="m8:param( $relationName, 'd', $factName ) != 'r' ">
 						<xsl:attribute name="d"><xsl:value-of select="m8:title( $relationName, 'd', $factName )"/></xsl:attribute>
 					</xsl:if>
@@ -489,7 +558,40 @@
 							</xsl:for-each>
 						</modification>
 					</xsl:if>
-					<xsl:copy-of select="m8:copylist( $relationName )"/>
+					<!--	<xsl:variable name="copys" select="m8:copylist( $relationName )"/>-->
+					<xsl:choose>
+						<xsl:when test="$secondName">
+							<xsl:for-each select="exsl:node-set( m8:copylist( $relationName ) )/*">
+								<xsl:copy>
+									<xsl:copy-of select="@*"/>
+									<xsl:for-each select="m8:role1( @name )/*[name()!='n' and m8:chief( name() ) = $secondName]">
+										<xsl:sort select="m8:title( name(), $depth )" data-type="number"/>
+										<xsl:element name="{name()}">
+											<xsl:attribute name="title"><xsl:value-of select="m8:title( name() )"/></xsl:attribute>
+											<!--<xsl:attribute name="picture"><xsl:value-of select="$picture"/></xsl:attribute>-->
+											<xsl:for-each select="m8:port( name() )/*|m8:port( m8:director(name()) )/*">
+												<xsl:variable name="paramName" select="name()"/>
+												<xsl:if test="$class/@*[name()=$paramName]">
+													<xsl:element name="{$class/@*[name()=$paramName]}">
+														<xsl:value-of select="m8:title( name(*) )"/>
+														<!--<xsl:attribute name="title"></xsl:attribute>-->
+														<!--<xsl:comment/>-->
+													</xsl:element>
+												</xsl:if>
+											</xsl:for-each>
+										</xsl:element>
+									</xsl:for-each>
+									<!--<xsl:copy-of select="m8:relation( @name, $secondName, $secondDirect )"/>-->
+								</xsl:copy>
+								<!--<xsl:copy-of select="."/>-->
+								<!--	<dd>ss</dd>-->
+							</xsl:for-each>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:copy-of select="m8:copylist( $relationName, $note )" xml:lang="кастомное безобразие 3"/>
+							
+						</xsl:otherwise>
+					</xsl:choose>
 				</xsl:element>
 			</xsl:for-each>
 		</xsl:variable>
@@ -509,6 +611,8 @@
 		<xsl:param name="placeholder"/>
 		<xsl:param name="hidden"/>
 		<xsl:param name="inputType"/>
+		<xsl:param name="inputInvalid"/>
+		<xsl:param name="alertTitle"/>
 		<xsl:param name="modifierName"/>
 		<xsl:param name="questName"/>
 		<xsl:param name="sourceValue"/>
@@ -518,10 +622,24 @@
 		<!--<xsl:variable name="selectedValue" select="$objectElement/*[name()=$predicateName]/*"/> or */@time = math:max( ../*/*/@time )  -->
 		<xsl:variable name="selectedValue" select="m8:unic( $objectElement, $predicateName )"/>
 		<!--<xsl:if test="name($selectedValue) = 'r' " xml:lang="add 2016-12-06"><xsl:attribute name="title">укажите здесь число больше нуля</xsl:attribute></xsl:if>-->
-		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message )" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
-			<xsl:attribute name="title"><xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута"><xsl:when test="$objectElement/@message"><xsl:value-of select="$objectElement/@message"/></xsl:when><xsl:otherwise><xsl:value-of select="$selectedValue/@message"/></xsl:otherwise></xsl:choose></xsl:attribute>
+		<xsl:if test="not($sourceValue) and ( $objectElement/@message or $selectedValue/@message or $alertTitle)" xml:lang="только для текстовых инпутов для корректного отображения всплывающих сообщений">
+			<xsl:variable name="error_title">
+				<xsl:choose xml:lang="2016-06-10: вносится наверх, а не в инпут т.к. при стилизации select2 сообщение нужно показывать не с инпута">
+					<xsl:when test="$alertTitle !='' ">
+						<xsl:value-of select="$alertTitle"/>
+					</xsl:when>
+					<xsl:when test="$objectElement/@message">
+						<xsl:value-of select="$objectElement/@message"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="$selectedValue/@message"/>
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:attribute name="title"><xsl:value-of select="$error_title"/></xsl:attribute>
 		</xsl:if>
-		<form id="editParamOfPort" selectedValue="{name($selectedValue)}" placeholder="{$placeholder}"><!-- currentModifier="{$currentModifier}" questName="{$questName}"-->
+		<form id="editParamOfPort" selectedValue="{name($selectedValue)}" placeholder="{$placeholder}" inputInvalid="{$inputInvalid}">
+			<!-- currentModifier="{$currentModifier}" questName="{$questName}"-->
 			<xsl:attribute name="action"><xsl:choose><xsl:when test="$action"><xsl:value-of select="$action"/></xsl:when><xsl:otherwise><xsl:value-of select="m8:root( $fact )"/></xsl:otherwise></xsl:choose><!--<xsl:if test="$predicateName = 'n' ">/</xsl:if>			--></xsl:attribute>
 			<xsl:if test="$predicateName = 'n' and not( $currentModifier )">
 				<xsl:attribute name="ENCTYPE">multipart/form-data</xsl:attribute>
@@ -543,7 +661,8 @@
 					</input>
 				</xsl:for-each>
 			</xsl:if>
-			<xsl:if test="( $currentModifier or $questName or $modifierName )" xml:lang="$modifier !='n' - нужен что бы можно было указывать n в квестах"><!--( $predicateName != 'n' or $modifier !='n' ) and -->
+			<xsl:if test="( $currentModifier or $questName or $modifierName )" xml:lang="$modifier !='n' - нужен что бы можно было указывать n в квестах">
+				<!--( $predicateName != 'n' or $modifier !='n' ) and -->
 				<input type="hidden" name="modifier">
 					<xsl:attribute name="value"><xsl:choose><xsl:when test="$questName"><xsl:value-of select="$questName"/></xsl:when><xsl:when test="$modifierName"><xsl:value-of select="$modifierName"/></xsl:when><xsl:when test="$currentModifier"><xsl:value-of select="$currentModifier"/></xsl:when><xsl:otherwise><xsl:value-of select="$modifier"/></xsl:otherwise></xsl:choose></xsl:attribute>
 				</input>
@@ -561,7 +680,7 @@
 					</xsl:choose>
 				</xsl:with-param>
 				<xsl:with-param name="currentModifier" select="$currentModifier"/>
-<!--				<xsl:with-param name="currentModifier">
+				<!--				<xsl:with-param name="currentModifier">
 					<xsl:choose>
 						<xsl:when test="$currentModifier">
 							<xsl:value-of select="$currentModifier"/>
@@ -572,6 +691,7 @@
 					</xsl:choose>
 				</xsl:with-param>-->
 				<xsl:with-param name="inputType" select="$inputType"/>
+				<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 				<xsl:with-param name="size" select="$size"/>
 				<xsl:with-param name="placeholder" select="$placeholder"/>
 				<xsl:with-param name="questName" select="$questName"/>
@@ -594,6 +714,7 @@
 		<xsl:param name="currentFact"/>
 		<xsl:param name="currentModifier"/>
 		<xsl:param name="inputType"/>
+		<xsl:param name="inputInvalid"/>
 		<xsl:param name="size"/>
 		<xsl:param name="placeholder"/>
 		<xsl:param name="questName"/>
@@ -615,6 +736,7 @@
 					<xsl:with-param name="currentFact" select="$currentFact"/>
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
+					<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -635,6 +757,7 @@
 					<xsl:with-param name="currentFact" select="$currentFact"/>
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
+					<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -655,6 +778,7 @@
 					<xsl:with-param name="currentFact" select="$currentFact"/>
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
+					<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -684,6 +808,7 @@
 					<xsl:with-param name="currentFact" select="$currentFact"/>
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
+					<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -705,6 +830,7 @@
 					<xsl:with-param name="currentFact" select="$currentFact"/>
 					<xsl:with-param name="currentModifier" select="$currentModifier"/>
 					<xsl:with-param name="inputType" select="$inputType"/>
+					<xsl:with-param name="inputInvalid" select="$inputInvalid"/>
 					<xsl:with-param name="size" select="$size"/>
 					<xsl:with-param name="placeholder" select="$placeholder"/>
 					<xsl:with-param name="questName" select="$questName"/>
@@ -726,6 +852,7 @@
 		<xsl:param name="currentFact"/>
 		<xsl:param name="currentModifier"/>
 		<xsl:param name="inputType"/>
+		<xsl:param name="inputInvalid"/>
 		<xsl:param name="size"/>
 		<xsl:param name="placeholder"/>
 		<xsl:param name="questName"/>
@@ -747,7 +874,8 @@
 			<!--
 							ВЫВОД ЗАПРОСА ФАЙЛА
 -->
-			<xsl:when test="$predicateName = 'n' and not( $currentModifier )"><!--$modifier='n'-->
+			<xsl:when test="$predicateName = 'n' and not( $currentModifier )">
+				<!--$modifier='n'-->
 				<input type="file" name="file">
 					<xsl:if test="not($ajaxMethod)">
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
@@ -903,10 +1031,20 @@
 								</xsl:for-each>
 							</input>
 							<label class="label-block" for="{name()}">
-								<xsl:if test="@activity!=1">
+								<!--<xsl:if test="@activity!=1"><xsl:value-of select="@domination"/><xsl:value-of select="@activity"/>-->
+								<xsl:if test="@domination != 1">
 									<xsl:attribute name="style">position: relative</xsl:attribute>
-									<div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #B99; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">не активно</div>
+									<xsl:choose>
+										<xsl:when test="@domination = 2">
+											<div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #5B5; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">служебное</div>
+										</xsl:when>
+										<xsl:otherwise>
+											<div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #B55; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">debug</div>
+										</xsl:otherwise>
+									</xsl:choose>
+									<!--<div style="position: absolute; right: 3px; top: 0; font-size: .6em; background-color: #B99; padding: 0 .5em; margin-right: .3em; letter-spacing: .2em; color: white ">не активно</div>-->
 								</xsl:if>
+								<!--<xsl:value-of select="@domitation"/>|<xsl:value-of select="@activity"/>-->
 								<xsl:if test="@imgPath">
 									<img src="{@imgPath}/front.jpg" alt="{@code}" width="60"/>
 								</xsl:if>
@@ -924,45 +1062,84 @@
 							</xsl:if>
 							<xsl:attribute name="class"><xsl:choose><xsl:when test="exsl:node-set($sourceValue)/*[20]" xml:lang="для городов в калькуляторе TN например">custom-</xsl:when><xsl:otherwise>simple-</xsl:otherwise></xsl:choose><xsl:value-of select="$ajaxMethod"/><xsl:text>-select</xsl:text></xsl:attribute>
 							<xsl:copy-of select="$option"/>
-							<xsl:for-each select="exsl:node-set($sourceValue)/*">
-								<xsl:sort select="m8:title( name() )"/>
-								<!-- m8:title( name() )-->
-								<xsl:variable name="valueName">
-									<xsl:choose>
-										<xsl:when test="m8:class( name() )">
-											<xsl:value-of select="n/@name"/>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:value-of select="name()"/>
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:variable>
-								<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or $valueName = name( $selectedValue )">
-									<option value="{$valueName}">
-										<xsl:if test="$valueName=name( $selectedValue )">
-											<xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
-										</xsl:if>
-										<xsl:variable name="title">
+							<xsl:choose>
+								<xsl:when test="exsl:node-set($sourceValue)/*[1]/n and exsl:node-set($sourceValue)/*[1]/n[@name!=../@relationName]">
+									<!-- and exsl:node-set($sourceValue)/*/n[1][@name!=current()/../@relationName]-->
+									<xsl:for-each select="exsl:node-set($sourceValue)/*">
+										<xsl:sort select="m8:title( name() )"/>
+										<optgroup label="{m8:title(@relationName)}">
+											<xsl:for-each select="n">
+												<xsl:variable name="valueName" select="@name"/>
+												<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or $valueName = name( $selectedValue )">
+													<option value="{$valueName}">
+														<xsl:copy-of select="@note"/>
+														<xsl:if test="$valueName=name( $selectedValue )">
+															<xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
+														</xsl:if>
+														<xsl:variable name="title">
+															<xsl:choose>
+																<xsl:when test="@on_display">
+																	<xsl:value-of select="@on_display"/>
+																</xsl:when>
+																<xsl:when test="@title">
+																	<xsl:value-of select="@title"/>
+																</xsl:when>
+																<xsl:when test="@i|@on_display" xml:lang="add 2016-12-06">
+																	<xsl:value-of select="@i|@on_display"/>
+																</xsl:when>
+																<xsl:otherwise>
+																	<xsl:apply-templates select="." mode="simpleName"/>
+																</xsl:otherwise>
+															</xsl:choose>
+														</xsl:variable>
+														<xsl:value-of select="$title"/>
+													</option>
+												</xsl:if>
+											</xsl:for-each>
+										</optgroup>
+									</xsl:for-each>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:for-each select="exsl:node-set($sourceValue)/*">
+										<xsl:sort select="m8:title( name() )"/>
+										<xsl:variable name="valueName">
 											<xsl:choose>
-												<xsl:when test="@on_display">
-													<xsl:value-of select="@on_display"/>
-												</xsl:when>
-												<xsl:when test="@title">
-													<xsl:value-of select="@title"/>
-												</xsl:when>
-												<xsl:when test="n[not(@on_display)]/@i|n/@on_display" xml:lang="add 2016-12-06">
-													<xsl:value-of select="n[not(@on_display)]/@i|n/@on_display"/>
+												<xsl:when test="m8:class( name() )">
+													<xsl:value-of select="n/@name"/>
 												</xsl:when>
 												<xsl:otherwise>
-													<xsl:apply-templates select="." mode="simpleName"/>
-													<!--titleWord-->
+													<xsl:value-of select="name()"/>
 												</xsl:otherwise>
 											</xsl:choose>
 										</xsl:variable>
-										<xsl:value-of select="$title"/>
-									</option>
-								</xsl:if>
-							</xsl:for-each>
+										<xsl:if test="not( $params_of_quest[ name() = $predicateName ]/*[name()=$valueName] ) or $valueName = name( $selectedValue )">
+											<option value="{$valueName}">
+												<xsl:copy-of select="@note|@note2"/>
+												<xsl:if test="$valueName=name( $selectedValue )">
+													<xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
+												</xsl:if>
+												<xsl:variable name="title">
+													<xsl:choose>
+														<xsl:when test="@on_display">
+															<xsl:value-of select="@on_display"/>
+														</xsl:when>
+														<xsl:when test="@title">
+															<xsl:value-of select="@title"/>
+														</xsl:when>
+														<xsl:when test="n[not(@on_display)]/@i|n/@on_display" xml:lang="add 2016-12-06">
+															<xsl:value-of select="n[not(@on_display)]/@i|n/@on_display"/>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:apply-templates select="." mode="simpleName"/>
+														</xsl:otherwise>
+													</xsl:choose>
+												</xsl:variable>
+												<xsl:value-of select="$title"/>
+											</option>
+										</xsl:if>
+									</xsl:for-each>
+								</xsl:otherwise>
+							</xsl:choose>
 						</select>
 					</xsl:otherwise>
 				</xsl:choose>
@@ -975,7 +1152,7 @@
 				<xsl:variable name="title">
 					<xsl:apply-templates select="$selectedValue" mode="titleWord"/>
 				</xsl:variable>
-				<input type="text" name="{$predicateName}">						
+				<input type="text" name="{$predicateName}">
 					<xsl:if test="$placeholder">
 						<xsl:attribute name="placeholder"><xsl:value-of select="$placeholder"/></xsl:attribute>
 					</xsl:if>
@@ -983,7 +1160,6 @@
 						<xsl:when test="$size">
 							<xsl:attribute name="size"><xsl:value-of select="$size"/></xsl:attribute>
 						</xsl:when>
-
 						<xsl:otherwise>
 							<xsl:variable name="length" select="string-length( $title )"/>
 							<xsl:choose>
@@ -1002,8 +1178,8 @@
 					<xsl:if test="not($ajaxMethod)">
 						<xsl:attribute name="onchange">this.form.submit()</xsl:attribute>
 					</xsl:if>
-					<xsl:if test="$selectedValue/@invalid or $selectedValue/../../@invalid or name($selectedValue) = 'r'" xml:lang="last part add 2016-12-06">
-						<xsl:attribute name="invalid"><xsl:value-of select="$selectedValue/@invalid"/><xsl:value-of select="$selectedValue/../../@invalid"/></xsl:attribute>
+					<xsl:if test="$selectedValue/@invalid or $selectedValue/../../@invalid or name($selectedValue) = 'r' or $inputInvalid" xml:lang="last part add 2016-12-06">
+						<xsl:attribute name="invalid"><xsl:value-of select="$selectedValue/@invalid"/><xsl:value-of select="$selectedValue/../../@invalid"/><xsl:value-of select="$inputInvalid"/></xsl:attribute>
 					</xsl:if>
 					<xsl:attribute name="value"><xsl:choose><xsl:when test="starts-with( name( $selectedValue ), 'r' )"><xsl:value-of select="translate( $title, '.', ',' )"/></xsl:when><xsl:otherwise><xsl:value-of select="$title"/></xsl:otherwise></xsl:choose></xsl:attribute>
 				</input>

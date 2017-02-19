@@ -92,7 +92,7 @@
 						</xsl:call-template>-->
 				<!--
 
--->
+-->			<xsl:apply-templates select="m8:port( $fact )" mode="start"/>
 				<xsl:choose>
 					<xsl:when test="$modifier='n'">
 						<xsl:apply-templates select="m8:port( 'n' )" mode="start">
@@ -105,7 +105,7 @@
 						</xsl:apply-templates>
 					</xsl:otherwise>
 				</xsl:choose>
-				<xsl:apply-templates select="m8:port( $fact )" mode="start"/>
+				
 				<xsl:call-template name="actionElement"/>
 				<!--</div>-->
 				<!--</div>-->
