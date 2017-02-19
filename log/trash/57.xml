@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<n1481012907-414626-0 multiRoot="/var/www/m8data/" planeRoot="/var/www/m8data/.public/teplotn/" mission="html" HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36" QUERY_STRING="n1478802988-713863-0=n1478803006-292316-0&amp;_=1481894869360" format="html" modifier="n" REQUEST_METHOD="GET" ajax="XMLHttpRequest" workpath="m8/n/n1481012907-414626-0/" prefix="/" m8path="m8/n/n1481012907-414626-0" branche="master" microseconds="215458" time="1481894965.21543" quest="n" tempkey="u13369043929561870373" avatar="teplotn" record="2" ctrl="teplotn" univer="teplotn" HTTP_COOKIE="debug=; user=u13369043929561870373" HTTP_X_REQUESTED_WITH="XMLHttpRequest" seconds="1481894965" fact="n1481012907-414626-0" version="0.8" DOCUMENT_ROOT="/var/www/m8data/.public/teplotn" REMOTE_ADDR="94.231.125.250" user="testingtn" activity="1" REQUEST_URI="/m8/n/n1481012907-414626-0/?n1478802988-713863-0=n1478803006-292316-0&amp;_=1481894869360" localtime="Fri Dec 16 13:29:25 2016">
-	<number predicate="n1478802988-713863-0" add="1" name="d6760181863583772660" subject="n1481012907-414626-0" modifier="n" object="n1478803006-292316-0">
-		0
-	</number>
-	_
-</n1481012907-414626-0>

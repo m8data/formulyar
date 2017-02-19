@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<n1481015066-8375-0 ctrl="teplotn" DOCUMENT_ROOT="/var/www/m8data/.public/teplotn" multiRoot="/var/www/m8data/" branche="master" quest="n" REMOTE_ADDR="94.231.125.250" REQUEST_URI="/m8/n/n1481015066-8375-0/?shag=6&amp;_=1481894892887" QUERY_STRING="shag=6&amp;_=1481894892887" REQUEST_METHOD="GET" seconds="1481894988" m8path="m8/n/n1481015066-8375-0" ajax="XMLHttpRequest" user="testingtn" activity="1" version="0.8" HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36" record="2" fact="n1481015066-8375-0" planeRoot="/var/www/m8data/.public/teplotn/" workpath="m8/n/n1481015066-8375-0/" time="1481894988.71802" modifier="n" format="html" HTTP_X_REQUESTED_WITH="XMLHttpRequest" univer="teplotn" HTTP_COOKIE="debug=; user=u13369043929561870373" mission="html" tempkey="u13369043929561870373" shag="r6" prefix="/" avatar="teplotn" microseconds="718060" localtime="Fri Dec 16 13:29:48 2016">
-	<number name="d14495625327992741414" predicate="n1458474027-45952-0" modifier="n" object="r6" add="1" subject="n1481015066-8375-0">
-		0
-	</number>
-	_
-</n1481015066-8375-0>

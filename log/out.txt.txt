@@ -1,3 +1,0 @@
-warning: failed to load external entity "/var/www/m8data/.public/teplotn/m8/type.xsl"
-compilation error: file /var/www/m8data/.public/teplotn/.plane/teplotn/xsl/teplotn.xsl line 6 element include
-xsl:include : unable to load /var/www/m8data/.public/teplotn/m8/type.xsl
